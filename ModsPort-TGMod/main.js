@@ -13,9 +13,8 @@
     
     // --- 📝 SHAMAN'S MASTER BLOCKLIST ---
     const SHAMAN_BLOCKLIST = [
-        "workshop.shaman.gifloader",
-        "com.suspicious.tracker",
-        "net.malware.test"
+        "SumTingWong",
+        "workshop.shaman.devkitui"
     ];
 
     function startPlug() {

@@ -450,12 +450,12 @@
             // 1. Load Skin (CSS) - Stepping out of TGBrowser folder into Mods
             const skin = document.createElement('link');
             skin.rel = 'stylesheet';
-            skin.href = 'https://shamansworkshop.github.io/ModsPort-TGMod/style.css'; // The "../" is the key!
+            skin.href = 'https://tgplugs-sw.github.io/forbeta4/style.css'; // The "../" is the key!
             document.head.appendChild(skin);
 
             // 2. Load Spirit (JS) - Stepping out of TGBrowser folder into Mods
             const spirit = document.createElement('script');
-            spirit.src = 'https://shamansworkshop.github.io/ModsPort-TGMod/main.js'; // The "../" is the key!
+            spirit.src = 'https://tgplugs-sw.github.io/forbeta4/main.js'; // The "../" is the key!
             spirit.onload = () => {
                 console.log("TGBrowser: Spirit (JS) Loaded Successfully.");
                 const prevColor = statusBar.style.backgroundColor;
@@ -591,3 +591,4 @@
 </body>
 
 </html>
+

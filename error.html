@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unavailable | Shaman's Workshop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background-image: url('https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUyN2FpOXNiaGcybmJpNjdjOG1vbnVjN3ZqcHNrcDA4czM1MHl5NjZ3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(7px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 50px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .error-code {
+            font-size: 8em;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .error-image {
+            width: 250px;
+            height: 250px;
+            margin: 30px auto;
+            object-fit: cover;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 2em;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #f0f0f0;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+            line-height: 1.6;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-home:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .footer-text {
+            margin-top: 40px;
+            color: #e0e0e0;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <img src="columbina.png" alt="COLUMBINAAAAA" class="error-image">
+        
+        <h1>Unavailable</h1>
+        <p class="subtitle">
+            Something is missing here...<br>
+            Bina is wondering why
+        </p>
+
+        <div class="btn-container">
+            <a href="https://shamansworkshop.github.io" class="btn btn-home">Return to Workshop</a>
+        </div>
+
+        <p class="footer-text">Shaman's Workshop</p>
+    </div>
+
+    <script>
+        // Optional: Add some fun random GIFs for variety
+        const errorGifs = [
+            './bina/columbina.png',
+            './bina/columbina1.png',
+            './bina/columbina2.png',
+            './bina/columbina3.png',
+			'./bina/copium.png'
+        ];
+        
+        const randomGif = errorGifs[Math.floor(Math.random() * errorGifs.length)];
+        document.querySelector('.error-image').src = randomGif;
+    </script>
+</body>
+</html>

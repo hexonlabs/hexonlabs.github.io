@@ -222,7 +222,7 @@
             right: 10px;
             top: 55px;
             background: var(--menu-bg);
-            backdrop-filter: blur(30px);
+            backdrop-filter: blur(var(--blur-amount);
             -webkit-backdrop-filter: blur(30px);
             border-radius: 16px;
             box-shadow: var(--shadow);
@@ -232,7 +232,7 @@
             z-index: 100;
             padding: 8px 0;
             border: 1px solid var(--border);
-            animation: slideIn 0.2s ease-out;
+            animation: slideIn 0.5s ease-out;
         }
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }

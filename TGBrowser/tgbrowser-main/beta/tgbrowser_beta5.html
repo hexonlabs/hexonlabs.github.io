@@ -7,12 +7,12 @@
     <style>
         :root {
             /* --- TGChroma Defaults --- */
-            --primary: #4285f4; 
+            --primary: #00fffff; 
             --primary-hover: #3367d6;
             --accent: #000000; 
             
             /* Base Colors */
-            --bg: #f8f9fa;
+            --bg: #ffff;
             --toolbar-bg: rgba(255, 255, 255, 0.8);
             --border: #dadce0;
             --text: #202124;
@@ -20,7 +20,7 @@
             --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             
             /* Glass variables */
-            --menu-bg: rgba(250, 245, 235, 0.75); 
+            --menu-bg: rgba(250, 245, 235, 0.85); 
             --blur-amount: 20px;
             --item-hover: rgba(0, 0, 0, 0.05);
             
@@ -29,15 +29,15 @@
             --filter-fx: none;
         }
 
-        /* Night Mode */
+        /* Dark AMOLED Mode */
         body.dark-mode {
-            --bg: #202124;
-            --toolbar-bg: rgba(41, 42, 45, 0.7);
-            --border: #3c4043;
-            --text: #e8eaed;
-            --text-light: #9aa0a6;
+            --bg: #000000;
+            --toolbar-bg: rgba(0, 0, 0, 0.7);
+            --border: #000000;
+            --text: #ffffff;
+            --text-light: #ffffff;
             --shadow: 0 4px 8px rgba(0,0,0,0.5);
-            --menu-bg: rgba(32, 33, 36, 0.60); 
+            --menu-bg: rgba(0, 0, 0, 0.85); 
             --item-hover: rgba(255, 255, 255, 0.1);
         }
 
@@ -50,6 +50,7 @@
             --border: #8b7d6b;
             --font-stack: 'Courier New', Courier, monospace;
             --filter-fx: sepia(0.4);
+            --menu-bg: #e0d0b0;
         }
         
         /* Matrix Mode */
@@ -62,6 +63,7 @@
             --border: #003300;
             --font-stack: 'Consolas', monospace;
             --shadow: 0 0 10px #00ff00;
+            --menu-bg: #000000;
         }
 
         body {
@@ -217,25 +219,23 @@
 
         /* Menu Panel */
         .menu-content {
+            background: var(--menu-bg);
             display: none;
             position: absolute;
-            right: 10px;
+            right: 20px;
             top: 55px;
-            background: var(--menu-bg);
-            backdrop-filter: blur(var(--blur-amount));
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 16px;
+            border-radius: 20px;
             box-shadow: var(--shadow);
-            width: 320px;
-            max-height: 85vh;
+            width: 300px;
+            max-height: 60vh;
             overflow-y: auto;
             z-index: 100;
-            padding: 8px 0;
-            border: 1px solid var(--border);
-            animation: slideIn 0.5s ease-out;
+            padding: 1px 0;
+            border: 3px solid var(--border);
+            animation: popUnfold 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: top right;
         }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popUnfold { from { opacity: 0; transform: scale(0.9) translateY(-10px); clip-path: inset(0 0 100% 0); } to { opacity: 1; transform: scale(1) translateY(0); clip-path: inset(0 0 0% 0); } }
 
         .menu-header {
             padding: 12px 16px;
@@ -321,7 +321,7 @@
             <div class="menu-content" id="menuContent">
                 <div class="menu-header">
                     <span>TGPanel</span>
-                    <span style="font-size:12px; opacity:0.6">v26.01.07c (Beta 5)</span>
+                    <span style="font-size:12px; opacity:0.6">v26.01.07d (Beta 5)</span>
                 </div>
 
                 <div class="menu-section">
@@ -332,7 +332,7 @@
                     </div>
                     
                     <div class="menu-item">
-                        <span>Night Mode</span>
+                        <span>Dark AMOLED Mode</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="darkModeToggle">
                             <span class="slider"></span>

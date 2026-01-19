@@ -411,7 +411,7 @@
             </div>
 
             <div class="section">
-                <h2>✨ What's New in Beta 5? <span class="new-badge">v26.01.07a+</span></h2>
+                <h2>✨ What's New? <span class="new-badge">v26.01.07a+</span></h2>
                 <div class="success-box">
                     <h3>🔐 Enhanced Security & Validation</h3>
                     <ul>
@@ -434,7 +434,7 @@
 
                 <div class="warning-box">
                     <h3>⚠️ Breaking Changes from Earlier Versions</h3>
-                    <p><strong>CRITICAL:</strong> TGPlugs created for versions before Beta 5 MUST be updated to include proper TGUID registration, or they will trigger security warnings!</p>
+                    <p><strong>CRITICAL:</strong> TGPlugs created for versions before v26.01.07a+ MUST be updated to include proper TGUID registration, or they will trigger security warnings!</p>
                     <p>Old mods without <code>window.TGMoLink.register("your.unique.id")</code> will still load BUT will be flagged as potentially unsafe.</p>
                 </div>
             </div>
@@ -459,7 +459,7 @@ github repo for tgplugs/<br>
             </div>
 
             <div class="section">
-                <h2>🆔 Understanding TGUID (TGMoLink Unique ID) <span class="new-badge">Beta 5</span></h2>
+                <h2>🆔 Understanding TGUID (TGMoLink Unique ID) <span class="new-badge">v26.01.07a+</span></h2>
                 
                 <h3>What is a TGUID?</h3>
                 <p>A TGUID is a reverse-domain identifier that ensures your mod is unique and traceable. Think of it like Android package names or iOS bundle identifiers!</p>
@@ -508,7 +508,7 @@ com..shaman.mod        (consecutive dots)</pre>
             </div>
 
             <div class="section">
-                <h2>📝 Basic TGPlug Template <span class="new-badge">Beta 5 Compatible</span></h2>
+                <h2>📝 Basic TGPlug Template <span class="new-badge">v26.01.07a+ Compatible</span></h2>
                 
                 <h3>style.css - Dark Theme Example</h3>
                 <div class="code-block" data-lang="css">
@@ -636,7 +636,7 @@ if (window.TGMoLink && window.TGMoLink.register) {
 // Returns: true if successful, false if invalid TGUID
 // Always check if the register method exists to prevent errors!</pre>
                     </div>
-                    <p><strong>New in Beta 5:</strong> Registration is now enforced with TGUID validation. Invalid or missing registration triggers security warnings in the status bar.</p>
+                    <p><strong>New in v26.01.07a+:</strong> Registration is now enforced with TGUID validation. Invalid or missing registration triggers security warnings in the status bar.</p>
                     <p><strong>⚡ Pro Tip:</strong> Always validate that <code>window.TGMoLink.register</code> exists before calling it. This makes your mod more robust and prevents crashes!</p>
                 </div>
 
@@ -700,7 +700,7 @@ function addCustomButton() {
             </div>
 
             <div class="section">
-                <h2>📦 Loading Your TGPlug <span class="new-badge">Beta 5</span></h2>
+                <h2>📦 Loading Your TGPlug <span class="new-badge">v26.01.07a+</span></h2>
                 
                 <h3>Method 1: Via TGPanel UI</h3>
                 <ol>
@@ -719,7 +719,7 @@ function addCustomButton() {
 
                 <h3>Method 2: Programmatic Loading</h3>
                 <div class="code-block" data-lang="javascript">
-<pre>// Load by TGUID (Beta 5 detects if it looks like an ID)
+<pre>// Load by TGUID (v26.01.07a+ detects if it looks like an ID)
 window.TGMoLink.inject('com.shaman.mymod');
 
 // Load by folder name
@@ -730,7 +730,7 @@ window.TGMoLink.inject('../ModsPort-TGMod/MyModFolder/');</pre>
                 </div>
 
                 <div class="warning-box">
-                    <h3>⚠️ Loading Behavior in Beta 5</h3>
+                    <h3>⚠️ Loading Behavior in v26.01.07a+</h3>
                     <p>After loading, the system checks if your mod called <code>register()</code> with a valid TGUID:</p>
                     <ul>
                         <li><strong>✅ Valid Registration:</strong> Status shows "Loaded TGPlug: [your TGUID]"</li>
@@ -1034,7 +1034,7 @@ try {
 
 **TGUID:** `com.yourname.modname`  
 **Version:** 1.0.0  
-**Requires:** TGBrowser Beta 5+
+**Requires:** TGBrowser v26.01.07a++
 
 ## Description
 Brief description of what your mod does.
@@ -1045,19 +1045,19 @@ Brief description of what your mod does.
 - Feature 3
 
 ## Installation
-1. Download and extract to `../ModsPort-TGMod/com.yourname.modname/`
-2. Open TGBrowser
-3. Go to TGPanel > Load TGPlug
-4. Enter: `com.yourname.modname`
-5. Click the + button
+1. Open TGBrowser
+2. Go to TGPanel > Load TGPlug
+3. Enter: `com.yourname.modname`
+4. Click the + button
+5. TGPlug installed!
 
 ## Permissions
 - localStorage access for [reason]
 - DOM manipulation for [reason]
 
 ## Compatibility
-- ✅ Beta 5 (v26.01.07a+)
-- ❌ Earlier versions (missing TGUID system)
+- ✅ v26.01.07a+
+- ❌ v25.12.20a-br1 and below (missing TGUID system)
 
 ## License
 MIT License
@@ -1072,7 +1072,7 @@ Your Name - [Contact]</pre>
                 <h2>📋 Version History & Changes</h2>
                 
                 <div class="info-box">
-                    <h3>🆕 Beta 5 (v26.01.07a) - Current</h3>
+                    <h3>🆕 v26.01.07a+</h3>
                     <ul>
                         <li>✨ Introduced TGUID validation system</li>
                         <li>🔐 Added security gatekeeper for mod registration</li>
@@ -1084,20 +1084,20 @@ Your Name - [Contact]</pre>
                 </div>
 
                 <div class="warning-box">
-                    <h3>📜 Beta 4 & Earlier (Pre-v26.01.07a)</h3>
+                    <h3>📜 Pre-v26.01.07a (v25.12.20a-br1 and below)</h3>
                     <ul>
                         <li>Basic TGMod system with <code>tg_skin.css</code> and <code>tg_spirit.js</code> naming</li>
                         <li>No TGUID requirement (mods loaded without validation)</li>
                         <li>Limited error feedback</li>
-                        <li><strong>⚠️ Mods from these versions need updating for Beta 5!</strong></li>
+                        <li><strong>⚠️ Mods from these versions need updating for v26.01.07a+!</strong></li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <footer>
-            <p><strong>TGPlugs Developer Guide</strong> - Updated for TGBrowser Beta 5</p>
-            <p><strong>Documentation Version:</strong> 2.0 (Beta 5 Compatible)</p>
+            <p><strong>TGPlugs Developer Guide</strong> - Updated for TGBrowser v26.01.07a+</p>
+            <p><strong>Documentation Version:</strong> 2.0 (v26.01.07a+ Compatible)</p>
             <p>Built by Shaman's Workshop • Part of TGProjects 🚀</p>
         </footer>
     </div>

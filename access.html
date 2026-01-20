@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        const allowlistRepo = "./ModsPort-TGMod/allowlist.json"; 
+        const allowlistRepo = "allowlist.json"; 
 
         // 1. Check if Shaman Approved (Read JSON)
         async function checkStatus() {
@@ -60,7 +60,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // 3. Login Logic (Strict Allowlist)
+        // 3. Login Logic (Strict Allowlist with Smart Redirect)
         async function attemptLogin() {
             const token = document.getElementById('tokenInput').value.trim();
             if (!token) return;
@@ -78,8 +78,20 @@
                     return;
                 }
 
+                // --- SMART REDIRECT SYSTEM ---
                 sessionStorage.setItem('shaman_token', token);
-                window.location.href = 'placeholder';
+
+                // Check if the URL has a destination (e.g., access.html?redirect=beta4.html)
+                const urlParams = new URLSearchParams(window.location.search);
+                const destination = urlParams.get('redirect');
+
+                if (destination) {
+                    // Send them to the specific beta file they requested
+                    window.location.href = destination;
+                } else {
+                    // Default to the main hub if no destination was specified
+                    window.location.href = 'indexindex.html';
+                }
 
             } catch (error) {
                 alert("Database connection failed.");

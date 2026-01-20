@@ -4,157 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unavailable | Shaman's Workshop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
     <style>
+        :root {
+            /* MD3 Tokens - Consistent with your other pages */
+            --md-sys-color-primary: #0b57d0;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-surface: #ffffff;
+            --md-sys-color-surface-variant: #f0f4f9;
+            --md-sys-color-background: #f8f9fa;
+            --md-sys-color-outline: #747775;
+            --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--md-sys-color-background);
+            color: #1f1f1f;
             min-height: 100vh;
-            background-image: url('https://media3.giphy.com/media/v1.Y2lkPTZjMDliOTUyN2FpOXNiaGcybmJpNjdjOG1vbnVjN3ZqcHNrcDA4czM1MHl5NjZ3aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 20px;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* Central Card */
+        .error-card {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 24px;
+            padding: 48px 32px;
+            max-width: 480px;
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.2);
-            z-index: -1;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(7px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 50px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
+            /* Subtle border instead of heavy shadow for a lighter feel */
+            border: 1px solid #e0e2e0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
         }
 
-        .error-code {
-            font-size: 8em;
-            font-weight: 900;
-            color: #ffffff;
-            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
-            margin-bottom: 10px;
-            line-height: 1;
+        /* Image Styling */
+        .image-container {
+            width: 200px;
+            height: 200px;
+            border-radius: 20px; /* Soft rounding */
+            overflow: hidden;
+            background-color: var(--md-sys-color-surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .error-image {
-            width: 250px;
-            height: 250px;
-            margin: 30px auto;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        
+        .error-image:hover {
+            transform: scale(1.05);
         }
 
-        h1 {
-            color: #ffffff;
-            margin-bottom: 15px;
-            font-size: 2em;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        /* Typography */
+        .text-content h1 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #1f1f1f;
+            margin-bottom: 12px;
         }
 
-        .subtitle {
-            color: #f0f0f0;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
-            line-height: 1.6;
+        .text-content p {
+            font-size: 16px;
+            color: #5e5e5e;
+            line-height: 1.5;
+            max-width: 300px;
+            margin: 0 auto;
         }
 
-        .btn-container {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        .btn {
-            display: inline-block;
-            color: white;
-            text-decoration: none;
-            padding: 15px 35px;
-            border-radius: 50px;
-            font-size: 1.1em;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-        }
-
+        /* Action Button */
         .btn-home {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 100px; /* Pill shape */
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.25px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-home:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background-color: #0842a0;
+            box-shadow: var(--md-elevation-1);
         }
 
-
-
-        .btn:active {
-            transform: translateY(-1px);
-        }
-
+        /* Footer inside card or outside? Outside looks cleaner for errors */
         .footer-text {
-            margin-top: 40px;
-            color: #e0e0e0;
-            font-size: 0.9em;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            margin-top: 32px;
+            font-size: 12px;
+            color: #757575;
+            font-weight: 500;
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(255, 255, 255, 0.3); /* Lighter ripple for dark buttons */
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        
-        <img src="columbina.png" alt="COLUMBINAAAAA" class="error-image">
-        
-        <h1>Unavailable</h1>
-        <p class="subtitle">
-            Something is missing here...<br>
-            Bina is wondering why
-        </p>
 
-        <div class="btn-container">
-            <a href="https://shamansworkshop.github.io" class="btn btn-home">Return to Workshop</a>
+    <div class="error-card">
+        <div class="image-container">
+            <img src="./bina/columbina.png" alt="Character Image" class="error-image">
         </div>
 
-        <p class="footer-text">Shaman's Workshop</p>
+        <div class="text-content">
+            <h1>Unavailable</h1>
+            <p>Something is missing here...<br>Bina is wondering why.</p>
+        </div>
+
+        <a href="https://shamansworkshop.github.io" class="btn-home" onclick="createRipple(event)">
+            <i class="material-icons-round" style="font-size: 18px;">arrow_back</i>
+            Return to Workshop
+        </a>
     </div>
 
+    <p class="footer-text">Shaman's Workshop</p>
+
     <script>
-        // Optional: Add some fun random GIFs for variety
+        // 1. Logic for Random Images (Preserved from original)
         const errorGifs = [
             './bina/columbina.png',
             './bina/columbina1.png',
             './bina/columbina2.png',
             './bina/columbina3.png',
-			'./bina/copium.png'
+            './bina/copium.png'
         ];
         
-        const randomGif = errorGifs[Math.floor(Math.random() * errorGifs.length)];
-        document.querySelector('.error-image').src = randomGif;
+        // Simple error handling in case images don't exist in dev environment
+        const imgElement = document.querySelector('.error-image');
+        if(imgElement) {
+            const randomGif = errorGifs[Math.floor(Math.random() * errorGifs.length)];
+            imgElement.src = randomGif;
+        }
+
+        // 2. Material Ripple Effect Logic
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            const rect = button.getBoundingClientRect();
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - rect.left - radius}px`;
+            circle.style.top = `${event.clientY - rect.top - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+            
+            // Allow animation to play briefly before navigating
+            setTimeout(() => {
+                window.location.href = button.href;
+            }, 300);
+            
+            event.preventDefault(); // Stop default link behavior to allow ripple
+        }
     </script>
 </body>
 </html>

@@ -4,327 +4,456 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGBrowser - Release Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <style>
+        :root {
+            /* Material Design 3 Tokens */
+            --md-sys-color-primary: #0b57d0;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-secondary-container: #d3e3fd;
+            --md-sys-color-on-secondary-container: #041e49;
+            --md-sys-color-surface: #ffffff;
+            --md-sys-color-surface-variant: #f0f4f9;
+            --md-sys-color-on-surface-variant: #444746;
+            --md-sys-color-background: #f8f9fa;
+            --md-sys-color-outline: #747775;
+            
+            /* Status Colors */
+            --md-sys-color-stable-container: #c4eed0;
+            --md-sys-color-on-stable-container: #072711;
+            --md-sys-color-beta-container: #ffddb3;
+            --md-sys-color-on-beta-container: #2b1700;
+            --md-sys-color-warning-container: #ffdad6;
+            --md-sys-color-on-warning-container: #410002;
+
+            --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #008b8b 0%, #060d0d 45%, #000000 100%);
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--md-sys-color-background);
+            color: #1f1f1f;
             min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* Animated background orbs */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(255, 193, 7, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: float 25s ease-in-out infinite;
-            z-index: -1;
+        /* Sticky Header */
+        header {
+            width: 100%;
+            padding: 24px 20px;
+            background: var(--md-sys-color-surface);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -20%;
-            left: -15%;
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: float 30s ease-in-out infinite reverse;
-            z-index: -1;
+        h1 {
+            font-size: 28px;
+            font-weight: 400;
+            color: #1f1f1f;
+            margin-bottom: 8px;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) translateX(0px); }
-            50% { transform: translateY(40px) translateX(30px); }
+        .subtitle {
+            font-size: 16px;
+            color: #5e5e5e;
+            line-height: 1.5;
         }
 
         .container {
             max-width: 900px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            width: 100%;
+            padding: 0 20px 40px 20px;
+        }
+
+        /* Navigation */
+        .nav-section {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #c0d8fc;
+        }
+
+        /* Main Cards */
+        .content-card {
+            background-color: var(--md-sys-color-surface);
             border-radius: 24px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            overflow: hidden;
-            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+            box-shadow: var(--md-elevation-1);
         }
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        header {
-            background: rgba(102, 126, 234, 0.2);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            padding: 50px 40px;
-            text-align: center;
+        .section-header i {
+            font-size: 28px;
+            color: var(--md-sys-color-primary);
         }
 
-        header h1 {
-            font-size: 3.2em;
-            margin-bottom: 10px;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        .section-header h2 {
+            font-size: 22px;
+            font-weight: 400;
+            color: #1f1f1f;
+            margin: 0;
+        }
+
+        /* Alert Box */
+        .alert-box {
+            background-color: var(--md-sys-color-warning-container);
+            color: var(--md-sys-color-on-warning-container);
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-box i {
+            font-size: 24px;
+        }
+
+        .alert-box strong {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Category Headers */
+        .category-label {
+            display: inline-block;
+            font-size: 12px;
             font-weight: 700;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        header p {
-            font-size: 1.1em;
-            opacity: 0.95;
-            font-weight: 300;
+            text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 16px;
+            margin-top: 24px;
+            color: #5e5e5e;
         }
 
-        .content {
-            padding: 50px 40px;
-        }
-
-        .section {
-            margin-bottom: 50px;
-        }
-
-        .section h2 {
-            color: rgba(255, 255, 255, 0.95);
-            font-size: 2em;
-            margin-bottom: 20px;
-            border-bottom: 3px solid rgba(255, 255, 255, 0.25);
-            padding-bottom: 15px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .section p {
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.05em;
-            margin-bottom: 15px;
-        }
-
-        .releases {
-            display: grid;
-            gap: 35px;
-        }
-
-        .release-category h3 {
-            background: rgba(102, 126, 234, 0.25);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-size: 1.4em;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            font-weight: 600;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-        }
-
-        .release-category h3:hover {
-            background: rgba(102, 126, 234, 0.35);
-            border-color: rgba(255, 255, 255, 0.25);
+        /* Release Items */
+        .release-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .release-item {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            padding: 20px 25px;
-            border-left: 5px solid rgba(255, 193, 7, 0.5);
-            margin-bottom: 15px;
+            background-color: var(--md-sys-color-surface-variant);
             border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: background-color 0.2s;
         }
-
-        .release-item:hover {
-            transform: translateX(8px);
-            background: rgba(255, 255, 255, 0.12);
-            border-left-color: rgba(255, 193, 7, 0.8);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-        }
-
-        .release-item strong {
-            color: rgba(255, 255, 255, 0.95);
-            font-size: 1.15em;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .release-item p {
-            margin-top: 8px;
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 400;
-        }
-
-        .release-item p:first-of-type {
-            display: inline-block;
-            background: rgba(76, 175, 80, 0.3);
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            margin-left: 10px;
-            border: 1px solid rgba(76, 175, 80, 0.5);
-        }
-
-        footer {
-            background: rgba(0, 0, 0, 0.15);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.9);
-            text-align: center;
-            padding: 25px;
-            font-size: 0.95em;
-        }
-
-        footer strong {
-            color: rgba(255, 255, 255, 0.95);
-            font-weight: 600;
-        }
-
-        .editable-notice {
-            background: rgba(255, 193, 7, 0.15);
-            border: 2px dashed rgba(255, 193, 7, 0.4);
-            padding: 18px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            font-weight: 500;
-            letter-spacing: 0.5px;
         
+        .release-item:hover {
+             background-color: #e2e7eb; /* Slightly darker variant */
+        }
+
+        .release-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .version-chip {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .version-chip.stable {
+            background-color: var(--md-sys-color-stable-container);
+            color: var(--md-sys-color-on-stable-container);
+        }
+
+        .version-chip.beta {
+            background-color: var(--md-sys-color-beta-container);
+            color: var(--md-sys-color-on-beta-container);
+        }
+
+        .release-desc {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #747775;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .content-card { padding: 20px; }
+            .release-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
+
+    <header>
+        <h1>Release Notes</h1>
+        <div class="subtitle">TGBrowser Changelog</div>
+    </header>
+
     <div class="container">
-        <header>
-            <h1>TGBrowser Release Notes</h1>
-        </header>
 
-        <div class="content">
+        <div class="nav-section">
+            <a href="index.html" class="back-btn" onclick="createRipple(event)">
+                <i class="material-icons-round">arrow_back</i>
+                Return to Workshop
+            </a>
+        </div>
 
-            <div class="section">
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">info</i>
                 <h2>About this Page</h2>
-                <p>TGBrowser's dedicated page for version releases notes.</p>
+            </div>
+            <p style="margin:0; font-size:15px; color:#444;">
+                This is the dedicated archive for TGBrowser version history, tracking the evolution from early Alpha builds to the latest Stable and Beta releases.
+            </p>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">history</i>
+                <h2>Version History</h2>
             </div>
 
-            <div class="section">
-                <h2>Releases</h2>
-                <div class="editable-notice">
-                     <strong>Some Releases might not show up here.</strong> 
-                </div>
-                <div class="releases">
-                    <!-- STABLE RELEASES -->
-                    <div class="release-category">
-                        <h3>STABLE</h3>
-                        <div class="release-item">
-                            <strong>v2.4.5alpha</strong>
-                            <p>Link only access, no google search, default browser theme (VanillaUI, stock appearance)</p>
-                        </div>
-                        <div class="release-item">
-                            <strong>v25.12.18a-r1</strong>
-                            <p>Added bookmark feature, introduced Bing Search capability</p>
-                        </div>
-                        <div class="release-item">
-                            <strong>v25.12.18b-r7</strong>
-                            <p>Minor adjustments, moved to Google Search</p>
-                        </div>
-                        <div class="release-item">
-                            <strong>v25.12.18c-r2</strong>
-                            <p>Moved from VanillaUI to Material Design 2, improved TGPanel, homepage introduced, now defaults to Google Search</p>
-                        </div>
-						<div class="release-item">
-							<strong>v25.12.19a-r2</strong>
-							<p>From Beta 2 to Stable 2, applied critical switch to Bing Search.</p>
-						</div>
-						<div class="release-item">
-							<strong>v25.12.19b-r2</strong>
-							<p>From "Beta 3" to "Stable 3,' you can now experience TGMod v1 in this release, as well minor tweaks in the code.</p>
-						</div>
-                    </div>
+            <div class="alert-box">
+                <i class="material-icons-round">warning_amber</i>
+                <strong>Note: Some older releases might not be listed here.</strong>
+            </div>
 
-                    <!-- BETA RELEASES -->
-                    <div class="release-category">
-                        <h3>BETA</h3>
-                        <div class="release-item">
-                            <strong>v25.12.19a-br1</strong>
-                            <p>Introduced "Data Barrier (Cookie Blocker)" toggleable feature, introduced "Masked Agent" (user-agent spoofing)</p>
-                        </div>
-                        <div class="release-item">
-                            <strong>v25.12.19a-br2</strong>
-                            <p>Removed "Masked Agent" (buggy), added "About Browser" clickable button (opens a file via file directory, must have the file downloaded)</p>
-                        </div>
-						<div class="release-item">
-                            <strong>v25.12.19b-br1</strong>
-                            <p>Introducing TGMod (TGBrowser Modding Interface) - loads JS or CSS files next to the main .html file of the browser. (tg_skin.css and tg_spirit.js format only)</p>
-						</div>
-						<div class="release-item">
-							<strong>v25.12.19a-br2 & v25.12.19b-br2</strong>
-							<p>Applied the critical Bing Search switch.</p>
-						</div>
-						<div class="release-item">
-							<strong>v25.12.20a-br1</strong>
-							<p>Introducing "Beta 4," added TGPanel UI transparency, minimal tweaks and adjustments.</p>
-						</div>
-						<div class="release-item">
-							<strong>v25.12.20a-br2</strong>
-							<p>Adjusted TGPanel's UI - from white to cream color.</p>
-						</div>
-						<div class="release-item">
-							<strong>v25.12.20b-br1</strong>
-							<p>Removal of "Go Back" and "Go Forward" navigation buttons for space saving.</p>
-						</div>
-						<div class="release-item">
-							<strong>v26.01.07a</strong>
-							<p>Introducing "Beta 5," this release features TGChroma, TGRitual, all new homepage system "TGHome," dynamic animations on TGPanel, as well as the refined TGMod, now has "TGMoLink" - an API for all TGPugs to use, also enhancement of how the system loads TGPlugs.</p>
-						</div>
-						<div class="release-item">
-							<strong>v26.01.07b</strong>
-							<p>Updated TGMod system to load TGPlugs by folder name typing.</p>
-						</div>
-						<div class="release-item">
-							<strong>v26.01.07c</strong>
-							<p>Added a security system for TGMod, now checks for TGUID on all TGplugs loaded.</p>
-						</div>
-						<div class="release-item">
-							<strong>v26.01.07d</strong>
-							<p>Minor adjustments to TGRitual theme modes, as well as Dark Mode. New animation for TGPanel, slightly made it a bit smaller and rounded corners. Addressed TGRitual theme picker background.</p>
-						</div>
+            <span class="category-label">Stable Channel</span>
+            <div class="release-list">
+                
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip stable">v25.12.19b-r2</span>
                     </div>
+                    <div class="release-desc">From "Beta 3" to "Stable 3," you can now experience TGMod v1 in this release, as well minor tweaks in the code.</div>
                 </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip stable">v25.12.19a-r2</span>
+                    </div>
+                    <div class="release-desc">From Beta 2 to Stable 2, applied critical switch to Bing Search.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip stable">v25.12.18c-r2</span>
+                    </div>
+                    <div class="release-desc">Moved from VanillaUI to Material Design 2, improved TGPanel, homepage introduced, now defaults to Google Search.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip stable">v25.12.18b-r7</span>
+                    </div>
+                    <div class="release-desc">Minor adjustments, moved to Google Search.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip stable">v25.12.18a-r1</span>
+                    </div>
+                    <div class="release-desc">Added bookmark feature, introduced Bing Search capability.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip stable">v2.4.5alpha</span>
+                    </div>
+                    <div class="release-desc">Link only access, no google search, default browser theme (VanillaUI, stock appearance).</div>
+                </div>
+
+            </div>
+
+            <br>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+            <span class="category-label">Beta / Experimental Channel</span>
+            <div class="release-list">
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v26.01.07d</span>
+                    </div>
+                    <div class="release-desc">Minor adjustments to TGRitual theme modes and Dark Mode. New animation for TGPanel, smaller with rounded corners. Addressed TGRitual theme picker background.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v26.01.07c</span>
+                    </div>
+                    <div class="release-desc">Added a security system for TGMod, now checks for TGUID on all TGplugs loaded.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v26.01.07b</span>
+                    </div>
+                    <div class="release-desc">Updated TGMod system to load TGPlugs by folder name typing.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v26.01.07a</span>
+                    </div>
+                    <div class="release-desc"><strong>Beta 5:</strong> Features TGChroma, TGRitual, new "TGHome" system, dynamic animations on TGPanel. Refined TGMod now includes "TGMoLink" API for mod communication and enhanced loading.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.20b-br1</span>
+                    </div>
+                    <div class="release-desc">Removal of "Go Back" and "Go Forward" navigation buttons for space saving.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.20a-br2</span>
+                    </div>
+                    <div class="release-desc">Adjusted TGPanel's UI - from white to cream color.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.20a-br1</span>
+                    </div>
+                    <div class="release-desc"><strong>Beta 4:</strong> Added TGPanel UI transparency, minimal tweaks and adjustments.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.19a/b-br2</span>
+                    </div>
+                    <div class="release-desc">Applied the critical Bing Search switch.</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.19b-br1</span>
+                    </div>
+                    <div class="release-desc">Introducing TGMod (Modding Interface) - loads JS or CSS files (tg_skin.css and tg_spirit.js format only).</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.19a-br2</span>
+                    </div>
+                    <div class="release-desc">Removed "Masked Agent" (buggy), added "About Browser" clickable button (opens a local file).</div>
+                </div>
+
+                <div class="release-item">
+                    <div class="release-header">
+                        <span class="version-chip beta">v25.12.19a-br1</span>
+                    </div>
+                    <div class="release-desc">Introduced "Data Barrier (Cookie Blocker)" and "Masked Agent" (user-agent spoofing).</div>
+                </div>
+
             </div>
         </div>
 
         <footer>
             <p>2025 PROJECT TGBrowser by <strong>Shaman's Workshop</strong></p>
         </footer>
+
     </div>
+
+    <script>
+        // Material Design Ripple Effect
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            const rect = button.getBoundingClientRect();
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - rect.left - radius}px`;
+            circle.style.top = `${event.clientY - rect.top - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+        }
+    </script>
 </body>
 </html>

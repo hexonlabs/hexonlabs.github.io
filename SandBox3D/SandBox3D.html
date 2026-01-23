@@ -26,7 +26,7 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            width: 240px;
+            width: 250px;
             background: rgba(30, 30, 30, 0.95);
             border-radius: 8px;
             padding: 10px 15px 15px 15px;
@@ -36,6 +36,8 @@
             user-select: none;
             pointer-events: auto; 
             transition: height 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .panel-header {
@@ -79,7 +81,7 @@
             font-size: 11px;
             font-weight: bold;
             color: #888;
-            margin-top: 10px;
+            margin-top: 15px;
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -110,7 +112,7 @@
             text-align: left;
             display: flex;
             align-items: center;
-            font-size: 14px;
+            font-size: 13px;
         }
         
         button:hover {
@@ -124,16 +126,27 @@
             font-weight: bold;
         }
 
+        /* TOOLS COLORS */
+        button#btn-none { border-left: 4px solid #aaa; }
+        button#btn-none.active { background: #555; border-color: #999; }
+        
+        button#btn-push { border-left: 4px solid #2ecc71; }
+        button#btn-push.active { background: #27ae60; border-color: #2ecc71; }
+
         /* BOMB BUTTON STYLE */
-        button#btn-bomb {
-            border-color: #8a4a4a;
+        button.btn-explosive {
+            border-left: 4px solid #e74c3c;
         }
-        button#btn-bomb.active {
+        button.btn-explosive.active {
             background: #802a2a;
             border-color: #df4a4a;
         }
-        button#btn-bomb:hover {
+        button.btn-explosive:hover {
             background: #5c2828;
+        }
+
+        button#btn-frag {
+            border-left: 4px solid #d35400;
         }
 
         button#btn-clear {
@@ -160,6 +173,9 @@
         .icon-sphere { border-radius: 50%; }
         .icon-cyl { border-radius: 2px; height: 16px; width: 8px; }
         .icon-bomb { border-radius: 50%; background: #e74c3c; border: 1px solid #000; }
+        .icon-frag { border-radius: 50%; background: #d35400; border: 2px dashed #000; }
+        .icon-hand { background: transparent; border: 1px solid #2ecc71; width: 10px; height: 10px;}
+        .icon-x { background: transparent; color: #aaa; font-weight: bold; font-size: 14px; line-height: 10px; width: auto; height: auto; }
     </style>
 
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -176,11 +192,21 @@
 
         <div class="panel-content">
             <div class="instruction">
-                Left Click: Spawn Shape<br>
+                Left Click: Use Tool<br>
                 Right Drag: Rotate Camera
             </div>
 
-            <div class="section-label">Shape Selector</div>
+            <div class="section-label">Tools</div>
+            <div class="control-group">
+                <button id="btn-none" onclick="selectShape('none')">
+                    <span class="shape-icon icon-x">X</span> Selection Mode (None)
+                </button>
+                <button id="btn-push" onclick="selectShape('push')">
+                    <span class="shape-icon icon-hand"></span> Force Push
+                </button>
+            </div>
+
+            <div class="section-label">Shapes</div>
             <div class="control-group">
                 <button id="btn-box" class="active" onclick="selectShape('box')">
                     <span class="shape-icon icon-box"></span> Cube
@@ -191,8 +217,15 @@
                 <button id="btn-cyl" onclick="selectShape('cylinder')">
                     <span class="shape-icon icon-cyl"></span> Cylinder
                 </button>
-                <button id="btn-bomb" onclick="selectShape('bomb')">
+            </div>
+
+            <div class="section-label">Explosives</div>
+            <div class="control-group">
+                <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
                     <span class="shape-icon icon-bomb"></span> Bomb (4s Fuse)
+                </button>
+                <button id="btn-frag" class="btn-explosive" onclick="selectShape('frag_bomb')">
+                    <span class="shape-icon icon-frag"></span> Fragmented Bomb
                 </button>
             </div>
 
@@ -226,6 +259,9 @@
             if(shape === 'sphere') document.getElementById('btn-sphere').classList.add('active');
             if(shape === 'cylinder') document.getElementById('btn-cyl').classList.add('active');
             if(shape === 'bomb') document.getElementById('btn-bomb').classList.add('active');
+            if(shape === 'frag_bomb') document.getElementById('btn-frag').classList.add('active');
+            if(shape === 'push') document.getElementById('btn-push').classList.add('active');
+            if(shape === 'none') document.getElementById('btn-none').classList.add('active');
         }
 
         function clearObjects() {
@@ -267,8 +303,8 @@
                         // 1. Physics
                         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
-                        // 2. Camera (Zoomed out slightly to see expanded platform)
-                        const camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 35, BABYLON.Vector3.Zero(), scene);
+                        // 2. Camera (Zoomed out more for bigger platform)
+                        const camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 60, BABYLON.Vector3.Zero(), scene);
                         camera.attachControl(this.canvas, true);
                         camera.wheelPrecision = 50;
                         camera.panningSensibility = 0; 
@@ -279,8 +315,8 @@
                         const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
                         dirLight.intensity = 0.5;
 
-                        // 4. Ground (Expanded)
-                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 60, height: 60}, scene);
+                        // 4. Ground (Expanded greatly)
+                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 200, height: 200}, scene);
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
                         groundMat.diffuseColor = new BABYLON.Color3(0.15, 0.15, 0.2);
                         groundMat.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
@@ -289,20 +325,44 @@
 
                         // 5. Incline (Ramp)
                         const ramp = BABYLON.MeshBuilder.CreateBox("ramp", {width: 15, height: 1, depth: 30}, scene);
-                        ramp.position = new BABYLON.Vector3(20, 4, 0); // Positioned to the right
-                        ramp.rotation.z = Math.PI / 8; // Tilted ~22 degrees
+                        ramp.position = new BABYLON.Vector3(30, 4, 0); 
+                        ramp.rotation.z = Math.PI / 8;
                         
                         const rampMat = new BABYLON.StandardMaterial("rampMat", scene);
                         rampMat.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.3);
                         ramp.material = rampMat;
-                        
                         ramp.physicsImpostor = new BABYLON.PhysicsImpostor(ramp, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.4 }, scene);
 
+                        // 6. Pillars (New Environment Feature)
+                        this.createPillars(scene);
 
-                        // 6. Interaction
+                        // 7. Interaction
                         this.setupInteraction(scene);
 
                         return scene;
+                    },
+
+                    createPillars: function(scene) {
+                        const mat = new BABYLON.StandardMaterial("pillarMat", scene);
+                        mat.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.35);
+
+                        // Create 15 Random pillars
+                        for(let i=0; i < 15; i++) {
+                            const height = 10 + Math.random() * 15;
+                            const size = 2 + Math.random() * 3;
+                            const pillar = BABYLON.MeshBuilder.CreateBox("pillar" + i, {height: height, width: size, depth: size}, scene);
+                            
+                            // Random position not too close to center
+                            let x = (Math.random() - 0.5) * 160;
+                            let z = (Math.random() - 0.5) * 160;
+                            
+                            // Keep clear area in middle
+                            if(Math.abs(x) < 20 && Math.abs(z) < 20) { x += 40; }
+
+                            pillar.position = new BABYLON.Vector3(x, height/2, z);
+                            pillar.material = mat;
+                            pillar.physicsImpostor = new BABYLON.PhysicsImpostor(pillar, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1 }, scene);
+                        }
                     },
 
                     setupInteraction: function(scene) {
@@ -311,9 +371,31 @@
                                 case BABYLON.PointerEventTypes.POINTERDOWN:
                                     if(pointerInfo.event.button !== 0) return; 
 
+                                    // SAFETY: If tool is "none", do nothing
+                                    if(selectedShape === 'none') return;
+
                                     const pickInfo = pointerInfo.pickInfo;
                                     
                                     if (pickInfo.hit && pickInfo.pickedMesh) {
+                                        
+                                        // PUSH TOOL LOGIC
+                                        if (selectedShape === 'push') {
+                                            // Don't push the ground or ramps (mass 0 objects usually)
+                                            if (pickInfo.pickedMesh.physicsImpostor && pickInfo.pickedMesh.physicsImpostor.mass > 0) {
+                                                // Calculate direction from camera to hit point
+                                                const ray = pickInfo.ray;
+                                                const forceDirection = ray.direction;
+                                                const forceMagnitude = 50; // Push strength
+                                                
+                                                pickInfo.pickedMesh.physicsImpostor.applyImpulse(
+                                                    forceDirection.scale(forceMagnitude), 
+                                                    pickInfo.pickedPoint
+                                                );
+                                            }
+                                            return; // Stop here, don't spawn anything
+                                        }
+
+                                        // SPAWN LOGIC
                                         const normal = pickInfo.getNormal(true);
                                         if (normal) {
                                             const spawnPos = pickInfo.pickedPoint.add(normal.scale(0.6));
@@ -344,65 +426,67 @@
                             mesh = BABYLON.MeshBuilder.CreateCylinder("cyl", {height: scale, diameter: scale/2}, scene);
                             mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 1, restitution: 0.3, friction: 0.6 }, scene);
                         }
-                        else if (type === 'bomb') {
+                        else if (type === 'bomb' || type === 'frag_bomb') {
                             mesh = BABYLON.MeshBuilder.CreateSphere("bomb", {diameter: 1.2}, scene);
                             mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Black
-                            mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0); // Slight red glow
+                            mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0); 
+                            
+                            // Fragment bomb looks slightly different (orange glow)
+                            if (type === 'frag_bomb') {
+                                mat.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0); 
+                            }
+
                             mesh.material = mat;
                             mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 3, restitution: 0.5, friction: 0.8 }, scene);
                             
-                            // Initialize Bomb Logic
-                            this.armBomb(mesh, scene);
+                            this.armBomb(mesh, scene, type === 'frag_bomb');
                         }
 
-                        // Apply Common properties if not bomb (bomb sets its own material above)
-                        if (mesh && type !== 'bomb') {
+                        if (mesh && !type.includes('bomb')) {
                             mesh.position.copyFrom(position);
                             mesh.material = mat;
                             spawnedMeshes.push(mesh);
-                        } else if (mesh && type === 'bomb') {
-                             mesh.position.copyFrom(position);
-                             // Don't push bomb to spawnedMeshes for cleanup purposes yet, 
-                             // or push it and handle disposal check in explosion.
-                             spawnedMeshes.push(mesh);
+                        } else if (mesh) {
+                            mesh.position.copyFrom(position);
+                            spawnedMeshes.push(mesh);
                         }
                     },
 
-                    armBomb: function(bombMesh, scene) {
-                        // Flash red color before exploding
+                    armBomb: function(bombMesh, scene, isFragment) {
                         let flashCount = 0;
                         const flashInterval = setInterval(() => {
                             if(!bombMesh || bombMesh.isDisposed()) { clearInterval(flashInterval); return; }
                             
+                            // Flash Logic
+                            const colorOn = isFragment ? new BABYLON.Color3(1, 0.5, 0) : new BABYLON.Color3(1, 0, 0);
+                            
                             if (flashCount % 2 === 0) {
-                                bombMesh.material.emissiveColor = new BABYLON.Color3(1, 0, 0); // Bright Red
+                                bombMesh.material.emissiveColor = colorOn;
                             } else {
-                                bombMesh.material.emissiveColor = new BABYLON.Color3(0.1, 0, 0); // Dark
+                                bombMesh.material.emissiveColor = new BABYLON.Color3(0.1, 0, 0);
                             }
                             flashCount++;
                         }, 500);
 
-                        // Explode after 4 seconds
                         setTimeout(() => {
                             clearInterval(flashInterval);
                             if(bombMesh && !bombMesh.isDisposed()) {
-                                this.explode(bombMesh.position, scene);
+                                this.explode(bombMesh.position, scene, isFragment);
                                 bombMesh.dispose();
                             }
                         }, 4000);
                     },
 
-                    explode: function(center, scene) {
-                        // 1. Visual Effect (Expanding Orange Sphere)
+                    explode: function(center, scene, isFragment) {
+                        // 1. Visual Effect
                         const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", {diameter: 1}, scene);
                         explosion.position = center;
                         const expMat = new BABYLON.StandardMaterial("expMat", scene);
-                        expMat.diffuseColor = new BABYLON.Color3(1, 0.5, 0);
+                        expMat.diffuseColor = isFragment ? new BABYLON.Color3(1, 0.8, 0) : new BABYLON.Color3(1, 0.5, 0);
                         expMat.emissiveColor = new BABYLON.Color3(1, 0.2, 0);
                         expMat.alpha = 0.8;
                         explosion.material = expMat;
 
-                        // Animation loop for visual explosion
                         let scale = 1;
                         const anim = scene.onBeforeRenderObservable.add(() => {
                             scale += 0.8;
@@ -415,19 +499,16 @@
                         });
 
                         // 2. Physics Impulse
-                        const blastRadius = 20;
-                        const blastForce = 50; 
+                        const blastRadius = 25;
+                        const blastForce = 60; 
 
                         spawnedMeshes.forEach(mesh => {
                             if (mesh && !mesh.isDisposed() && mesh.physicsImpostor) {
-                                // Calculate distance
                                 const dir = mesh.getAbsolutePosition().subtract(center);
                                 const dist = dir.length();
 
                                 if (dist < blastRadius) {
-                                    // Normalize direction
                                     dir.normalize();
-                                    // Force reduces with distance
                                     const forceMagnitude = blastForce * (1 - dist / blastRadius);
                                     const contactPoint = mesh.getAbsolutePosition();
                                     const impulse = dir.scale(forceMagnitude);
@@ -436,6 +517,36 @@
                                 }
                             }
                         });
+
+                        // 3. Spawn Fragments (If Fragment Bomb)
+                        if (isFragment) {
+                            this.spawnFragments(center, scene);
+                        }
+                    },
+
+                    spawnFragments: function(center, scene) {
+                        const numFrags = 8;
+                        for(let i=0; i<numFrags; i++) {
+                            const frag = BABYLON.MeshBuilder.CreateBox("frag", {size: 0.5}, scene);
+                            frag.position = center.clone();
+                            // Offset slightly so they don't clip instantly
+                            frag.position.y += 1;
+                            frag.position.x += (Math.random() - 0.5);
+                            frag.position.z += (Math.random() - 0.5);
+
+                            const fMat = new BABYLON.StandardMaterial("fMat", scene);
+                            fMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+                            fMat.emissiveColor = new BABYLON.Color3(0.8, 0.3, 0); // Burning debris look
+                            frag.material = fMat;
+
+                            frag.physicsImpostor = new BABYLON.PhysicsImpostor(frag, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.5, restitution: 0.1 }, scene);
+                            
+                            // Shoot fragment outwards
+                            const exDir = new BABYLON.Vector3(Math.random()-0.5, Math.random(), Math.random()-0.5).normalize();
+                            frag.physicsImpostor.applyImpulse(exDir.scale(15), frag.getAbsolutePosition());
+
+                            spawnedMeshes.push(frag);
+                        }
                     }
                 }
             }

@@ -29,7 +29,7 @@
             width: 240px;
             background: rgba(30, 30, 30, 0.95);
             border-radius: 8px;
-            padding: 10px 15px 15px 15px; /* Adjusted padding */
+            padding: 10px 15px 15px 15px;
             color: #eee;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             border: 1px solid #444;
@@ -38,7 +38,6 @@
             transition: height 0.3s ease;
         }
 
-        /* HEADER & MINIMIZE CONTROLS */
         .panel-header {
             display: flex;
             justify-content: space-between;
@@ -52,10 +51,8 @@
             margin: 0;
             font-size: 18px;
             color: #4aa3df;
-            border: none; /* Removed border from H2, moved to .panel-header */
         }
 
-        /* Minimize Button Style */
         #btn-minimize {
             background: transparent;
             border: 1px solid #555;
@@ -74,20 +71,10 @@
             color: white;
         }
 
-        /* Logic to hide contents when minimized */
-        #ui-panel.minimized .panel-content {
-            display: none;
-        }
-        #ui-panel.minimized {
-            width: 200px; /* Optional: make it slightly narrower when minimized */
-        }
-        #ui-panel.minimized .panel-header {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
+        #ui-panel.minimized .panel-content { display: none; }
+        #ui-panel.minimized { width: 200px; }
+        #ui-panel.minimized .panel-header { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
-        /* CONTENT STYLES */
         .section-label {
             font-size: 11px;
             font-weight: bold;
@@ -112,7 +99,6 @@
             margin-bottom: 10px;
         }
 
-        /* BUTTONS */
         button {
             background: #333;
             border: 1px solid #555;
@@ -138,6 +124,18 @@
             font-weight: bold;
         }
 
+        /* BOMB BUTTON STYLE */
+        button#btn-bomb {
+            border-color: #8a4a4a;
+        }
+        button#btn-bomb.active {
+            background: #802a2a;
+            border-color: #df4a4a;
+        }
+        button#btn-bomb:hover {
+            background: #5c2828;
+        }
+
         button#btn-clear {
             background: #6e2828;
             border-color: #a34a4a;
@@ -150,7 +148,7 @@
             background: #8f3434;
         }
 
-        /* INDICATOR DOTS */
+        /* SHAPE ICONS */
         .shape-icon {
             width: 12px;
             height: 12px;
@@ -161,6 +159,7 @@
         .icon-box { border-radius: 2px; }
         .icon-sphere { border-radius: 50%; }
         .icon-cyl { border-radius: 2px; height: 16px; width: 8px; }
+        .icon-bomb { border-radius: 50%; background: #e74c3c; border: 1px solid #000; }
     </style>
 
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -192,6 +191,9 @@
                 <button id="btn-cyl" onclick="selectShape('cylinder')">
                     <span class="shape-icon icon-cyl"></span> Cylinder
                 </button>
+                <button id="btn-bomb" onclick="selectShape('bomb')">
+                    <span class="shape-icon icon-bomb"></span> Bomb (4s Fuse)
+                </button>
             </div>
 
             <button id="btn-clear" onclick="clearObjects()">CLEAR SCENE</button>
@@ -212,15 +214,8 @@
         function toggleUI() {
             const panel = document.getElementById('ui-panel');
             const btn = document.getElementById('btn-minimize');
-            
             panel.classList.toggle('minimized');
-
-            // Change button text based on state
-            if (panel.classList.contains('minimized')) {
-                btn.innerText = "+";
-            } else {
-                btn.innerText = "-";
-            }
+            btn.innerText = panel.classList.contains('minimized') ? "+" : "-";
         }
 
         function selectShape(shape) {
@@ -230,6 +225,7 @@
             if(shape === 'box') document.getElementById('btn-box').classList.add('active');
             if(shape === 'sphere') document.getElementById('btn-sphere').classList.add('active');
             if(shape === 'cylinder') document.getElementById('btn-cyl').classList.add('active');
+            if(shape === 'bomb') document.getElementById('btn-bomb').classList.add('active');
         }
 
         function clearObjects() {
@@ -271,8 +267,8 @@
                         // 1. Physics
                         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
-                        // 2. Camera
-                        const camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 20, BABYLON.Vector3.Zero(), scene);
+                        // 2. Camera (Zoomed out slightly to see expanded platform)
+                        const camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 35, BABYLON.Vector3.Zero(), scene);
                         camera.attachControl(this.canvas, true);
                         camera.wheelPrecision = 50;
                         camera.panningSensibility = 0; 
@@ -283,15 +279,27 @@
                         const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
                         dirLight.intensity = 0.5;
 
-                        // 4. Ground
-                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 40, height: 40}, scene);
+                        // 4. Ground (Expanded)
+                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 60, height: 60}, scene);
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
                         groundMat.diffuseColor = new BABYLON.Color3(0.15, 0.15, 0.2);
                         groundMat.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
                         ground.material = groundMat;
                         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.5, friction: 0.5 }, scene);
 
-                        // 5. Interaction
+                        // 5. Incline (Ramp)
+                        const ramp = BABYLON.MeshBuilder.CreateBox("ramp", {width: 15, height: 1, depth: 30}, scene);
+                        ramp.position = new BABYLON.Vector3(20, 4, 0); // Positioned to the right
+                        ramp.rotation.z = Math.PI / 8; // Tilted ~22 degrees
+                        
+                        const rampMat = new BABYLON.StandardMaterial("rampMat", scene);
+                        rampMat.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.3);
+                        ramp.material = rampMat;
+                        
+                        ramp.physicsImpostor = new BABYLON.PhysicsImpostor(ramp, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.4 }, scene);
+
+
+                        // 6. Interaction
                         this.setupInteraction(scene);
 
                         return scene;
@@ -305,9 +313,7 @@
 
                                     const pickInfo = pointerInfo.pickInfo;
                                     
-                                    // ALLOW CLICK ON ANY MESH (Ground or Object)
                                     if (pickInfo.hit && pickInfo.pickedMesh) {
-                                        // Calculate spawn position based on the Normal of the face we clicked
                                         const normal = pickInfo.getNormal(true);
                                         if (normal) {
                                             const spawnPos = pickInfo.pickedPoint.add(normal.scale(0.6));
@@ -324,7 +330,6 @@
                         const mat = new BABYLON.StandardMaterial("objMat", scene);
                         mat.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
                         
-                        // Scale factor (randomized slightly)
                         const scale = Math.random() * 0.4 + 0.6; 
 
                         if (type === 'box') {
@@ -339,12 +344,98 @@
                             mesh = BABYLON.MeshBuilder.CreateCylinder("cyl", {height: scale, diameter: scale/2}, scene);
                             mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 1, restitution: 0.3, friction: 0.6 }, scene);
                         }
+                        else if (type === 'bomb') {
+                            mesh = BABYLON.MeshBuilder.CreateSphere("bomb", {diameter: 1.2}, scene);
+                            mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Black
+                            mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0); // Slight red glow
+                            mesh.material = mat;
+                            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 3, restitution: 0.5, friction: 0.8 }, scene);
+                            
+                            // Initialize Bomb Logic
+                            this.armBomb(mesh, scene);
+                        }
 
-                        if (mesh) {
+                        // Apply Common properties if not bomb (bomb sets its own material above)
+                        if (mesh && type !== 'bomb') {
                             mesh.position.copyFrom(position);
                             mesh.material = mat;
                             spawnedMeshes.push(mesh);
+                        } else if (mesh && type === 'bomb') {
+                             mesh.position.copyFrom(position);
+                             // Don't push bomb to spawnedMeshes for cleanup purposes yet, 
+                             // or push it and handle disposal check in explosion.
+                             spawnedMeshes.push(mesh);
                         }
+                    },
+
+                    armBomb: function(bombMesh, scene) {
+                        // Flash red color before exploding
+                        let flashCount = 0;
+                        const flashInterval = setInterval(() => {
+                            if(!bombMesh || bombMesh.isDisposed()) { clearInterval(flashInterval); return; }
+                            
+                            if (flashCount % 2 === 0) {
+                                bombMesh.material.emissiveColor = new BABYLON.Color3(1, 0, 0); // Bright Red
+                            } else {
+                                bombMesh.material.emissiveColor = new BABYLON.Color3(0.1, 0, 0); // Dark
+                            }
+                            flashCount++;
+                        }, 500);
+
+                        // Explode after 4 seconds
+                        setTimeout(() => {
+                            clearInterval(flashInterval);
+                            if(bombMesh && !bombMesh.isDisposed()) {
+                                this.explode(bombMesh.position, scene);
+                                bombMesh.dispose();
+                            }
+                        }, 4000);
+                    },
+
+                    explode: function(center, scene) {
+                        // 1. Visual Effect (Expanding Orange Sphere)
+                        const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", {diameter: 1}, scene);
+                        explosion.position = center;
+                        const expMat = new BABYLON.StandardMaterial("expMat", scene);
+                        expMat.diffuseColor = new BABYLON.Color3(1, 0.5, 0);
+                        expMat.emissiveColor = new BABYLON.Color3(1, 0.2, 0);
+                        expMat.alpha = 0.8;
+                        explosion.material = expMat;
+
+                        // Animation loop for visual explosion
+                        let scale = 1;
+                        const anim = scene.onBeforeRenderObservable.add(() => {
+                            scale += 0.8;
+                            explosion.scaling = new BABYLON.Vector3(scale, scale, scale);
+                            expMat.alpha -= 0.05;
+                            if (expMat.alpha <= 0) {
+                                scene.onBeforeRenderObservable.remove(anim);
+                                explosion.dispose();
+                            }
+                        });
+
+                        // 2. Physics Impulse
+                        const blastRadius = 20;
+                        const blastForce = 50; 
+
+                        spawnedMeshes.forEach(mesh => {
+                            if (mesh && !mesh.isDisposed() && mesh.physicsImpostor) {
+                                // Calculate distance
+                                const dir = mesh.getAbsolutePosition().subtract(center);
+                                const dist = dir.length();
+
+                                if (dist < blastRadius) {
+                                    // Normalize direction
+                                    dir.normalize();
+                                    // Force reduces with distance
+                                    const forceMagnitude = blastForce * (1 - dist / blastRadius);
+                                    const contactPoint = mesh.getAbsolutePosition();
+                                    const impulse = dir.scale(forceMagnitude);
+                                    
+                                    mesh.physicsImpostor.applyImpulse(impulse, contactPoint);
+                                }
+                            }
+                        });
                     }
                 }
             }

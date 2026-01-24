@@ -187,6 +187,9 @@
 
         button#btn-frag { border-left: 4px solid #d35400; }
 
+        button#btn-build { border-left: 4px solid #e91e63; }
+        button#btn-build.active { background: #880e4f; border-color: #e91e63; }
+
         button#btn-clear {
             background: #6e2828;
             border-color: #a34a4a;
@@ -209,6 +212,7 @@
         .icon-eye { background: transparent; border: 2px solid #9b59b6; border-radius: 50%; width: 12px; height: 6px; margin-top: 3px; position: relative; }
         .icon-eye::after { content:''; position: absolute; left: 3px; top: 0; width: 4px; height: 4px; background: #9b59b6; border-radius: 50%; }
         .icon-ice { background: #3498db; transform: rotate(45deg); width: 8px; height: 8px; }
+        .icon-glue { background: #e91e63; width: 10px; height: 4px; border-radius: 1px; }
         .icon-x { background: transparent; color: #aaa; font-weight: bold; font-size: 14px; line-height: 10px; width: auto; height: auto; }
     </style>
 
@@ -245,6 +249,9 @@
                 </button>
                 <button id="btn-freeze" onclick="toggleFreezeLogic()">
                     <span class="shape-icon icon-ice"></span> Freeze Object
+                </button>
+                <button id="btn-build" onclick="toggleBuildMode()">
+                    <span class="shape-icon icon-glue"></span> Build Mode (Sticky blocks)
                 </button>
             </div>
 
@@ -298,6 +305,7 @@
         
         let selectedShape = 'box'; 
         let freezeAction = 'freeze'; 
+        let isBuildMode = false; // Added to support the new spawn logic
         let spawnedMeshes = [];    
         let sceneRef = null;
         let viewTargetMesh = null; // Object currently being controlled
@@ -332,6 +340,16 @@
             }
         }
 
+        function toggleBuildMode() {
+            isBuildMode = !isBuildMode;
+            const btn = document.getElementById('btn-build');
+            if(isBuildMode) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+
         // --- KEY FIX FOR VIEW MODE SNAP BACK ---
         function toggleViewMode() {
             if(selectedShape === 'view') {
@@ -341,7 +359,7 @@
                 // FORCE RESET Camera Position to Center Platform
                 const cam = workshop.shaman.sandbox3d.cameraFree;
                 if(cam) {
-                    cam.position.set(0, 20, -50);
+                    cam.position.set(0, 30, -60);
                     cam.setTarget(BABYLON.Vector3.Zero());
                 }
 
@@ -359,7 +377,9 @@
             const lookPad = document.getElementById('look-controls');
 
             // Reset UI
-            document.querySelectorAll('.control-group button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.control-group button').forEach(b => {
+                if(b.id !== 'btn-build') b.classList.remove('active');
+            });
             
             // Handle Camera Swapping
             if(shape === 'freecam') {
@@ -480,12 +500,12 @@
                         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
                         // 2. Cameras
-                        this.cameraOrbit = new BABYLON.ArcRotateCamera("CameraOrbit", -Math.PI / 2, Math.PI / 2.5, 60, BABYLON.Vector3.Zero(), scene);
+                        this.cameraOrbit = new BABYLON.ArcRotateCamera("CameraOrbit", -Math.PI / 2, Math.PI / 3.5, 67, BABYLON.Vector3.Zero(), scene);
                         this.cameraOrbit.attachControl(this.canvas, true);
                         this.cameraOrbit.wheelPrecision = 50;
                         this.cameraOrbit.panningSensibility = 0; 
 
-                        this.cameraFree = new BABYLON.UniversalCamera("CameraFree", new BABYLON.Vector3(0, 10, -40), scene);
+                        this.cameraFree = new BABYLON.UniversalCamera("CameraFree", new BABYLON.Vector3(0, 30, -60), scene);
                         this.cameraFree.setTarget(BABYLON.Vector3.Zero());
                         
                         this.cameraFree.keysUp = [87, 38]; // W
@@ -529,7 +549,7 @@
 
                     // --- KILL ZONE LOGIC ---
                     handleKillZone: function() {
-                        const killY = -60;
+                        const killY = -100;
                         for(let i = spawnedMeshes.length - 1; i >= 0; i--) {
                             const mesh = spawnedMeshes[i];
                             if(mesh && !mesh.isDisposed()) {
@@ -551,7 +571,7 @@
                         if(!this.cameraFree) return;
                         
                         const cam = this.cameraFree;
-                        const lookSpeed = 0.02;
+                        const lookSpeed = 0.015;
 
                         // 1. LOOKING (Always active for FreeCam/ViewMode)
                         if(lookState.left) cam.rotation.y -= lookSpeed;
@@ -565,7 +585,7 @@
                             
                             // Snap Camera to Object
                             cam.position.copyFrom(viewTargetMesh.position);
-                            cam.position.y += 1.5; // Slightly above center (Eye level)
+                            cam.position.y += 3.0;
 
                             // Force Logic
                             const forcePower = 0.5; // Adjust speed
@@ -592,7 +612,7 @@
 
                         } else if (selectedShape === 'freecam') {
                             // --- STANDARD FREE CAM MOVEMENT ---
-                            const moveSpeed = 1.0;
+                            const moveSpeed = 0.3;
                             if(moveState.up) cam.position.addInPlace(cam.getDirection(BABYLON.Vector3.Forward()).scale(moveSpeed));
                             if(moveState.down) cam.position.addInPlace(cam.getDirection(BABYLON.Vector3.Backward()).scale(moveSpeed));
                             if(moveState.left) cam.position.addInPlace(cam.getDirection(BABYLON.Vector3.Left()).scale(moveSpeed));
@@ -713,52 +733,71 @@
                                         }
 
                                         // SPAWN
-                                        const normal = pickInfo.getNormal(true);
-                                        if (normal) {
-                                            const spawnPos = pickInfo.pickedPoint.add(normal.scale(0.6));
-                                            this.spawnObject(selectedShape, spawnPos, scene);
-                                        }
+                                        // Updated call for new logic: passing pickInfo instead of calculated vector
+                                        this.spawnObject(selectedShape, pickInfo, scene);
                                     }
                                     break;
                             }
                         });
                     },
 
-                    spawnObject: function(type, position, scene) {
+                    spawnObject: function(type, pickInfo, scene) {
+                        const normal = pickInfo.getNormal(true);
+                        if(!normal) return;
+
                         let mesh;
                         const mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
                         mat.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+                        
                         const scale = Math.random() * 0.4 + 0.6; 
+                        
+                        // We use a tiny margin (0.01) instead of 0.05 to make it look flush
+                        const pivotOffset = scale * 0.5 + (isBuildMode ? 0 : 0.01);
+                        const spawnPos = pickInfo.pickedPoint.add(normal.scale(pivotOffset));
 
+                        // 1. CREATE THE MESH
                         if (type === 'box') {
                             mesh = BABYLON.MeshBuilder.CreateBox("box", {size: scale}, scene);
-                            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, restitution: 0.2, friction: 0.6 }, scene);
                         } 
                         else if (type === 'sphere') {
                             mesh = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: scale}, scene);
-                            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.7, friction: 0.5 }, scene);
                         }
                         else if (type === 'cylinder') {
                             mesh = BABYLON.MeshBuilder.CreateCylinder("cyl", {height: scale, diameter: scale/2}, scene);
-                            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 1, restitution: 0.3, friction: 0.6 }, scene);
                         }
                         else if (type === 'bomb' || type === 'frag_bomb') {
                             mesh = BABYLON.MeshBuilder.CreateSphere("bomb", {diameter: 1.2}, scene);
                             mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); 
                             mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0); 
                             if (type === 'frag_bomb') mat.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0); 
-
-                            mesh.material = mat;
-                            mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 3, restitution: 0.5, friction: 0.8 }, scene);
-                            this.armBomb(mesh, scene, type === 'frag_bomb');
                         }
 
-                        if (mesh && !type.includes('bomb')) {
-                            mesh.position.copyFrom(position);
+                        if (mesh) {
+                            // 2. SET POSITION BEFORE PHYSICS
+                            mesh.position.copyFrom(spawnPos);
                             mesh.material = mat;
-                            spawnedMeshes.push(mesh);
-                        } else if (mesh) {
-                            mesh.position.copyFrom(position);
+
+                            // 3. NOW ATTACH PHYSICS
+                            if (type === 'box') {
+                                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, restitution: 0.1, friction: 0.8 }, scene);
+                            } else if (type === 'sphere' || type.includes('bomb')) {
+                                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: type.includes('bomb') ? 3 : 1, restitution: 0.4, friction: 0.5 }, scene);
+                            } else if (type === 'cylinder') {
+                                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 1, restitution: 0.1, friction: 0.8 }, scene);
+                            }
+
+                            // Arm the bomb after physics is set
+                            if (type.includes('bomb')) {
+                                this.armBomb(mesh, scene, type === 'frag_bomb');
+                            }
+                            
+                            // Handle Build Mode (Glue)
+                            if(isBuildMode && pickInfo.pickedMesh && pickInfo.pickedMesh.physicsImpostor && !type.includes('bomb')) {
+                                const joint = new BABYLON.PhysicsJoint(BABYLON.PhysicsJoint.LockJoint, {});
+                                pickInfo.pickedMesh.physicsImpostor.addJoint(mesh.physicsImpostor, joint);
+                                mesh.material.emissiveColor = new BABYLON.Color3(0.2, 0.0, 0.2);
+                            }
+
                             spawnedMeshes.push(mesh);
                         }
                     },

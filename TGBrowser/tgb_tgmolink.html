@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGPlug Developer Guide - TGMoLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Material Design 3 Tokens */
+            --md-sys-color-primary: #0b57d0;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-secondary-container: #d3e3fd;
+            --md-sys-color-on-secondary-container: #041e49;
+            --md-sys-color-surface: #ffffff;
+            --md-sys-color-surface-variant: #f0f4f9;
+            --md-sys-color-on-surface-variant: #444746;
+            --md-sys-color-background: #f8f9fa;
+            --md-sys-color-outline: #747775;
+
+            /* Functional Colors for Code/Status */
+            --md-sys-color-error-container: #ffdad6;
+            --md-sys-color-on-error-container: #410002;
+            --md-sys-color-success-container: #c4eed0;
+            --md-sys-color-on-success-container: #072711;
+            --md-sys-color-warning-container: #ffddb3;
+            --md-sys-color-on-warning-container: #2b1700;
+            
+            --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--md-sys-color-background);
+            color: #1f1f1f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Sticky Header */
+        header {
+            width: 100%;
+            padding: 24px 20px;
+            background: var(--md-sys-color-surface);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 400;
+            color: #1f1f1f;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #5e5e5e;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            padding: 0 20px 40px 20px;
+        }
+
+        /* Navigation */
+        .nav-section {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #c0d8fc;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+            box-shadow: var(--md-elevation-1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section-header i {
+            font-size: 28px;
+            color: var(--md-sys-color-primary);
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            font-weight: 400;
+            color: #1f1f1f;
+            margin: 0;
+        }
+
+        /* Badge/Chips */
+        .badge-critical {
+            display: inline-flex;
+            align-items: center;
+            background-color: #b3261e;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(179, 38, 30, 0.3);
+        }
+
+        /* Typography */
+        h3 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1f1f1f;
+            margin: 24px 0 12px 0;
+        }
+        
+        p, li {
+            font-size: 15px;
+            color: #444746;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        ul, ol {
+            padding-left: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Code Blocks */
+        .code-container {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            overflow-x: auto;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            border: 1px solid #444;
+            position: relative;
+        }
+
+        .code-container::before {
+            content: 'JS';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #666;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        /* Special Alert Boxes */
+        .alert-box {
+            padding: 24px;
+            border-radius: 16px;
+            margin: 24px 0;
+        }
+
+        .alert-box h3 { margin-top: 0; }
+
+        .alert-box.error {
+            background-color: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+        .alert-box.error h2, .alert-box.error p, .alert-box.error strong {
+             color: var(--md-sys-color-on-error-container);
+        }
+
+        .alert-box.success {
+            background-color: var(--md-sys-color-success-container);
+            color: var(--md-sys-color-on-success-container);
+        }
+        .alert-box.success h2, .alert-box.success p {
+            color: var(--md-sys-color-on-success-container);
+        }
+
+        .alert-box.warning {
+            background-color: var(--md-sys-color-warning-container);
+            color: var(--md-sys-color-on-warning-container);
+        }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comparison-card {
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .comparison-card.bad {
+            background-color: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        .comparison-card.good {
+            background-color: var(--md-sys-color-success-container);
+            color: var(--md-sys-color-on-success-container);
+        }
+
+        .comparison-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0;
+            color: inherit;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #747775;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+            .content-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="material-icons-round" style="color: #d93025;">local_fire_department</i> TGPlug Developer Guide</h1>
+        <div class="subtitle">TGMoLink Security Protocols</div>
+        <div class="badge-critical">For TGMod v3-secure</div>
+    </header>
+
+    <div class="container">
+        
+        <div class="nav-section">
+            <a href="tgbrowser_page.html" class="back-btn" onclick="createRipple(event)">
+                <i class="material-icons-round">arrow_back</i>
+                Return to Loader
+            </a>
+        </div>
+
+        <div class="content-card alert-box error">
+            <h2>⚠️ Why Your TGPlug Might Fail Validation</h2>
+            <p><strong>Here's what happened:</strong></p>
+            <p>Your code had a <strong>race condition</strong>! 🏃‍♂️💨 It checked if TGMoLink existed, but didn't WAIT for registration to complete before running mod features. TGMoLink's security system is strict and will flag mods that try to execute logic before properly registering their TGUID.</p>
+            
+            <h3>The Problem Pattern:</h3>
+            <div class="code-container" style="background: rgba(0,0,0,0.1); color: inherit; border:none;">
+// ❌ BAD - This causes race conditions!
+if (window.TGMoLink && window.TGMoLink.register) {
+    window.TGMoLink.register(MOD_ID);
+}
+
+// Your code runs immediately - but registration might not be done!
+initializeModFeatures(); // 💥 Gatekeeper throws warning!
+            </div>
+            <p><strong>Why it validates "eventually":</strong> The registration DOES happen, but there's a timing gap where your mod starts before TGMoLink confirms the TGUID. TGMoLink hates that!</p>
+        </div>
+
+        <div class="content-card alert-box success">
+            <h2>✅ The Correct Pattern (TGMoLink Compliant)</h2>
+            <p>This is the ONLY way to ensure your mod passes TGMoLink's security checks:</p>
+            
+            <div class="code-container" style="background: #00210e; color: #c4eed0; border: 1px solid #0f5132;">
+(function() {
+    'use strict';
+    const MOD_ID = 'workshop.shaman.yourplug'; // Use your workshop ID!
+
+    function startPlug() {
+        if (window.TGMoLink && window.TGMoLink.register) {
+            const success = window.TGMoLink.register(MOD_ID);
+            if (success) {
+                console.log(`[${MOD_ID}] Protocol Active. ⚡`);
+                // Only run your mod logic AFTER successful registration
+                initializeModFeatures();
+            }
+        } else {
+            // Wait silently without throwing errors
+            setTimeout(startPlug, 100);
+        }
+    }
+
+    function initializeModFeatures() {
+        // Your beautiful code goes here!
+        console.log('🎨 Mod features initialized!');
+        
+        // Example: Announce yourself
+        window.TGMoLink.broadcast('Mod is alive!', MOD_ID);
+    }
+
+    startPlug();
+})();
+            </div>
+
+            <h3>🎯 Why This Works:</h3>
+            <ul>
+                <li><strong>Recursive waiting:</strong> <code>setTimeout</code> keeps checking until TGMoLink loads.</li>
+                <li><strong>Registration-first:</strong> Calls <code>register()</code> and checks its return value.</li>
+                <li><strong>Gated execution:</strong> Features only run AFTER successful registration.</li>
+                <li><strong>No race conditions:</strong> Everything happens in the correct order.</li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">compare_arrows</i>
+                <h2>Side-by-Side Comparison</h2>
+            </div>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card bad">
+                    <h3><i class="material-icons-round">cancel</i> OLD WAY</h3>
+                    <div class="code-container" style="background: rgba(0,0,0,0.2); border: none;">
+if (window.TGMoLink) {
+    window.TGMoLink.register(ID);
+}
+// Code runs immediately
+doStuff(); // 💥 Error!
+                    </div>
+                    <p style="font-size:13px; margin-top:10px;"><strong>Problems:</strong> No success verification, features run too early, Gatekeeper warnings.</p>
+                </div>
+
+                <div class="comparison-card good">
+                    <h3><i class="material-icons-round">check_circle</i> NEW WAY</h3>
+                    <div class="code-container" style="background: rgba(0,0,0,0.2); border: none;">
+function start() {
+    if (TGMoLink?.register) {
+        if (TGMoLink.register(ID)) {
+            doStuff(); // ✅ Safe!
+        }
+    } else setTimeout(start, 100);
+}
+start();
+                    </div>
+                    <p style="font-size:13px; margin-top:10px;"><strong>Benefits:</strong> Waits for API, Checks success, Passes gatekeeper.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">code</i>
+                <h2>Complete Working Example</h2>
+            </div>
+            <p>Here's a FULL working TGPlug that passes all TGMoLink security checks.</p>
+
+            <h3>main.js - Purple Theme Mod</h3>
+            <div class="code-container">
+// TGPlug: Shaman's Purple Dream
+// TGUID: workshop.shaman.purpledream
+// Version: 2.0 (Fixed)
+
+(function() {
+    'use strict';
+    
+    const MOD_ID = 'workshop.shaman.purpledream';
+    const VERSION = '2.0';
+    
+    // Master initialization function
+    function startPlug() {
+        // Check if TGMoLink exists and has register method
+        if (window.TGMoLink && window.TGMoLink.register) {
+            // Attempt registration
+            const registered = window.TGMoLink.register(MOD_ID);
+            
+            if (registered) {
+                console.log(`[${MOD_ID}] ⚡ Registration successful! Version ${VERSION}`);
+                
+                // NOW it's safe to run your mod features
+                initializeTheme();
+                announcePresence();
+                setupEventListeners();
+            } else {
+                console.error(`[${MOD_ID}] ❌ Registration failed - invalid TGUID?`);
+            }
+        } else {
+            // TGMoLink not ready yet, wait and try again
+            setTimeout(startPlug, 100);
+        }
+    }
+    
+    function initializeTheme() {
+        console.log(`[${MOD_ID}] 🎨 Applying purple theme...`);
+        // Mod logic here...
+    }
+    
+    // START THE PLUG!
+    startPlug();
+    
+})();
+            </div>
+
+            <h3>style.css - Visual Enhancements</h3>
+            <div class="code-container">
+/* TGPlug: Shaman's Purple Dream
+ * TGUID: workshop.shaman.purpledream
+ */
+
+:root {
+    --primary: #667eea !important;
+    --accent: #764ba2 !important;
+}
+
+.toolbar {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)) !important;
+    backdrop-filter: blur(30px) !important;
+}
+            </div>
+        </div>
+
+        <div class="content-card alert-box warning">
+            <div class="section-header" style="border-bottom: 1px solid rgba(0,0,0,0.1); margin-bottom: 16px;">
+                <i class="material-icons-round" style="color: inherit;">build</i>
+                <h2 style="color: inherit;">Troubleshooting Common Errors</h2>
+            </div>
+            
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 16px;">
+                    <strong>"TGUID is missing" security warning</strong><br>
+                    <span style="opacity: 0.8;">Fix: Move ALL mod logic inside the <code>if (registered)</code> block.</span>
+                </li>
+                <li style="margin-bottom: 16px;">
+                    <strong>"Invalid TGUID format"</strong><br>
+                    <span style="opacity: 0.8;">Fix: Use format like <code>com.yourname.modname</code>.</span>
+                </li>
+                <li>
+                    <strong>Mod loads but nothing happens</strong><br>
+                    <span style="opacity: 0.8;">Fix: Ensure <code>initializeModFeatures()</code> is called only inside the success check.</span>
+                </li>
+            </ul>
+        </div>
+
+        <footer>
+            <p><strong>TGPlugs Developer Guide - TGMoLink Edition</strong></p>
+            <p>Guide for your journey in producing the greatest TGPlug.🔥</p>
+            <p style="font-size: 12px; margin-top: 10px;">Now with 100% less race conditions! ⚡</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // Material Design Ripple Effect
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            const rect = button.getBoundingClientRect();
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - rect.left - radius}px`;
+            circle.style.top = `${event.clientY - rect.top - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+        }
+    </script>
+</body>
+</html>

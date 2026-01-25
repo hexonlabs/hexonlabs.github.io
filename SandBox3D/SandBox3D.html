@@ -19,7 +19,7 @@
             padding: 0;
             background-color: #1a1a1a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none; /* Prevents text highlighting on mobile taps */
+            user-select: none;
         }
         #renderCanvas {
             width: 100%;
@@ -28,7 +28,7 @@
             outline: none;
         }
 
-        /* --- UI PANELS (Base Styles) --- */
+        /* --- UI PANELS --- */
         .ui-panel-base {
             position: absolute;
             width: 250px;
@@ -42,14 +42,13 @@
             max-height: 90vh;
             overflow-y: auto;
             z-index: 20;
-            transition: none; /* No animations for performance */
+            transition: none;
         }
 
-        /* Positions */
         #left-panel { top: 20px; left: 20px; }
         #right-panel { top: 20px; right: 20px; }
 
-        /* --- MINIMIZED STATE LOGIC --- */
+        /* --- MINIMIZED STATE --- */
         .ui-panel-base.minimized {
             width: 140px; 
             height: 35px; 
@@ -67,7 +66,7 @@
         }
         .ui-panel-base.minimized h2 { font-size: 13px; }
 
-        /* --- INTERNAL COMPONENTS --- */
+        /* --- COMPONENTS --- */
         .panel-header {
             display: flex;
             justify-content: space-between;
@@ -95,7 +94,6 @@
         }
         .control-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 
-        /* --- INPUTS & SLIDERS --- */
         .slider-group {
             background: #252525;
             padding: 10px;
@@ -119,12 +117,11 @@
             display: flex;
             align-items: center;
             font-size: 13px;
-            width: 100%; /* Full width in groups */
+            width: 100%; 
         }
         button:hover { background: #444; border-color: #777; }
         button.active { background: #2a5c80; border-color: #4aa3df; font-weight: bold; }
 
-        /* Min/Max Toggle Button */
         .btn-minimize {
             width: 24px; height: 24px; padding: 0;
             display: flex; justify-content: center; align-items: center;
@@ -132,12 +129,11 @@
             background: transparent; border: 1px solid #555;
         }
 
-        /* Action Buttons */
         button#btn-enter-game { background: #27ae60; border-color: #2ecc71; justify-content: center; font-weight: bold; margin-bottom: 10px; }
         button#btn-clear { background: #6e2828; border-color: #a34a4a; justify-content: center; font-weight: bold; margin-top: 10px; }
 
-        /* Color Coding */
-        button#btn-none { border-left: 4px solid #aaa; }
+        /* Button Colors */
+        button#btn-none, button#btn-none-tools { border-left: 4px solid #aaa; }
         button#btn-push { border-left: 4px solid #2ecc71; }
         button#btn-eraser { border-left: 4px solid #ff5252; }
         button#btn-view { border-left: 4px solid #9b59b6; }
@@ -146,13 +142,13 @@
         button#btn-freeze.thaw-mode { border-left-color: #e67e22; }
         button#btn-freeze.thaw-mode.active { background: #a04000; border-color: #e67e22; }
 
+        /* Explosives */
         button.btn-explosive { border-left: 4px solid #e74c3c; }
         button.btn-explosive.active { background: #802a2a; border-color: #df4a4a; }
         button#btn-frag { border-left: 4px solid #d35400; }
 
         /* --- ICONS --- */
         .shape-icon { width: 12px; height: 12px; margin-right: 10px; background: #ccc; display: inline-block; }
-        
         .icon-box { border-radius: 2px; }
         .icon-sphere { border-radius: 50%; }
         .icon-cyl { border-radius: 2px; height: 16px; width: 8px; }
@@ -161,7 +157,6 @@
             border-left: 6px solid transparent; border-right: 6px solid transparent; 
             border-bottom: 12px solid #ccc; 
         }
-        
         .icon-bomb { border-radius: 50%; background: #e74c3c; border: 1px solid #000; }
         .icon-frag { border-radius: 50%; background: #d35400; border: 2px dashed #000; }
         
@@ -175,17 +170,15 @@
         .icon-x { background: transparent; color: #aaa; font-weight: bold; font-size: 14px; line-height: 10px; width: auto; height: auto; }
         .icon-play { background: transparent; border-left: 10px solid white; border-top: 6px solid transparent; border-bottom: 6px solid transparent; width: 0; height: 0; margin-right: 5px; }
 
-        /* --- MOBILE VIRTUAL PADS --- */
+        /* --- MOBILE CONTROLS --- */
         .mobile-pad {
             position: absolute; bottom: 30px; width: 120px; height: 120px; z-index: 10;
-            display: grid; /* Always visible for FreeCam default */
+            display: grid; 
             pointer-events: none;
             grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 5px;
         }
-        
         #move-controls { left: 30px; }
         #look-controls { right: 30px; }
-        
         .d-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -221,6 +214,10 @@
 
             <div class="section-label">Actions</div>
             <div class="control-group">
+                <button id="btn-none-tools" onclick="selectShape('none')">
+                    <span class="shape-icon icon-x">X</span> None (Safe Mode)
+                </button>
+
                 <button id="btn-view" onclick="toggleViewMode()">
                     <span class="shape-icon icon-eye"></span> Possess Object
                 </button>
@@ -323,22 +320,17 @@
         // SECTION 1: UI & INTERACTION LOGIC
         // ==========================================
         
-        // -- State Variables --
         let selectedShape = 'box'; 
         let freezeAction = 'freeze'; 
         let isBuildMode = false; 
         let currentSize = 1.0; 
-
-        // -- Game Logic References --
         let spawnedMeshes = [];    
         let sceneRef = null;
         let viewTargetMesh = null; 
 
-        // -- Input States --
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
 
-        // --- KEYBOARD LISTENERS (Added for Desktop FreeCam) ---
         window.addEventListener('keydown', (e) => {
             if(e.key.toLowerCase() === 'w') moveState.up = true;
             if(e.key.toLowerCase() === 's') moveState.down = true;
@@ -352,7 +344,6 @@
             if(e.key.toLowerCase() === 'd') moveState.right = false;
         });
 
-        // --- FULLSCREEN & ORIENTATION ---
         function enterGame() {
             const de = document.documentElement;
             if (de.requestFullscreen) de.requestFullscreen();
@@ -362,7 +353,6 @@
             }
         }
 
-        // --- PANEL TOGGLE LOGIC ---
         function toggleLeftUI() {
             const left = document.getElementById('left-panel');
             const right = document.getElementById('right-panel');
@@ -377,7 +367,6 @@
             } else {
                 left.classList.remove('minimized');
                 leftBtn.innerText = "-";
-                // Auto-close other
                 right.classList.add('minimized');
                 rightBtn.innerText = "+";
             }
@@ -397,38 +386,56 @@
             } else {
                 right.classList.remove('minimized');
                 rightBtn.innerText = "-";
-                // Auto-close other
                 left.classList.add('minimized');
                 leftBtn.innerText = "+";
             }
+        }
+
+        // --- NEW TOGGLE LOGIC FOR BUILD MODE ---
+        function toggleBuildMode() {
+            // If we are in "None" mode, switch to "Box" so we can build
+            if(selectedShape === 'none' || selectedShape === 'eraser' || selectedShape === 'push' || selectedShape === 'view') {
+                selectShape('box');
+                isBuildMode = true; // Force ON
+            } else {
+                isBuildMode = !isBuildMode; // Standard Toggle
+            }
+
+            const btn = document.getElementById('btn-build');
+            if(isBuildMode) btn.classList.add('active');
+            else btn.classList.remove('active');
         }
 
         // --- TOOL SELECTION ---
         function selectShape(shape) {
             selectedShape = shape;
             
-            // UI References
             const instruct = document.getElementById('txt-instruct');
             
-            // 1. Reset All Buttons
+            // 1. Reset All Buttons EXCEPT Build Mode (because it's a toggle now)
             document.querySelectorAll('button').forEach(b => {
-                if(b.id !== 'btn-build' && !b.classList.contains('btn-minimize') && b.id !== 'btn-enter-game') {
+                if(!b.classList.contains('btn-minimize') && b.id !== 'btn-enter-game' && b.id !== 'btn-build') {
                     b.classList.remove('active');
                 }
             });
 
-            // 2. Handle Special Modes
+            // 2. Handle Logic specifically for "None" to disable Build Mode
+            if (shape === 'none') {
+                isBuildMode = false;
+                document.getElementById('btn-build').classList.remove('active');
+            }
+
+            // 3. Handle Special Modes
             if (shape === 'view') {
-                workshop.shaman.sandbox3d.resetCameraTarget(); // Reset camera focus
+                workshop.shaman.sandbox3d.resetCameraTarget();
                 instruct.innerHTML = "CLICK object to Possess.<br>Click 'Possess' again to Exit.";
             }
             else {
-                // Standard Tool Mode (Also defaults to free fly now)
                 viewTargetMesh = null;
                 instruct.innerHTML = "WASD to Fly<br>Left Click: Use Tool<br>Right Drag: Look";
             }
 
-            // 3. Highlight Active Button
+            // 4. Highlight Active Button
             let btnId = 'btn-' + shape;
             if (shape === 'cylinder') btnId = 'btn-cyl';
             if (shape === 'triangle') btnId = 'btn-tri';
@@ -437,13 +444,19 @@
             const activeBtn = document.getElementById(btnId);
             if(activeBtn) activeBtn.classList.add('active');
 
-            // 4. Handle Freeze Toggle State
+            // Special Case: Dual "None" buttons sync
+            if (shape === 'none') {
+                 const btnTools = document.getElementById('btn-none-tools');
+                 if(btnTools) btnTools.classList.add('active');
+                 const btnRight = document.getElementById('btn-none');
+                 if(btnRight) btnRight.classList.add('active');
+            }
+
             if(shape === 'freeze' && freezeAction === 'thaw') {
                 document.getElementById('btn-freeze').classList.add('thaw-mode');
             }
         }
 
-        // --- HELPERS ---
         function updateSize(val) {
             currentSize = parseFloat(val);
             document.getElementById('size-display').innerText = currentSize.toFixed(1);
@@ -466,15 +479,8 @@
             }
         }
 
-        function toggleBuildMode() {
-            isBuildMode = !isBuildMode;
-            const btn = document.getElementById('btn-build');
-            btn.classList.toggle('active', isBuildMode);
-        }
-
         function toggleViewMode() {
             if(selectedShape === 'view') {
-                // Exit View Mode
                 viewTargetMesh = null;
                 selectShape('box'); 
             } else {
@@ -490,7 +496,6 @@
             spawnedMeshes = [];
         }
 
-        // --- MOBILE TOUCH LISTENERS ---
         function setupMobileButtons() {
             const bindBtn = (id, targetState, key) => {
                 const el = document.getElementById(id);
@@ -513,7 +518,6 @@
         }
         setupMobileButtons();
 
-
         // ==========================================
         // SECTION 2: BABYLON 3D ENGINE
         // ==========================================
@@ -524,7 +528,7 @@
                     canvas: document.getElementById("renderCanvas"),
                     engine: null,
                     scene: null,
-                    cameraFree: null, // Only one camera needed now
+                    cameraFree: null,
 
                     init: function() {
                         this.engine = new BABYLON.Engine(this.canvas, true);
@@ -543,29 +547,21 @@
                         const scene = new BABYLON.Scene(this.engine);
                         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
-                        // 1. Camera (Always Free/Universal)
-                        // Positioned slightly higher and back to give a good view
                         this.cameraFree = new BABYLON.UniversalCamera("CameraFree", new BABYLON.Vector3(0, 20, -40), scene);
                         this.cameraFree.setTarget(BABYLON.Vector3.Zero());
                         
-                        // We attach control but prevent default behavior so we can manage interaction (spawning vs looking)
-                        // By default Babylon Universal Camera uses Left Click to look. We want Right Click or Virtual Pads.
-                        // We remove the default keyboard keys (arrow keys) from Babylon to use our own handleInput or let them coexist.
                         this.cameraFree.keysUp = [];
                         this.cameraFree.keysDown = [];
                         this.cameraFree.keysLeft = [];
                         this.cameraFree.keysRight = [];
                         
-                        // We manually handle rotation in handleInput, but we attach control to capture the canvas context
                         this.cameraFree.attachControl(this.canvas, true);
                         
-                        // 2. Lighting
                         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
                         light.intensity = 0.8;
                         const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
                         dirLight.intensity = 0.5;
 
-                        // 3. Environment
                         const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 200, height: 200}, scene);
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
                         groundMat.diffuseColor = new BABYLON.Color3(0.15, 0.15, 0.2);
@@ -586,11 +582,7 @@
                         return scene;
                     },
 
-                    resetCameraTarget: function() {
-                        if(this.cameraFree) {
-                            // When exiting view mode, just stop momentum, don't snap back
-                        }
-                    },
+                    resetCameraTarget: function() { },
 
                     handleKillZone: function() {
                         const killY = -100;
@@ -607,22 +599,18 @@
                     },
 
                     handleInput: function() {
-                        // ALWAYS RUN INPUT LOGIC (Removed the check for selectedShape)
                         if(!this.cameraFree) return;
                         
                         const cam = this.cameraFree;
                         const lookSpeed = 0.02;
                         const moveSpeed = 0.5;
 
-                        // 1. Rotation (Pad or Mouse fallback if drag implemented manually)
                         if(lookState.left) cam.rotation.y -= lookSpeed;
                         if(lookState.right) cam.rotation.y += lookSpeed;
                         if(lookState.up) cam.rotation.x -= lookSpeed;
                         if(lookState.down) cam.rotation.x += lookSpeed;
 
-                        // 2. Movement Logic
                         if (selectedShape === 'view' && viewTargetMesh && viewTargetMesh.physicsImpostor) {
-                            // -- POSSESS MODE --
                             cam.position.copyFrom(viewTargetMesh.position);
                             cam.position.y += (3.0 * (currentSize || 1)); 
 
@@ -642,8 +630,6 @@
                                 viewTargetMesh.physicsImpostor.applyImpulse(impulse, viewTargetMesh.getAbsolutePosition());
                             }
                         } else {
-                            // -- FREE FLY MODE -- (Default)
-                            // Apply movement based on camera direction
                             if(moveState.up) cam.position.addInPlace(cam.getDirection(BABYLON.Vector3.Forward()).scale(moveSpeed));
                             if(moveState.down) cam.position.addInPlace(cam.getDirection(BABYLON.Vector3.Backward()).scale(moveSpeed));
                             if(moveState.left) cam.position.addInPlace(cam.getDirection(BABYLON.Vector3.Left()).scale(moveSpeed));
@@ -669,15 +655,13 @@
                     },
 
                     setupInteraction: function(scene) {
-                        // Mouse Drag to Look Logic
                         let isDragging = false;
                         let lastPointerX = 0;
                         let lastPointerY = 0;
 
                         scene.onPointerObservable.add((pointerInfo) => {
-                            // 1. Handle Looking (Right Click or Drag)
                             if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                                if (pointerInfo.event.button === 2) { // Right Click
+                                if (pointerInfo.event.button === 2) { 
                                     isDragging = true;
                                     lastPointerX = pointerInfo.event.clientX;
                                     lastPointerY = pointerInfo.event.clientY;
@@ -698,10 +682,9 @@
                                 }
                             }
 
-                            // 2. Handle Spawning (Left Click)
                             if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                                if(pointerInfo.event.button !== 0) return; // Only Left Click
-                                if(selectedShape === 'none') return; // Safe Mode
+                                if(pointerInfo.event.button !== 0) return; 
+                                if(selectedShape === 'none') return; 
 
                                 const pickInfo = pointerInfo.pickInfo;
                                 if (pickInfo.hit && pickInfo.pickedMesh) {
@@ -760,13 +743,11 @@
                                         return; 
                                     }
                                     
-                                    // Spawning logic (Now works while in freecam!)
                                     this.spawnObject(selectedShape, pickInfo, scene);
                                 }
                             }
                         });
                         
-                        // Prevent context menu on right click
                         window.addEventListener("contextmenu", e => e.preventDefault());
                     },
 
@@ -777,7 +758,6 @@
                         let mesh;
                         const mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
                         
-                        // Color Picker
                         const pickerVal = document.getElementById('color-picker').value;
                         mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
                         
@@ -785,7 +765,6 @@
                         const pivotOffset = scale * 0.5 + (isBuildMode ? 0 : 0.01);
                         const spawnPos = pickInfo.pickedPoint.add(normal.scale(pivotOffset));
 
-                        // --- SHAPE GENERATION ---
                         if (type === 'box') {
                             mesh = BABYLON.MeshBuilder.CreateBox("box", {size: scale}, scene);
                         } 
@@ -810,7 +789,6 @@
                             mesh.material = mat;
                             const massVal = scale * 1.5; 
 
-                            // --- PHYSICS ASSIGNMENT ---
                             if (type === 'box') {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: massVal, restitution: 0.1, friction: 0.8 }, scene);
                             } else if (type === 'sphere' || type.includes('bomb')) {
@@ -821,6 +799,7 @@
 
                             if (type.includes('bomb')) this.armBomb(mesh, scene, type === 'frag_bomb');
                             
+                            // JOINING LOGIC
                             if(isBuildMode && pickInfo.pickedMesh && pickInfo.pickedMesh.physicsImpostor && !type.includes('bomb')) {
                                 const joint = new BABYLON.PhysicsJoint(BABYLON.PhysicsJoint.LockJoint, {});
                                 pickInfo.pickedMesh.physicsImpostor.addJoint(mesh.physicsImpostor, joint);

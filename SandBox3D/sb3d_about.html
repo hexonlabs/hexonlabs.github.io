@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Sand Box 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        :root {
+            --md-sys-color-primary: #0b57d0;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-secondary-container: #d3e3fd;
+            --md-sys-color-on-secondary-container: #041e49;
+            --md-sys-color-surface: #ffffff;
+            --md-sys-color-surface-variant: #f0f4f9;
+            --md-sys-color-background: #f8f9fa;
+            --md-sys-color-outline: #747775;
+            --md-sys-color-error-container: #ffdad6;
+            --md-sys-color-on-error-container: #410002;
+            --md-sys-color-tertiary-container: #cae6ff;
+            --md-sys-color-on-tertiary-container: #001e30;
+            --md-sys-color-success-container: #c6f6d5;
+            --md-sys-color-on-success-container: #004d1a;
+            --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--md-sys-color-background);
+            color: #1f1f1f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 24px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            text-align: center;
+            margin-bottom: 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: var(--md-elevation-2);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 500;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 0 20px 40px 20px;
+        }
+
+        .nav-section {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn:hover {
+            background-color: #c0d8fc;
+        }
+
+        .content-card {
+            background-color: var(--md-sys-color-surface);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .section-header i {
+            font-size: 32px;
+            color: var(--md-sys-color-primary);
+        }
+
+        .section-header h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #1f1f1f;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1f1f1f;
+            margin: 24px 0 12px 0;
+        }
+
+        h3:first-of-type {
+            margin-top: 0;
+        }
+
+        p {
+            font-size: 16px;
+            color: #444746;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #444746;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        li i {
+            font-size: 20px;
+            color: var(--md-sys-color-primary);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        li strong {
+            color: #1f1f1f;
+            font-weight: 500;
+        }
+
+        .grid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .grid-item {
+            background-color: var(--md-sys-color-surface-variant);
+            padding: 16px;
+            border-radius: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .grid-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .grid-item strong {
+            display: block;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 4px;
+            font-size: 16px;
+        }
+
+        .grid-item p {
+            font-size: 14px;
+            margin: 0;
+            color: #444746;
+        }
+
+        .alert-box {
+            padding: 20px;
+            border-radius: 16px;
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .alert-box h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0;
+        }
+
+        .alert-box.info {
+            background-color: var(--md-sys-color-tertiary-container);
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+        
+        .alert-box.info h3, .alert-box.info strong {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+
+        .alert-box.info li i {
+            color: var(--md-sys-color-on-tertiary-container);
+        }
+
+        .alert-box.warning {
+            background-color: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        .alert-box.warning h3, .alert-box.warning strong {
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        .alert-box.warning li i {
+            color: #d93025;
+        }
+
+        .alert-box.success {
+            background-color: var(--md-sys-color-success-container);
+            color: var(--md-sys-color-on-success-container);
+        }
+
+        .alert-box.success h3, .alert-box.success strong {
+            color: var(--md-sys-color-on-success-container);
+        }
+
+        .alert-box.success li i {
+            color: #0d8043;
+        }
+
+        .controls-table {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .controls-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .controls-table th {
+            text-align: left;
+            padding: 12px;
+            background-color: var(--md-sys-color-primary);
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .controls-table th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        .controls-table th:last-child {
+            border-radius: 0 8px 0 0;
+        }
+
+        .controls-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .controls-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .controls-table kbd {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: monospace;
+            font-size: 13px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #747775;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            background-color: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .content-card { padding: 20px; }
+            .grid-list { grid-template-columns: 1fr; }
+            .controls-table { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎮 Sand Box 3D</h1>
+        <div class="subtitle">Complete Documentation & User Guide</div>
+    </header>
+
+    <div class="container">
+        
+        <div class="nav-section">
+            <a href="https://shamansworkshop.github.io/SandBox3D/sb3d_page" class="back-btn" onclick="createRipple(event)">
+                <i class="material-icons-round">arrow_back</i>
+                Return to Launchpad
+            </a>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">info</i>
+                <h2>About Sand Box 3D</h2>
+            </div>
+            
+            <h3>What is Sand Box 3D?</h3>
+            <p>Sand Box 3D is a fully interactive 3D physics sandbox built with Babylon.js and Cannon.js. It provides a creative playground where you can spawn objects, apply physics forces, freeze objects in place, and even cause spectacular explosions. Perfect for experimentation, stress testing, or just having fun with physics!</p>
+
+            <h3>Core Philosophy</h3>
+            <div class="grid-list">
+                <div class="grid-item">
+                    <strong><i class="material-icons-round" style="font-size:16px; vertical-align:middle;">science</i> Physics-Driven</strong>
+                    <p>Realistic physics simulation with gravity, collisions, and forces</p>
+                </div>
+                <div class="grid-item">
+                    <strong><i class="material-icons-round" style="font-size:16px; vertical-align:middle;">brush</i> Creative Freedom</strong>
+                    <p>Build structures, create chaos, or test physics scenarios</p>
+                </div>
+                <div class="grid-item">
+                    <strong><i class="material-icons-round" style="font-size:16px; vertical-align:middle;">control_camera</i> Full Control</strong>
+                    <p>Fly freely or possess objects for direct control</p>
+                </div>
+                <div class="grid-item">
+                    <strong><i class="material-icons-round" style="font-size:16px; vertical-align:middle;">touch_app</i> Mobile Ready</strong>
+                    <p>On-screen controls for mobile devices</p>
+                </div>
+            </div>
+
+            <h3>Key Features</h3>
+            <ul>
+                <li><i class="material-icons-round">category</i><span><strong>Multiple Shapes:</strong> Spawn cubes, spheres, cylinders, and triangular prisms</span></li>
+                <li><i class="material-icons-round">palette</i><span><strong>Color Customization:</strong> Choose any color for spawned objects</span></li>
+                <li><i class="material-icons-round">straighten</i><span><strong>Size Control:</strong> Adjust object scale from 0.2x to 5.0x</span></li>
+                <li><i class="material-icons-round">gamepad</i><span><strong>Interactive Tools:</strong> Push, freeze, erase, and possess objects</span></li>
+                <li><i class="material-icons-round">construction</i><span><strong>Build Mode:</strong> Connect objects together with physics joints</span></li>
+                <li><i class="material-icons-round">bolt</i><span><strong>Explosives:</strong> Standard bombs and cluster bombs for destruction</span></li>
+                <li><i class="material-icons-round">visibility</i><span><strong>Possess Mode:</strong> Take control of any physics object</span></li>
+                <li><i class="material-icons-round">terrain</i><span><strong>Pre-built Environment:</strong> Includes ground, ramp, and decorative pillars</span></li>
+            </ul>
+
+            <h3>Technical Architecture</h3>
+            <ul>
+                <li><i class="material-icons-round">language</i><span><strong>3D Engine:</strong> Babylon.js (WebGL-based rendering)</span></li>
+                <li><i class="material-icons-round">memory</i><span><strong>Physics Engine:</strong> Cannon.js (rigid body dynamics)</span></li>
+                <li><i class="material-icons-round">phone_android</i><span><strong>Responsive Design:</strong> Touch controls for mobile devices</span></li>
+                <li><i class="material-icons-round">cleaning_services</i><span><strong>Kill Zone:</strong> Auto-cleanup for objects falling below Y = -100</span></li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">settings</i>
+                <h2>Controls & Navigation</h2>
+            </div>
+
+            <h3>Desktop Controls</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Input</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></td>
+                            <td>Fly camera forward, left, backward, right</td>
+                        </tr>
+                        <tr>
+                            <td><kbd>Left Click</kbd></td>
+                            <td>Use selected tool / Spawn object</td>
+                        </tr>
+                        <tr>
+                            <td><kbd>Right Click + Drag</kbd></td>
+                            <td>Look around (rotate camera)</td>
+                        </tr>
+                        <tr>
+                            <td><kbd>Mouse Wheel</kbd></td>
+                            <td>Zoom in/out (if supported)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Mobile Controls</h3>
+            <div class="alert-box info">
+                <h3><i class="material-icons-round">smartphone</i> On-Screen D-Pads</h3>
+                <ul>
+                    <li><i class="material-icons-round">arrow_circle_left</i><span><strong>Move Pad (Left):</strong> Control forward/backward/left/right movement</span></li>
+                    <li><i class="material-icons-round">arrow_circle_right</i><span><strong>Look Pad (Right):</strong> Control camera rotation</span></li>
+                    <li><i class="material-icons-round">touch_app</i><span><strong>Tap Screen:</strong> Use selected tool / Spawn object</span></li>
+                </ul>
+            </div>
+
+            <h3>Fullscreen Mode</h3>
+            <p>Click the <strong>FULLSCREEN</strong> button to enter fullscreen mode for an immersive experience. On mobile devices, this will also attempt to lock the screen orientation to landscape.</p>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">build</i>
+                <h2>Tools & Actions</h2>
+            </div>
+
+            <h3>None (Safe Mode) <span class="feature-badge">🛡️ SAFE</span></h3>
+            <p>Disables all tools and spawning. Use this to explore the scene without accidentally creating objects or modifying the environment.</p>
+
+            <h3>Possess Object <span class="feature-badge">👁️ VIEW</span></h3>
+            <p>Click on any physics-enabled object to take control of it. When possessing an object:</p>
+            <ul>
+                <li><i class="material-icons-round">gamepad</i><span>Camera follows the object from above</span></li>
+                <li><i class="material-icons-round">arrow_forward</i><span>WASD applies force to move the object</span></li>
+                <li><i class="material-icons-round">exit_to_app</i><span>Click "Possess Object" again to exit control</span></li>
+            </ul>
+
+            <h3>Force Push <span class="feature-badge">💚 PUSH</span></h3>
+            <p>Click on any movable object to apply a powerful impulse force in the direction of your camera ray. Great for launching objects or creating chain reactions!</p>
+
+            <h3>Eraser <span class="feature-badge">🗑️ DELETE</span></h3>
+            <p>Click on objects to instantly delete them. Cannot erase ground or ramp (protected static objects). Useful for cleaning up clutter.</p>
+
+            <h3>Freeze / Unfreeze <span class="feature-badge">❄️ FREEZE</span></h3>
+            <p>Toggle between freeze and thaw modes:</p>
+            <ul>
+                <li><i class="material-icons-round">ac_unit</i><span><strong>Freeze:</strong> Click objects to lock them in place (mass = 0, icy blue appearance)</span></li>
+                <li><i class="material-icons-round">whatshot</i><span><strong>Unfreeze:</strong> Click frozen objects to restore their original mass and color</span></li>
+            </ul>
+
+            <h3>Build Mode <span class="feature-badge">🔗 JOIN</span></h3>
+            <p>When enabled, newly spawned objects will be <strong>physically connected</strong> to the object you click on using physics joints. Perfect for building structures, vehicles, or contraptions!</p>
+            <div class="alert-box success">
+                <h3><i class="material-icons-round">lightbulb</i> Build Mode Tips</h3>
+                <ul>
+                    <li><i class="material-icons-round">check_circle</i><span>Automatically switches to a shape if you're in "None" mode</span></li>
+                    <li><i class="material-icons-round">check_circle</i><span>Connected objects show a subtle emissive glow</span></li>
+                    <li><i class="material-icons-round">check_circle</i><span>Build complex structures by chaining connections</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">category</i>
+                <h2>Objects & Shapes</h2>
+            </div>
+
+            <h3>Basic Shapes</h3>
+            <div class="grid-list">
+                <div class="grid-item">
+                    <strong>🟦 Cube</strong>
+                    <p>Standard box shape, great for building</p>
+                </div>
+                <div class="grid-item">
+                    <strong>🔵 Sphere</strong>
+                    <p>Rolls smoothly, ideal for balls and wheels</p>
+                </div>
+                <div class="grid-item">
+                    <strong>🟢 Cylinder</strong>
+                    <p>Can roll or stand upright, versatile shape</p>
+                </div>
+                <div class="grid-item">
+                    <strong>🔺 Triangle</strong>
+                    <p>Three-sided prism, good for slopes</p>
+                </div>
+            </div>
+
+            <h3>Object Properties</h3>
+            <ul>
+                <li><i class="material-icons-round">straighten</i><span><strong>Size Slider:</strong> 0.2x to 5.0x scale (affects mass proportionally)</span></li>
+                <li><i class="material-icons-round">palette</i><span><strong>Color Picker:</strong> Choose any RGB color for objects</span></li>
+                <li><i class="material-icons-round">fitness_center</i><span><strong>Mass:</strong> Automatically calculated as size × 1.5</span></li>
+                <li><i class="material-icons-round">sports_basketball</i><span><strong>Physics:</strong> Restitution (bounciness) and friction vary by shape</span></li>
+            </ul>
+
+            <h3>Explosives <span class="feature-badge">💥 BOOM</span></h3>
+            
+            <h3>Bomb (Standard)</h3>
+            <p>A timed explosive that detonates after 4 seconds. Features:</p>
+            <ul>
+                <li><i class="material-icons-round">timer</i><span>4-second countdown with red flashing warning</span></li>
+                <li><i class="material-icons-round">auto_awesome</i><span>Creates expanding explosion sphere effect</span></li>
+                <li><i class="material-icons-round">blur_on</i><span>25-unit blast radius (scaled by bomb size)</span></li>
+                <li><i class="material-icons-round">whatshot</i><span>Applies radial force to all nearby objects</span></li>
+            </ul>
+
+            <h3>Cluster Bomb (Frag)</h3>
+            <p>Advanced explosive that spawns shrapnel fragments. Features:</p>
+            <ul>
+                <li><i class="material-icons-round">timer</i><span>4-second countdown with orange flashing warning</span></li>
+                <li><i class="material-icons-round">scatter_plot</i><span>Spawns 20 small physics-enabled fragments</span></li>
+                <li><i class="material-icons-round">whatshot</i><span>Fragments are launched in all directions</span></li>
+                <li><i class="material-icons-round">auto_awesome</i><span>Main explosion + fragment secondary effects</span></li>
+            </ul>
+
+            <div class="alert-box warning">
+                <h3><i class="material-icons-round">warning</i> Explosive Safety</h3>
+                <ul>
+                    <li><i class="material-icons-round">report</i><span>Explosives cannot be frozen or connected in Build Mode</span></li>
+                    <li><i class="material-icons-round">report</i><span>Cluster bombs can significantly increase object count</span></li>
+                    <li><i class="material-icons-round">report</i><span>Multiple explosions may cause performance lag</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">public</i>
+                <h2>Environment & Scene</h2>
+            </div>
+
+            <h3>Static Objects</h3>
+            <ul>
+                <li><i class="material-icons-round">terrain</i><span><strong>Ground Plane:</strong> 200×200 unit floor with physics collision</span></li>
+                <li><i class="material-icons-round">call_made</i><span><strong>Ramp:</strong> 15×30 unit inclined plane at position (30, 4, 0)</span></li>
+                <li><i class="material-icons-round">apartment</i><span><strong>Pillars:</strong> 15 randomly placed decorative pillars (non-deletable)</span></li>
+            </ul>
+
+            <h3>Lighting & Atmosphere</h3>
+            <ul>
+                <li><i class="material-icons-round">wb_sunny</i><span><strong>Hemisphere Light:</strong> Ambient lighting (intensity: 0.8)</span></li>
+                <li><i class="material-icons-round">light_mode</i><span><strong>Directional Light:</strong> Shadow-casting light (intensity: 0.5)</span></li>
+                <li><i class="material-icons-round">dark_mode</i><span><strong>Ground Color:</strong> Dark grey (0.15, 0.15, 0.2 RGB)</span></li>
+            </ul>
+
+            <h3>Kill Zone System</h3>
+            <p>Objects that fall below <strong>Y = -100</strong> are automatically removed from the scene. This prevents infinite falling and keeps performance stable.</p>
+            <div class="alert-box info">
+                <h3><i class="material-icons-round">info</i> Performance Tip</h3>
+                <p>If you're experiencing lag, use the <strong>CLEAR ALL</strong> button to remove all spawned objects and reset the scene.</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">tips_and_updates</i>
+                <h2>Tips & Tricks</h2>
+            </div>
+
+            <h3>Creative Ideas</h3>
+            <ul>
+                <li><i class="material-icons-round">castle</i><span><strong>Tower Building:</strong> Stack cubes with Build Mode to create tall structures</span></li>
+                <li><i class="material-icons-round">car_rental</i><span><strong>Vehicle Creation:</strong> Connect cylinders and boxes to make rolling contraptions</span></li>
+                <li><i class="material-icons-round">bolt</i><span><strong>Chain Reactions:</strong> Place bombs strategically and watch the chaos unfold</span></li>
+                <li><i class="material-icons-round">sports_soccer</i><span><strong>Ball Pit:</strong> Spawn many spheres and use Force Push to launch them</span></li>
+                <li><i class="material-icons-round">architecture</i><span><strong>Ramp Stunts:</strong> Build on the ramp and use Force Push for launches</span></li>
+            </ul>
+
+            <h3>Advanced Techniques</h3>
+            <ul>
+                <li><i class="material-icons-round">pause_circle</i><span><strong>Freeze Scaffolding:</strong> Build complex structures by freezing support pieces</span></li>
+                <li><i class="material-icons-round">sports_esports</i><span><strong>Possess + Push:</strong> Possess an object, then switch to Push to launch yourself</span></li>
+                <li><i class="material-icons-round">gradient</i><span><strong>Size Variation:</strong> Mix different sizes for interesting physics interactions</span></li>
+                <li><i class="material-icons-round">animation</i><span><strong>Color Coding:</strong> Use colors to organize different parts of builds</span></li>
+            </ul>
+
+            <div class="alert-box success">
+                <h3><i class="material-icons-round">emoji_events</i> Performance Best Practices</h3>
+                <ul>
+                    <li><i class="material-icons-round">speed</i><span>Keep object count under 200 for smooth performance</span></li>
+                    <li><i class="material-icons-round">delete_sweep</i><span>Use CLEAR ALL periodically to reset the scene</span></li>
+                    <li><i class="material-icons-round">close</i><span>Close UI panels when not in use (click minimize buttons)</span></li>
+                    <li><i class="material-icons-round">fullscreen</i><span>Use fullscreen mode for better frame rates</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">code</i>
+                <h2>Technical Details</h2>
+            </div>
+
+            <h3>Browser Compatibility</h3>
+            <ul>
+                <li><i class="material-icons-round">check_circle</i><span><strong>Recommended:</strong> Chrome, Edge, Firefox (latest versions)</span></li>
+                <li><i class="material-icons-round">check_circle</i><span><strong>Mobile:</strong> Chrome for Android, Safari for iOS</span></li>
+                <li><i class="material-icons-round">warning</i><span><strong>Note:</strong> WebGL must be enabled in browser settings</span></li>
+            </ul>
+
+            <h3>Dependencies</h3>
+            <ul>
+                <li><i class="material-icons-round">view_in_ar</i><span><strong>Babylon.js:</strong> Core 3D rendering engine (from CDN)</span></li>
+                <li><i class="material-icons-round">science</i><span><strong>Cannon.js:</strong> Physics simulation library (from CDN)</span></li>
+                <li><i class="material-icons-round">extension</i><span><strong>Babylon Loaders:</strong> For potential future model loading</span></li>
+            </ul>
+
+            <h3>Physics Configuration</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gravity</td>
+                            <td>-9.81 m/s² (Y-axis)</td>
+                        </tr>
+                        <tr>
+                            <td>Ground Friction</td>
+                            <td>0.5</td>
+                        </tr>
+                        <tr>
+                            <td>Ground Restitution</td>
+                            <td>0.5 (moderate bounce)</td>
+                        </tr>
+                        <tr>
+                            <td>Ramp Friction</td>
+                            <td>0.4</td>
+                        </tr>
+                        <tr>
+                            <td>Sphere Restitution</td>
+                            <td>0.4 (bouncy)</td>
+                        </tr>
+                        <tr>
+                            <td>Box/Cylinder Restitution</td>
+                            <td>0.1 (minimal bounce)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>System Requirements</h3>
+            <ul>
+                <li><i class="material-icons-round">memory</i><span><strong>RAM:</strong> 4GB minimum, 8GB recommended</span></li>
+                <li><i class="material-icons-round">desktop_windows</i><span><strong>GPU:</strong> Any WebGL-compatible graphics card</span></li>
+                <li><i class="material-icons-round">monitor</i><span><strong>Resolution:</strong> 1280×720 minimum, responsive to any size</span></li>
+                <li><i class="material-icons-round">speed</i><span><strong>Performance:</strong> 60 FPS with ~100 objects on mid-range hardware</span></li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">bug_report</i>
+                <h2>Known Limitations & Issues</h2>
+            </div>
+
+            <div class="alert-box warning">
+                <h3><i class="material-icons-round">info</i> Current Limitations</h3>
+                <ul>
+                    <li><i class="material-icons-round">sports_esports</i><span><strong>No Save/Load:</strong> Scene state is not persistent between sessions</span></li>
+                    <li><i class="material-icons-round">download</i><span><strong>No Export:</strong> Cannot export created structures or scenes</span></li>
+                    <li><i class="material-icons-round">undo</i><span><strong>No Undo/Redo:</strong> Actions cannot be reversed (use CLEAR ALL to reset)</span></li>
+                    <li><i class="material-icons-round">content_copy</i><span><strong>No Clone Tool:</strong> Cannot duplicate existing objects</span></li>
+                    <li><i class="material-icons-round">texture</i><span><strong>Basic Materials:</strong> No texture support, only solid colors</span></li>
+                </ul>
+            </div>
+
+            <h3>Performance Considerations</h3>
+            <ul>
+                <li><i class="material-icons-round">trending_down</i><span>Frame rate may drop with 200+ objects in scene</span></li>
+                <li><i class="material-icons-round">trending_down</i><span>Multiple explosions can cause temporary lag spikes</span></li>
+                <li><i class="material-icons-round">trending_down</i><span>Build Mode joints with many connections may become unstable</span></li>
+                <li><i class="material-icons-round">trending_down</i><span>Mobile devices have lower object count limits (~100 objects)</span></li>
+            </ul>
+
+            <h3>Troubleshooting</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Issue</th>
+                            <th>Solution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Black screen / Not loading</td>
+                            <td>Check WebGL support, try different browser</td>
+                        </tr>
+                        <tr>
+                            <td>Severe lag / Low FPS</td>
+                            <td>Click CLEAR ALL, reduce object count</td>
+                        </tr>
+                        <tr>
+                            <td>Objects won't spawn</td>
+                            <td>Disable "None" mode, select a shape</td>
+                        </tr>
+                        <tr>
+                            <td>Can't move camera</td>
+                            <td>Exit Possess mode, check WASD keys work</td>
+                        </tr>
+                        <tr>
+                            <td>Possessed object won't move</td>
+                            <td>Make sure object isn't frozen</td>
+                        </tr>
+                        <tr>
+                            <td>Build Mode not connecting</td>
+                            <td>Ensure clicking on physics objects (not ground)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">school</i>
+                <h2>Educational Use Cases</h2>
+            </div>
+
+            <h3>Physics Education</h3>
+            <ul>
+                <li><i class="material-icons-round">science</i><span><strong>Gravity Demonstration:</strong> Show how objects fall and accelerate</span></li>
+                <li><i class="material-icons-round">sports_basketball</i><span><strong>Collision Physics:</strong> Explore elastic vs inelastic collisions</span></li>
+                <li><i class="material-icons-round">fitness_center</i><span><strong>Mass & Inertia:</strong> Compare small vs large objects</span></li>
+                <li><i class="material-icons-round">trending_up</i><span><strong>Momentum:</strong> Use Force Push to demonstrate impulse and momentum</span></li>
+                <li><i class="material-icons-round">rotate_right</i><span><strong>Angular Motion:</strong> Observe spinning and tumbling of objects</span></li>
+            </ul>
+
+            <h3>Engineering Concepts</h3>
+            <ul>
+                <li><i class="material-icons-round">engineering</i><span><strong>Structural Stability:</strong> Test tower designs and load distribution</span></li>
+                <li><i class="material-icons-round">link</i><span><strong>Joints & Constraints:</strong> Understand physical connections in Build Mode</span></li>
+                <li><i class="material-icons-round">balance</i><span><strong>Center of Mass:</strong> Explore balance and tipping points</span></li>
+                <li><i class="material-icons-round">construction</i><span><strong>Material Testing:</strong> Stress test structures with Force Push</span></li>
+            </ul>
+
+            <h3>Creative Learning</h3>
+            <ul>
+                <li><i class="material-icons-round">psychology</i><span><strong>Problem Solving:</strong> Design challenges (e.g., "build the tallest stable tower")</span></li>
+                <li><i class="material-icons-round">color_lens</i><span><strong>Spatial Reasoning:</strong> Practice 3D thinking and visualization</span></li>
+                <li><i class="material-icons-round">theaters</i><span><strong>Cause & Effect:</strong> Predict outcomes of actions</span></li>
+                <li><i class="material-icons-round">groups</i><span><strong>Collaborative Play:</strong> Take turns creating scenarios</span></li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">update</i>
+                <h2>Sand Box 3D Version</h2>
+            </div>
+
+            <h3>Current Version: sb3d-26.01.25
+            		
+            </h3>
+            <p>Initial release of Sand Box 3D with core features:</p>
+            <ul>
+                <li><i class="material-icons-round">check_circle</i><span>4 basic shapes (cube, sphere, cylinder, triangle)</span></li>
+                <li><i class="material-icons-round">check_circle</i><span>7 interactive tools (Push, Freeze, Erase, Possess, Build, Bombs)</span></li>
+                <li><i class="material-icons-round">check_circle</i><span>Mobile touch controls</span></li>
+                <li><i class="material-icons-round">check_circle</i><span>Physics simulation with Cannon.js</span></li>
+                <li><i class="material-icons-round">check_circle</i><span>Color and size customization</span></li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">code</i>
+                <h2>For Developers</h2>
+            </div>
+
+            <h3>Code Structure</h3>
+            <p>Sand Box 3D is organized into two main sections:</p>
+            <ul>
+                <li><i class="material-icons-round">dashboard</i><span><strong>UI Logic (Section 1):</strong> Panel controls, button handlers, mobile inputs</span></li>
+                <li><i class="material-icons-round">view_in_ar</i><span><strong>Babylon Engine (Section 2):</strong> 3D scene, physics, rendering, interaction</span></li>
+            </ul>
+
+            <h3>Key Variables</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>selectedShape</code></td>
+                            <td>Current tool/shape selection</td>
+                        </tr>
+                        <tr>
+                            <td><code>spawnedMeshes[]</code></td>
+                            <td>Array of all spawned objects</td>
+                        </tr>
+                        <tr>
+                            <td><code>isBuildMode</code></td>
+                            <td>Build Mode toggle state</td>
+                        </tr>
+                        <tr>
+                            <td><code>viewTargetMesh</code></td>
+                            <td>Currently possessed object</td>
+                        </tr>
+                        <tr>
+                            <td><code>currentSize</code></td>
+                            <td>Spawn size multiplier</td>
+                        </tr>
+                        <tr>
+                            <td><code>freezeAction</code></td>
+                            <td>'freeze' or 'thaw' mode</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Customization Tips</h3>
+            <ul>
+                <li><i class="material-icons-round">tune</i><span><strong>Modify Physics:</strong> Adjust gravity, friction, restitution in <code>createScene()</code></span></li>
+                <li><i class="material-icons-round">add_circle</i><span><strong>Add Shapes:</strong> Create new mesh types in <code>spawnObject()</code> function</span></li>
+                <li><i class="material-icons-round">color_lens</i><span><strong>Change Theme:</strong> Edit CSS variables in <code>:root</code></span></li>
+                <li><i class="material-icons-round">wb_sunny</i><span><strong>Adjust Lighting:</strong> Modify HemisphericLight and DirectionalLight values</span></li>
+                <li><i class="material-icons-round">landscape</i><span><strong>Custom Environments:</strong> Add terrain in <code>createScene()</code></span></li>
+            </ul>
+
+            <h3>Extension Points</h3>
+            <p>Developers can extend Sand Box 3D by:</p>
+            <ul>
+                <li><i class="material-icons-round">webhook</i><span>Adding new tools to the <code>setupInteraction()</code> function</span></li>
+                <li><i class="material-icons-round">category</i><span>Creating custom shape generators in <code>spawnObject()</code></span></li>
+                <li><i class="material-icons-round">animation</i><span>Implementing new visual effects in the render loop</span></li>
+                <li><i class="material-icons-round">save</i><span>Adding save/load functionality using localStorage</span></li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <i class="material-icons-round">gavel</i>
+                <h2>License & Credits</h2>
+            </div>
+
+            <h3>Open Source License</h3>
+            <p>Sand Box 3D is part of <strong>Shaman's Workshop</strong> and is provided as open-source software. You are free to:</p>
+            <ul>
+                <li><i class="material-icons-round">check</i><span>Use it for personal or educational purposes</span></li>
+                <li><i class="material-icons-round">check</i><span>Modify and customize the code</span></li>
+                <li><i class="material-icons-round">check</i><span>Share and distribute modified versions</span></li>
+                <li><i class="material-icons-round">check</i><span>Learn from the codebase</span></li>
+            </ul>
+
+            <div class="alert-box warning">
+                <h3><i class="material-icons-round">info</i> Attribution Required</h3>
+                <p>If you distribute modified versions, please credit <strong>Shaman's Workshop</strong> and link back to the original project.</p>
+            </div>
+
+            <h3>Third-Party Libraries</h3>
+            <ul>
+                <li><i class="material-icons-round">view_in_ar</i><span><strong>Babylon.js:</strong> Licensed under Apache License 2.0 © Babylon.js Team</span></li>
+                <li><i class="material-icons-round">science</i><span><strong>Cannon.js:</strong> MIT License © Stefan Hedman</span></li>
+                <li><i class="material-icons-round">font_download</i><span><strong>Fonts:</strong> Segoe UI (system font), Material Icons Round (Google)</span></li>
+            </ul>
+
+            <h3>Credits</h3>
+            <ul>
+                <li><i class="material-icons-round">person</i><span><strong>Created by:</strong> Shaman's Workshop Team</span></li>
+                <li><i class="material-icons-round">code</i><span><strong>Built with:</strong> Pure HTML, CSS, JavaScript</span></li>
+                <li><i class="material-icons-round">workspace_premium</i><span><strong>Powered by:</strong> Babylon.js & Cannon.js</span></li>
+            </ul>
+        </div>
+
+        <footer>
+            <p><strong>🎮 Sand Box 3D</strong> - Built by Shaman's Workshop</p>
+            <p>Physics Sandbox • Creative Playground • Educational Tool</p>
+            <p style="margin-top: 12px; font-size: 12px;">Version 1.0 • Open Source • Made with ❤️ and Physics</p>
+        </footer>
+    </div>
+
+    <script>
+        // Material Design Ripple Effect
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            const rect = button.getBoundingClientRect();
+
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - rect.left - radius}px`;
+            circle.style.top = `${event.clientY - rect.top - radius}px`;
+            circle.classList.add("ripple");
+
+            const ripple = button.getElementsByClassName("ripple")[0];
+            if (ripple) {
+                ripple.remove();
+            }
+
+            button.appendChild(circle);
+        }
+    </script>
+</body>
+</html>

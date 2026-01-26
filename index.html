@@ -9,8 +9,8 @@
     
     <style>
         :root {
-            /* Material Design 3 Token-ish colors */
-            --md-sys-color-primary: #0b57d0; /* Google Blue */
+            /* MD3 Color Tokens */
+            --md-sys-color-primary: #0b57d0;
             --md-sys-color-on-primary: #ffffff;
             --md-sys-color-secondary-container: #d3e3fd;
             --md-sys-color-on-secondary-container: #041e49;
@@ -18,8 +18,8 @@
             --md-sys-color-surface-variant: #f0f4f9;
             --md-sys-color-background: #f8f9fa;
             --md-sys-color-outline: #747775;
+            
             --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
-            --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -37,169 +37,184 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        /* Top App Bar Look */
-        header {
+        /* --- Background Animation --- */
+        .bg-shape-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 24px 20px;
-            background: var(--md-sys-color-surface);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .hexagon-spinner {
+            width: 65vh;
+            height: 65vh;
+            color: var(--md-sys-color-primary);
+            opacity: 0.08;
+            animation: spin 12s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Main Layout --- */
+        .container {
+            max-width: 500px; /* Narrow Setup Screen width */
+            width: 100%;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            z-index: 1;
+            /* Glassmorphism */
+            background: rgba(248, 249, 250, 0.65);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            margin: 20px;
+        }
+
+        /* Header */
+        header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            font-size: 56px;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 16px;
         }
 
         h1 {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 400;
             color: #1f1f1f;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .subtitle {
             font-size: 16px;
             color: #5e5e5e;
-            line-height: 1.5;
+            font-weight: 400;
         }
 
-        .container {
-            max-width: 800px;
-            width: 100%;
-            padding: 0 20px 40px 20px;
-        }
-
-        /* Main Action Button (FAB / Extended FAB style) */
-        .featured-app-section {
+        /* Primary Action (GitHub) */
+        .primary-action-container {
             display: flex;
             justify-content: center;
-            margin-bottom: 48px;
+            margin-bottom: 8px;
         }
 
-        .google-btn {
-            display: inline-flex;
+        .fab-primary {
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: 12px;
             background-color: var(--md-sys-color-primary);
             color: var(--md-sys-color-on-primary);
-            text-decoration: none;
             padding: 16px 32px;
-            border-radius: 100px; /* Full pill shape */
-            font-size: 16px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+            border-radius: 100px;
+            text-decoration: none;
+            transition: all 0.2s ease;
             box-shadow: var(--md-elevation-1);
-            transition: box-shadow 0.2s ease, background-color 0.2s ease;
             border: none;
             cursor: pointer;
-        }
-
-        .google-btn:hover {
-            box-shadow: var(--md-elevation-2);
-            background-color: #0842a0; /* Slightly darker on hover */
-        }
-
-        .google-btn i {
-            font-size: 24px;
-        }
-
-        /* Section Styling */
-        .section-title {
-            font-size: 22px;
-            font-weight: 400;
-            color: #1f1f1f;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title i {
-            color: var(--md-sys-color-primary);
-        }
-
-        .projects-section {
-            margin-bottom: 40px;
-        }
-
-        /* Grid Layout */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        /* Material Cards */
-        .project-card {
-            background-color: var(--md-sys-color-surface);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid #e0e0e0;
-            transition: background-color 0.2s ease, transform 0.2s ease;
-            cursor: pointer;
-            text-align: left;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
             position: relative;
             overflow: hidden;
         }
 
-        .project-card:hover {
-            background-color: var(--md-sys-color-surface-variant);
-            border-color: transparent;
+        .fab-primary:hover {
+            background-color: #0842a0;
+            box-shadow: 0 4px 8px 3px rgba(0,0,0,0.15);
         }
 
-        .card-content {
+        /* Lists (Projects) */
+        .section-header {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 8px;
+            margin-top: 8px;
+            padding-left: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .list-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .list-item {
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-bottom: 16px;
+            background-color: var(--md-sys-color-surface);
+            padding: 16px 20px;
+            border-radius: 20px; /* Soft shapes */
+            text-decoration: none;
+            color: #1f1f1f;
+            transition: background-color 0.2s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
-        .card-icon {
-            background-color: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .list-item:hover {
+            background-color: var(--md-sys-color-surface-variant);
         }
 
-        .card-text h3 {
+        .item-icon {
+            color: #5e5e5e;
+            font-size: 24px;
+        }
+
+        .item-content {
+            flex-grow: 1;
+        }
+
+        .item-title {
             font-size: 16px;
             font-weight: 500;
-            color: #1f1f1f;
+            margin-bottom: 2px;
         }
 
-        .card-text span {
-            font-size: 14px;
+        .item-subtitle {
+            font-size: 12px;
             color: #5e5e5e;
         }
 
-        .action-text {
-            color: var(--md-sys-color-primary);
-            font-size: 14px;
-            font-weight: 500;
-            text-transform: uppercase;
-            align-self: flex-end;
+        .item-arrow {
+            color: #bcbcbc;
+            font-size: 20px;
         }
 
-        /* Unknown Section Styles */
-        .unknown-card {
-            background-color: #fff0f0;
-            border: 1px solid #ffcece;
-        }
-        .unknown-card .card-icon {
-            background-color: #ffeceb;
-            color: #d93025;
-        }
-        .unknown-card .action-text {
-            color: #d93025;
+        /* Footer */
+        footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 11px;
+            color: #8e918f;
         }
 
-        /* Ripple Effect Logic */
+        /* Ripple */
         .ripple {
             position: absolute;
             border-radius: 50%;
@@ -208,6 +223,9 @@
             background-color: rgba(0, 0, 0, 0.1);
             pointer-events: none;
         }
+        .fab-primary .ripple {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
 
         @keyframes ripple {
             to {
@@ -215,101 +233,99 @@
                 opacity: 0;
             }
         }
-        
-        @media (max-width: 600px) {
-            h1 { font-size: 24px; }
-            .container { padding: 0 16px 40px 16px; }
-        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Shaman's Workshop</h1>
-        <div class="subtitle">Master Shaman</div>
-        <div class="subtitle">HTML, JavaScript, and CSS Projects</div>
-    </header>
+    <div class="bg-shape-container">
+        <svg class="hexagon-spinner" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50 5, 95 27.5, 95 72.5, 50 95, 5 72.5, 5 27.5" 
+                     fill="none" stroke="currentColor" stroke-width="1.5" />
+            <polygon points="50 25, 72.5 36.25, 72.5 63.75, 50 75, 27.5 63.75, 27.5 36.25" 
+                     fill="currentColor" opacity="0.5"/>
+        </svg>
+    </div>
 
     <div class="container">
         
-        <div class="featured-app-section">
-            <a href="https://github.com/shamansworkshop" target="_blank" class="google-btn">
+        <header>
+            <i class="material-icons-round logo-icon">handyman</i>
+            <h1>Shaman's Workshop</h1>
+            <div class="subtitle">Master Shaman's Project Hub</div>
+        		   <div class="subtitle">HEX Workshop v3</div>
+        </header>
+
+        <div class="primary-action-container">
+            <a href="https://github.com/shamansworkshop" target="_blank" class="fab-primary" onclick="createRipple(event)">
                 <i class="material-icons-round">code</i>
                 <span>GitHub Repositories</span>
             </a>
         </div>
 
-        <div class="projects-section">
-            <h2 class="section-title">
-                <i class="material-icons-round">category</i>
-                TGBrowser Ecosystem
-            </h2>
-            <div class="projects-grid">
+        <div>
+            <div class="section-header">TGBrowser Ecosystem</div>
+            <div class="list-group">
                 
-                <div class="project-card" onclick="createRipple(event, 'https://shamansworkshop.github.io/TGBrowser/tgbrowser_page')">
-                    <div class="card-content">
-                        <div class="card-icon"><i class="material-icons-round">public</i></div>
-                        <div class="card-text">
-                            <h3>TGBrowser</h3>
-                            <span>Core Application</span>
-                        </div>
+                <a href="https://shamansworkshop.github.io/TGBrowser/tgbrowser_page" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">public</i>
+                    <div class="item-content">
+                        <div class="item-title">TGBrowser</div>
+                        <div class="item-subtitle">Core Application</div>
                     </div>
-                    <div class="action-text">Open</div>
-                </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
 
-                <div class="project-card" onclick="createRipple(event, 'https://shamansworkshop.github.io/tgplugs')">
-                    <div class="card-content">
-                        <div class="card-icon"><i class="material-icons-round">extension</i></div>
-                        <div class="card-text">
-                            <h3>TGPlugs</h3>
-                            <span>Extensions & Addons</span>
-                        </div>
+                <a href="https://shamansworkshop.github.io/tgplugs" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">extension</i>
+                    <div class="item-content">
+                        <div class="item-title">TGPlugs</div>
+                        <div class="item-subtitle">Extensions Store</div>
                     </div>
-                    <div class="action-text">Open</div>
-                </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
 
-                <div class="project-card" onclick="createRipple(event, 'https://shamansworkshop.github.io/TGBrowser/tgb_tgplugtest')">
-                    <div class="card-content">
-                        <div class="card-icon"><i class="material-icons-round">science</i></div>
-                        <div class="card-text">
-                            <h3>TGPlug Lab</h3>
-                            <span>Testing Environment</span>
-                        </div>
+                <a href="https://shamansworkshop.github.io/TGBrowser/tgb_tgplugtest" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">science</i>
+                    <div class="item-content">
+                        <div class="item-title">TGPlug Lab</div>
+                        <div class="item-subtitle">Dev Testing Environment</div>
                     </div>
-                    <div class="action-text">Open</div>
-                </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
 
             </div>
         </div>
 
-        <div class="projects-section">
-            <h2 class="section-title">
-                <i class="material-icons-round">sports_esports</i>
-                3D Architecture
-            </h2>
-            <div class="projects-grid">
-                <div class="project-card" onclick="createRipple(event, 'https://shamansworkshop.github.io/SandBox3D/sb3d_page')">
-                    <div class="card-content">
-                        <div class="card-icon"><i class="material-icons-round">view_in_ar</i></div>
-                        <div class="card-text">
-                            <h3>Sand Box 3D</h3>
-                            <span>Interactive 3D Physics</span>
-                        </div>
+        <div>
+            <div class="section-header">3D Architecture</div>
+            <div class="list-group">
+                <a href="https://shamansworkshop.github.io/SandBox3D/sb3d_page" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">view_in_ar</i>
+                    <div class="item-content">
+                        <div class="item-title">Sand Box 3D</div>
+                        <div class="item-subtitle">Interactive Physics</div>
                     </div>
-                    <div class="action-text">Open</div>
-                </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
             </div>
         </div>
+
+        <footer>
+            <p>2025 Shaman's Workshop</p>
+        </footer>
+
     </div>
 
     <script>
-        // Material Design Ripple Effect
-        function createRipple(event, url) {
+        function createRipple(event) {
             const button = event.currentTarget;
+            
+            // Check if it's an external link (target=_blank) to avoid delaying navigation
+            const isExternal = button.getAttribute('target') === '_blank';
+
             const circle = document.createElement("span");
             const diameter = Math.max(button.clientWidth, button.clientHeight);
             const radius = diameter / 2;
-
             const rect = button.getBoundingClientRect();
 
             circle.style.width = circle.style.height = `${diameter}px`;
@@ -317,22 +333,17 @@
             circle.style.top = `${event.clientY - rect.top - radius}px`;
             circle.classList.add("ripple");
 
-            const ripple = button.getElementsByClassName("ripple")[0];
-            if (ripple) {
-                ripple.remove();
+            const existingRipple = button.getElementsByClassName("ripple")[0];
+            if (existingRipple) {
+                existingRipple.remove();
             }
 
             button.appendChild(circle);
-
-            // Wait for ripple animation slightly before navigating
-            setTimeout(() => {
-                window.location.href = url;
-            }, 300);
+            
+            // If it's an internal link, we can optionally delay slightly for effect,
+            // but standard <a> tags handle navigation automatically. 
+            // The visual ripple will play as the page unloads.
         }
     </script>
 </body>
-
 </html>
-
-
-

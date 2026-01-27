@@ -209,7 +209,7 @@
             </button>
             
             <div class="instruction">
-                <span id="txt-instruct">WASD to Fly<br>Left Click: Use Tool<br>Right Drag: Look</span>
+                <span id="txt-instruct">WASD to Fly<br>Arrows to Look<br>Left Click: Use Tool<br>Right Drag: Look</span>
             </div>
 
             <div class="section-label">Actions</div>
@@ -331,17 +331,35 @@
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
 
+        // --- UPDATED KEYBOARD CONTROLS FOR PC ---
         window.addEventListener('keydown', (e) => {
-            if(e.key.toLowerCase() === 'w') moveState.up = true;
-            if(e.key.toLowerCase() === 's') moveState.down = true;
-            if(e.key.toLowerCase() === 'a') moveState.left = true;
-            if(e.key.toLowerCase() === 'd') moveState.right = true;
+            const k = e.key.toLowerCase();
+            // Movement (WASD)
+            if(k === 'w') moveState.up = true;
+            if(k === 's') moveState.down = true;
+            if(k === 'a') moveState.left = true;
+            if(k === 'd') moveState.right = true;
+
+            // Camera Look (Arrow Keys)
+            if(e.key === "ArrowUp") lookState.up = true;
+            if(e.key === "ArrowDown") lookState.down = true;
+            if(e.key === "ArrowLeft") lookState.left = true;
+            if(e.key === "ArrowRight") lookState.right = true;
         });
+
         window.addEventListener('keyup', (e) => {
-            if(e.key.toLowerCase() === 'w') moveState.up = false;
-            if(e.key.toLowerCase() === 's') moveState.down = false;
-            if(e.key.toLowerCase() === 'a') moveState.left = false;
-            if(e.key.toLowerCase() === 'd') moveState.right = false;
+            const k = e.key.toLowerCase();
+            // Movement (WASD)
+            if(k === 'w') moveState.up = false;
+            if(k === 's') moveState.down = false;
+            if(k === 'a') moveState.left = false;
+            if(k === 'd') moveState.right = false;
+
+            // Camera Look (Arrow Keys)
+            if(e.key === "ArrowUp") lookState.up = false;
+            if(e.key === "ArrowDown") lookState.down = false;
+            if(e.key === "ArrowLeft") lookState.left = false;
+            if(e.key === "ArrowRight") lookState.right = false;
         });
 
         function enterGame() {
@@ -432,7 +450,8 @@
             }
             else {
                 viewTargetMesh = null;
-                instruct.innerHTML = "WASD to Fly<br>Left Click: Use Tool<br>Right Drag: Look";
+                // Updated Instruction Text
+                instruct.innerHTML = "WASD to Fly<br>Arrows to Look<br>Left Click: Use Tool<br>Right Drag: Look";
             }
 
             // 4. Highlight Active Button

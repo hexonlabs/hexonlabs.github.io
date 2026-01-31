@@ -652,14 +652,14 @@ scene.registerBeforeRender(() => {
     }
 });
 
-// --- 4. NETWORK (Promise-Based Fix) ---
+// --- 4. NETWORK (Ironclad Stability Fix) ---
+
+let isJoined = false; // Guard to prevent processing before ready
 
 function createPeer(id) {
     return new Promise((resolve, reject) => {
         const p = new Peer(id);
-        p.on('open', (assignedId) => {
-            resolve(p);
-        });
+        p.on('open', (assignedId) => resolve(p));
         p.on('error', (err) => {
             console.error("Peer Error:", err);
             reject(err);
@@ -674,13 +674,13 @@ function setupGameSession(id) {
     document.getElementById("connection-panel").style.display = "none";
     addSystemMessage("Welcome, " + id);
     myPlayerMesh = createPlayerMesh(id, null, myColor);
+    isJoined = true; // Now we are ready to receive
 }
 
 function startHost() {
     let id = document.getElementById("my-id").value || "Host" + Math.floor(Math.random()*100);
     addSystemMessage("Initializing Host...");
     
-    // Wait for Peer Open
     createPeer(id).then((p) => {
         peer = p;
         isHost = true;
@@ -688,12 +688,15 @@ function startHost() {
         addSystemMessage("Server Started. ID: " + id);
         
         peer.on('connection', (c) => {
-            connections.push(c); 
-            setupConnectionEvent(c); 
-            addSystemMessage("A player connected.");
+            // Check if we already have this connection
+            if (!connections.find(conn => conn.peer === c.peer)) {
+                connections.push(c); 
+                setupConnectionEvent(c); 
+                addSystemMessage("A player is connecting...");
+            }
         });
     }).catch(err => {
-        alert("ID taken or connection failed.");
+        alert("ID taken or connection failed. Try a different name.");
     });
 }
 
@@ -706,68 +709,68 @@ function joinGame() {
 
     addSystemMessage("Initializing Client...");
 
-    // 1. Create Self
     createPeer(myName).then((p) => {
         peer = p;
         setupGameSession(myName);
-        addSystemMessage("Connecting to " + hostID + "...");
+        addSystemMessage("Searching for Host...");
 
-        // 2. Connect to Host
         conn = peer.connect(hostID);
         
         conn.on('open', () => { 
             setupConnectionEvent(conn); 
-            addSystemMessage("Joined Successfully!");
-            conn.send({ type: "join", id: myName, color: myColor }); 
+            addSystemMessage("Connected to Host!");
+            // Send join packet AFTER a small delay to ensure handshake is solid
+            setTimeout(() => {
+                conn.send({ type: "join", id: myName, color: myColor }); 
+            }, 500);
         });
 
-        conn.on('error', (err) => {
-            alert("Could not connect to host.");
-        });
+        conn.on('error', (err) => alert("Host not found. Check ID."));
 
-    }).catch(err => {
-        alert("Username taken.");
-    });
+    }).catch(err => alert("Username taken."));
 }
 
-function setupConnectionEvent(c) { c.on('data', (data) => handleData(data, c)); }
+function setupConnectionEvent(c) { 
+    c.on('data', (data) => {
+        // Use requestAnimationFrame to ensure we don't block the UI thread
+        requestAnimationFrame(() => handleData(data, c));
+    }); 
+}
 
 function handleData(data, senderConn) {
-    // 🛑 CRITICAL FIX: If the ID is missing or is YOUR OWN, drop the packet immediately.
-    // This stops the infinite loop that causes the freeze.
-    if (!data.id || data.id === myID) return;
+    // 1. Fundamental Safety Checks
+    if (!isJoined || !data || !data.id || data.id === myID) return;
 
     if (data.type === "join") {
-        // Only create the mesh if it doesn't already exist in the workshop
+        // 2. Prevent Duplicate Meshes
         if (!players[data.id]) {
             players[data.id] = createPlayerMesh(data.id, new BABYLON.Vector3(0, 50, 0), data.color);
-            addSystemMessage(data.id + " has entered the realm.");
+            addSystemMessage(data.id + " joined.");
         }
 
         if (isHost) {
-            // Host: Tell other guests about this newcomer
             relayData(data, senderConn);
-
-            // Host: Send own identity back to the newcomer
+            // Send host info back
             senderConn.send({ type: "join", id: myID, color: myColor });
 
-            // Host: Sync all existing players to the new guest
-            for (let pid in players) {
+            // 3. THROTTLED SYNC: Send existing players one by one to avoid flooding
+            let pids = Object.keys(players);
+            pids.forEach((pid, index) => {
                 if (pid !== data.id && pid !== myID) {
-                    senderConn.send({ type: "join", id: pid, color: { top: "#555", bot: "#333" } });
+                    setTimeout(() => {
+                        if(senderConn.open) {
+                            senderConn.send({ type: "join", id: pid, color: { top: "#555", bot: "#333" } });
+                        }
+                    }, index * 100); // 100ms gap between each player sync
                 }
-            }
+            });
         }
     }
 
     if (data.type === "move") {
-        if (!players[data.id]) return; // Don't move players who haven't "joined" yet
-        
-        players[data.id].position = new BABYLON.Vector3(data.pos.x, data.pos.y, data.pos.z);
-        if (data.rot) {
-            players[data.id].rotation = new BABYLON.Vector3(data.rot.x, data.rot.y, data.rot.z);
-        }
-        
+        if (!players[data.id]) return; 
+        players[data.id].position.copyFrom(data.pos);
+        if (data.rot) players[data.id].rotation.copyFrom(data.rot);
         if (isHost) relayData(data, senderConn);
     }
 
@@ -778,13 +781,22 @@ function handleData(data, senderConn) {
     }
 }
 
-function relayData(data, excludeConn) { connections.forEach(c => { if (c !== excludeConn && c.open) c.send(data); }); }
-function broadcastData(data) {
-    if (isHost) connections.forEach(c => { if(c.open) c.send(data); });
-    else if (conn && conn.open) conn.send(data);
+function relayData(data, excludeConn) { 
+    connections.forEach(c => { 
+        if (c !== excludeConn && c.open) c.send(data); 
+    }); 
 }
 
-// Chat
+function broadcastData(data) {
+    if (!isJoined) return;
+    if (isHost) {
+        connections.forEach(c => { if(c.open) c.send(data); });
+    } else {
+        if (conn && conn.open) conn.send(data);
+    }
+}
+
+// Chat UI logic
 const chatInput = document.getElementById("chat-input");
 const chatHistory = document.getElementById("chat-history");
 chatInput.addEventListener("keypress", (e) => {
@@ -805,7 +817,7 @@ function addSystemMessage(msg) {
     chatHistory.appendChild(div);
 }
 
-// Start
+// Initialization logic
 updateSettings();
 engine.runRenderLoop(() => { scene.render(); });
 window.addEventListener("resize", () => { engine.resize(); });

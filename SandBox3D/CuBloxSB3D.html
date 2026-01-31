@@ -733,22 +733,25 @@ function joinGame() {
 function setupConnectionEvent(c) { c.on('data', (data) => handleData(data, c)); }
 
 function handleData(data, senderConn) {
-    if (data.type === "join") {
-        addSystemMessage(data.id + " joined.");
-        if (isHost) {
-            if(!players[data.id]) {
-                players[data.id] = createPlayerMesh(data.id, new BABYLON.Vector3(0,50,0), data.color);
-            }
-            relayData(data, senderConn);
-            senderConn.send({ type: "join", id: myID, color: myColor });
-            // Sync existing players
-            for(let pid in players) {
-                 if(pid !== data.id) senderConn.send({type: "join", id: pid, color: {top:"#aaa", bot:"#555"}}); // Simple sync
-            }
+        if (data.type === "join") {
+        // 1. Create the new player mesh if it doesn't exist
+        if (!players[data.id]) {
+            players[data.id] = createPlayerMesh(data.id, new BABYLON.Vector3(0, 50, 0), data.color);
+            addSystemMessage(data.id + " joined the workshop.");
         }
-        else {
-            if(!players[data.id] && data.id !== myID) {
-                players[data.id] = createPlayerMesh(data.id, new BABYLON.Vector3(0,50,0), data.color);
+
+        if (isHost) {
+            // 2. Tell everyone else about this new person
+            relayData(data, senderConn);
+
+            // 3. Send ONLY the Host's info back to the Guest
+            senderConn.send({ type: "join", id: myID, color: myColor });
+
+            // 4. Send existing players to the new Guest (Directly, no relay)
+            for (let pid in players) {
+                if (pid !== data.id && pid !== myID) {
+                    senderConn.send({ type: "join", id: pid, color: { top: "#aaa", bot: "#555" } });
+                }
             }
         }
     }

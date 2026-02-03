@@ -266,6 +266,10 @@
         </video>
     </div>
 
+    <audio id="explosion-snd" preload="auto">
+        <source src="./asset/bomboclat.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="left-panel" class="ui-panel-base minimized">
         <div class="panel-header">
             <h2>Tools</h2>
@@ -288,11 +292,21 @@
                 style="display: none; background: rgba(20, 20, 20, 0.5); padding: 10px; border-radius: 4px; margin-bottom: 10px; border: 1px solid #444;">
                 <div class="slider-group">
                     <div class="slider-label"><span>Resolution Scale</span><span id="val-res">100%</span></div>
-                    <input type="range" id="opt-res" min="25" max="100" value="100" step="25" oninput="updateGraphics()">
+                    <input type="range" id="opt-res" min="25" max="100" value="100" step="5" oninput="updateGraphics()">
                 </div>
+            
+                <div class="section-label">Performance</div>
+                <div style="display: flex; width: 100%; gap: 4px; margin-bottom: 10px;">
+                    <button class="fps-btn" onclick="setFPS(24)">24</button>
+                    <button class="fps-btn" onclick="setFPS(30)">30</button>
+                    <button class="fps-btn" onclick="setFPS(45)">45</button>
+                    <button class="fps-btn" onclick="setFPS(60)">60</button>
+                    <button class="fps-btn active" id="fps-unlimited" onclick="setFPS(0)">∞</button>
+                </div>
+            
                 <div class="slider-group">
-                    <div class="slider-label"><span>View Distance</span><span id="val-view">200m</span></div>
-                    <input type="range" id="opt-view" min="50" max="1000" value="500" step="50" oninput="updateGraphics()">
+                    <div class="slider-label"><span>View Distance</span><span id="val-view">500m</span></div>
+                    <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateGraphics()">
                 </div>
             </div>
 
@@ -649,6 +663,18 @@
             }
         }
 
+            let targetFPS = 60;
+            let lastFrameTime = performance.now();
+
+            function setFPS(val) {
+                targetFPS = val;
+                document.querySelectorAll('.fps-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if ((val === 0 && btn.innerText === '∞') || btn.innerText == val) btn.classList.add('active');
+                });
+            }
+
+
         function updateSize(val) {
             currentSize = parseFloat(val);
             document.getElementById('size-display').innerText = currentSize.toFixed(1);
@@ -733,9 +759,26 @@
                         sceneRef = this.scene;
 
                         this.engine.runRenderLoop(() => {
-                            this.handleKillZone(); 
-                            this.handleInput();    
-                            this.scene.render();
+                            const now = performance.now();
+
+                            // SHAMAN LOGIC: If Unlimited (0), skip the math and render full speed
+                            if (targetFPS === 0) {
+                                this.handleKillZone();
+                                this.handleInput(); // Important for Mobile Joysticks
+                                this.scene.render();
+                                return;
+                            }
+
+                            // APPLY THROTTLE: Only render if enough time has passed
+                            const delta = now - lastFrameTime;
+                            const interval = 1000 / targetFPS;
+
+                            if (delta >= interval) {
+                                lastFrameTime = now - (delta % interval);
+                                this.handleKillZone();
+                                this.handleInput();
+                                this.scene.render();
+                            }
                         });
                         window.addEventListener("resize", () => { this.engine.resize(); });
                     },
@@ -1048,8 +1091,14 @@
                         }, isFlash ? 2500 : 4000); // Flashbangs explode sooner (2.5s)
                     },
 
-                    explode: function(center, scene, isFragment, scaleMultiplier) {
-                        const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", {diameter: 1 * scaleMultiplier}, scene);
+                    explode: function (center, scene, isFragment, scaleMultiplier) {
+                        const snd = document.getElementById('explosion-snd');
+                        if (snd) {
+                            snd.currentTime = 0; // Restart if already playing
+                            snd.volume = 1.0;    // Adjust master volume here
+                            snd.play().catch(e => console.log("Audio blocked: Interaction required."));
+                        }
+                        const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", { diameter: 1 * scaleMultiplier }, scene);
                         explosion.position = center;
                         const expMat = new BABYLON.StandardMaterial("expMat", scene);
                         expMat.diffuseColor = isFragment ? new BABYLON.Color3(1, 0.8, 0) : new BABYLON.Color3(1, 0.5, 0);
@@ -1069,7 +1118,7 @@
                         });
 
                         const blastRadius = 25 * scaleMultiplier;
-                        const blastForce = 60 * scaleMultiplier; 
+                        const blastForce = 60 * scaleMultiplier;
                         spawnedMeshes.forEach(mesh => {
                             if (mesh && !mesh.isDisposed() && mesh.physicsImpostor) {
                                 if (mesh.metadata && mesh.metadata.originalMass) return;

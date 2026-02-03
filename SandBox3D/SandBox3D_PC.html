@@ -265,6 +265,10 @@
         </video>
     </div>
 
+    <audio id="explosion-snd" preload="auto">
+        <source src="./asset/bomboclat.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="crosshair"></div>
 
     <div id="left-panel" class="ui-panel-base minimized">
@@ -287,13 +291,19 @@
             
             <div id="graphics-sub-panel"
                 style="display: none; background: rgba(20, 20, 20, 0.5); padding: 10px; border-radius: 4px; margin-bottom: 10px; border: 1px solid #444;">
-                <div class="slider-group">
-                    <div class="slider-label"><span>Resolution Scale</span><span id="val-res">100%</span></div>
-                    <input type="range" id="opt-res" min="25" max="100" value="100" step="25" oninput="updateGraphics()">
+                <div class="section-label" style="margin-top:0;">Optimization</div>
+                <div class="control-group" style="flex-direction: row; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">
+                    div style="display: flex; width: 100%; gap: 4px; margin-top: 5px;">
+                        <button class="fps-btn" onclick="setFPS(24)">24</button>
+                        <button class="fps-btn" onclick="setFPS(30)">30</button>
+                        <button class="fps-btn" onclick="setFPS(45)">45</button>
+                        <button class="fps-btn" onclick="setFPS(60)">60</button>
+                        <button class="fps-btn active" id="fps-unlimited" onclick="setFPS(0)">∞</button>
+                    </div>
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>View Distance</span><span id="val-view">200m</span></div>
-                    <input type="range" id="opt-view" min="50" max="1000" value="500" step="50" oninput="updateGraphics()">
+                    <div class="slider-label"><span>View Distance</span><span id="val-view">500m</span></div>
+                    <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateViewDistance()">
                 </div>
             </div>
 
@@ -679,6 +689,31 @@
             }
         }
 
+            let targetFPS = 0; // 0 represents Unlimited/Native
+            let lastFrameTime = performance.now();
+
+            function setFPS(val) {
+                targetFPS = val;
+
+                    // UI Feedback
+                document.querySelectorAll('.fps-btn').forEach(btn => {
+                     btn.classList.remove('active');
+                     if ((val === 0 && btn.innerText === '∞') || btn.innerText == val) {
+                         btn.classList.add('active');
+                     }
+                });
+            }
+            
+
+            function updateViewDistance() {
+                const viewDist = document.getElementById('opt-view').value;
+                document.getElementById('val-view').innerText = viewDist + "m";
+                const sb3d = workshop.shaman.sandbox3d;
+                if (sb3d.cameraFree) {
+                    sb3d.cameraFree.maxZ = parseFloat(viewDist);
+                }
+            }
+
         function updateSize(val) {
             currentSize = parseFloat(val);
             document.getElementById('size-display').innerText = currentSize.toFixed(1);
@@ -736,9 +771,26 @@
                         sceneRef = this.scene;
 
                         this.engine.runRenderLoop(() => {
-                            this.handleKillZone(); 
-                            this.handleInput();    
-                            this.scene.render();
+                            const now = performance.now();
+
+                            // If Unlimited, skip the math and just render
+                            if (targetFPS === 0) {
+                                this.handleKillZone();
+                                this.handleInput();
+                                this.scene.render();
+                                return;
+                            }
+
+                            // Otherwise, apply the Shaman's throttle
+                            const delta = now - lastFrameTime;
+                            const interval = 1000 / targetFPS;
+
+                            if (delta >= interval) {
+                                lastFrameTime = now - (delta % interval);
+                                this.handleKillZone();
+                                this.handleInput();
+                                this.scene.render();
+                            }
                         });
                         window.addEventListener("resize", () => { this.engine.resize(); });
                     },
@@ -762,9 +814,9 @@
                         // this.cameraFree.attachControl(this.canvas, true);
                         
                         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-                        light.intensity = 0.8;
+                        light.intensity = 1.2;
                         const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
-                        dirLight.intensity = 0.5;
+                        dirLight.intensity = 0.8;
 
                         const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 200, height: 200}, scene);
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
@@ -807,9 +859,8 @@
                         
                         const cam = this.cameraFree;
                         const moveSpeed = 0.5;
-                        const lookSpeed = 0.03; // For Arrow Keys backup
+                        const lookSpeed = 0.03;
 
-                        // Arrow Key Look (Backup if mouse lock isn't used)
                         if(lookState.left) cam.rotation.y -= lookSpeed;
                         if(lookState.right) cam.rotation.y += lookSpeed;
                         if(lookState.up) cam.rotation.x -= lookSpeed;
@@ -859,36 +910,41 @@
                         }
                     },
 
-                    setupInteraction: function(scene) {
-                        // Mouse Look Logic using Pointer Movement
+                    setupInteraction: function (scene) {
                         document.addEventListener("mousemove", (event) => {
                             if (document.pointerLockElement === this.canvas) {
-                                if(this.cameraFree) {
+                                if (this.cameraFree) {
                                     const sensitivity = 0.002;
                                     this.cameraFree.rotation.y += event.movementX * sensitivity;
                                     this.cameraFree.rotation.x += event.movementY * sensitivity;
                                 }
                             }
+                            
                         });
 
-                        // Click Interaction
+                        // Unified Click Interaction
                         scene.onPointerObservable.add((pointerInfo) => {
                             if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                                if(pointerInfo.event.button !== 0) return; // Only Left Click
-                                if(selectedShape === 'none') return; 
+                                if (pointerInfo.event.button !== 0) return; // Only Left Click
+                                if (selectedShape === 'none') return;
 
-                                // If locked, always pick center of screen. If unlocked, pick under mouse
                                 let pickInfo;
+
                                 if (document.pointerLockElement === this.canvas) {
-                                     pickInfo = scene.pick(this.canvas.width / 2, this.canvas.height / 2);
+                                    const ray = scene.createPickingRay(
+                                        this.canvas.width / 2,
+                                        this.canvas.height / 2,
+                                        BABYLON.Matrix.Identity(),
+                                        this.cameraFree
+                                    );
+                                    pickInfo = scene.pickWithRay(ray);
                                 } else {
-                                     pickInfo = pointerInfo.pickInfo;
+                                    pickInfo = scene.pick(scene.pointerX, scene.pointerY);
                                 }
 
                                 if (pickInfo && pickInfo.hit && pickInfo.pickedMesh) {
-                                    // Handle Interaction with loaded models
                                     let mesh = pickInfo.pickedMesh;
-                                    if(mesh.parent && (mesh.parent.name.includes("customHitbox") || mesh.parent.name.includes("customInstance"))) {
+                                    if (mesh.parent && (mesh.parent.name.includes("customHitbox") || mesh.parent.name.includes("customInstance"))) {
                                         mesh = mesh.parent;
                                     }
 
@@ -900,7 +956,7 @@
                                     }
 
                                     if (selectedShape === 'eraser') {
-                                        if (mesh.name === "ground" || mesh.name === "ramp") return; 
+                                        if (mesh.name === "ground" || mesh.name === "ramp") return;
                                         mesh.dispose();
                                         const index = spawnedMeshes.indexOf(mesh);
                                         if (index > -1) spawnedMeshes.splice(index, 1);
@@ -908,48 +964,52 @@
                                     }
 
                                     if (selectedShape === 'freeze') {
-                                        if (!mesh.physicsImpostor || mesh.name === "ground" || mesh.name === "ramp") return;
-                                        if (freezeAction === 'freeze') {
-                                            if(!mesh.metadata) mesh.metadata = {};
-                                            if(mesh.physicsImpostor.mass > 0) {
-                                                mesh.metadata.originalMass = mesh.physicsImpostor.mass;
-                                                mesh.physicsImpostor.setMass(0);
-                                                mesh.physicsImpostor.sleep();
-                                                if(mesh.material) {
-                                                    mesh.metadata.originalColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : null;
-                                                    if(mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0.2, 0.6, 1);
-                                                }
-                                            }
-                                        } else {
-                                            if(mesh.metadata && mesh.metadata.originalMass) {
-                                                mesh.physicsImpostor.setMass(mesh.metadata.originalMass);
-                                                mesh.physicsImpostor.wakeUp();
-                                                if(mesh.material && mesh.metadata.originalColor) {
-                                                    if(mesh.material.diffuseColor) mesh.material.diffuseColor = mesh.metadata.originalColor;
-                                                    if(mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0,0,0);
-                                                }
-                                                mesh.metadata = null;
-                                            }
-                                        }
+                                        this.handleFreeze(mesh); // Refactored for cleanliness
                                         return;
                                     }
-                                    
+
                                     if (selectedShape === 'push') {
                                         if (mesh.physicsImpostor && mesh.physicsImpostor.mass > 0) {
                                             const ray = pickInfo.ray;
                                             const forceDirection = ray.direction;
-                                            const forceMagnitude = 50 * (mesh.scaling.x); 
+                                            const forceMagnitude = 50 * (mesh.scaling.x);
                                             mesh.physicsImpostor.applyImpulse(forceDirection.scale(forceMagnitude), pickInfo.pickedPoint);
                                         }
-                                        return; 
+                                        return;
                                     }
-                                    
+
                                     this.spawnObject(selectedShape, pickInfo, scene);
                                 }
                             }
                         });
-                        
+
                         window.addEventListener("contextmenu", e => e.preventDefault());
+                    },
+
+                    handleFreeze: function (mesh) {
+                        if (!mesh.physicsImpostor || mesh.name === "ground" || mesh.name === "ramp") return;
+                        if (freezeAction === 'freeze') {
+                            if (!mesh.metadata) mesh.metadata = {};
+                            if (mesh.physicsImpostor.mass > 0) {
+                                mesh.metadata.originalMass = mesh.physicsImpostor.mass;
+                                mesh.physicsImpostor.setMass(0);
+                                mesh.physicsImpostor.sleep();
+                                if (mesh.material) {
+                                    mesh.metadata.originalColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : null;
+                                    if (mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0.2, 0.6, 1);
+                                }
+                            }
+                        } else {
+                            if (mesh.metadata && mesh.metadata.originalMass !== undefined) {
+                                mesh.physicsImpostor.setMass(mesh.metadata.originalMass);
+                                mesh.physicsImpostor.wakeUp();
+                                if (mesh.material && mesh.metadata.originalColor) {
+                                    if (mesh.material.diffuseColor) mesh.material.diffuseColor = mesh.metadata.originalColor;
+                                    if (mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                                }
+                                mesh.metadata = null;
+                            }
+                        }
                     },
 
                     spawnObject: function(type, pickInfo, scene) {
@@ -1051,21 +1111,26 @@
                             if (flashCount % 2 === 0) bombMesh.material.emissiveColor = colorOn;
                             else bombMesh.material.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.1);
                             flashCount++;
-                        }, isFlash ? 200 : 500); // Flashbangs beep faster
+                        }, isFlash ? 200 : 500);
 
                         setTimeout(() => {
                             clearInterval(flashInterval);
                             if (bombMesh && !bombMesh.isDisposed()) {
-                                // Trigger explosion or flash
                                 if (isFlash) this.triggerFlashbang(bombMesh.position, scene);
                                 else this.explode(bombMesh.position, scene, isFragment, bombMesh.scaling.x);
 
                                 bombMesh.dispose();
                             }
-                        }, isFlash ? 2500 : 4000); // Flashbangs explode sooner (2.5s)
+                        }, isFlash ? 2500 : 4000);
                     },
 
                     explode: function(center, scene, isFragment, scaleMultiplier) {
+                        const snd = document.getElementById('explosion-snd');
+                        if (snd) {
+                            snd.currentTime = 0; // Restart if already playing
+                            snd.volume = 1.0;    // Adjust master volume here
+                            snd.play().catch(e => console.log("Audio blocked: Interaction required."));
+                        }
                         const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", {diameter: 1 * scaleMultiplier}, scene);
                         explosion.position = center;
                         const expMat = new BABYLON.StandardMaterial("expMat", scene);
@@ -1106,39 +1171,39 @@
                     },
 
                     triggerFlashbang: function (center, scene) {
+                        // Keep the small physical explosion for physics impact
                         this.explode(center, scene, false, 0.2);
 
                         const layer = document.getElementById('flash-layer');
                         const video = document.getElementById('flash-meme-vid');
                         if (!layer || !video) return;
 
+                        // Reset layer and prepare video immediately
                         layer.style.transition = 'none';
-                        layer.style.backgroundColor = 'white';
+                        layer.style.backgroundColor = 'transparent'; // No white flash
                         layer.style.opacity = '1';
-                        video.style.display = 'none';
 
+                        video.currentTime = 0;
+                        video.muted = false;
+                        video.volume = 1.0;
+                        video.style.display = 'block';
+
+                        // Immediate Playback
+                        video.play().catch(e => {
+                            console.error("Audio/Video blocked! Ensure pointer is locked or screen clicked.", e);
+                        });
+
+                        // Start fading out towards the end of the clip
                         setTimeout(() => {
-                            video.currentTime = 0;
-                            // SHAMAN FIX: Ensure volume is up and muted is off
-                            video.muted = false;
-                            video.volume = 1.0;
-
-                            video.style.display = 'block';
-                            layer.style.backgroundColor = 'black';
-
-                            video.play().catch(e => {
-                                console.error("Sound blocked! User must click the screen first.", e);
-                            });
-                        }, 150);
-
-                        setTimeout(() => {
-                            layer.style.transition = 'opacity 2s ease-out';
+                            layer.style.transition = 'opacity 1.5s ease-out';
                             layer.style.opacity = '0';
-                        }, 2500);
+                        }, 2500); // Adjust based on the length of gahdayum.mp4
 
+                        // Complete cleanup
                         setTimeout(() => {
                             video.pause();
                             video.style.display = 'none';
+                            layer.style.backgroundColor = 'white'; // Reset background for future use if needed
                         }, 4500);
                     },
 
@@ -1147,9 +1212,9 @@
                         for(let i=0; i<numFrags; i++) {
                             const frag = BABYLON.MeshBuilder.CreateBox("frag", {size: 0.5}, scene);
                             frag.position = center.clone();
-                            frag.position.y += 1;
-                            frag.position.x += (Math.random() - 0.5);
-                            frag.position.z += (Math.random() - 0.5);
+                            frag.position.y += (Math.random() - 0.5) * 0.2;
+                            frag.position.x += (Math.random() - 0.5) * 0.1;
+                            frag.position.z += (Math.random() - 0.5) * 0.1;
                             const fMat = new BABYLON.StandardMaterial("fMat", scene);
                             fMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
                             fMat.emissiveColor = new BABYLON.Color3(0.8, 0.3, 0); 

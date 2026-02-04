@@ -187,21 +187,6 @@
             border: 1px solid #fff;
         }
 
-        /* Jukebox Icon */
-        .icon-music { 
-            background: transparent; 
-            width: 12px; height: 12px; 
-            border-left: 2px solid #ccc; 
-            border-right: 2px solid #ccc; 
-            border-bottom: 2px solid #ccc;
-            position: relative;
-        }
-
-        .icon-music::before {
-            content: ''; position: absolute; top: 2px; left: 0; 
-            width: 100%; height: 2px; background: #ccc;
-        }
-
         button#btn-enter-game { background: #27ae60; border-color: #2ecc71; justify-content: center; font-weight: bold; margin-bottom: 5px; }
         button#btn-upload { background: #333; border-color: #888; justify-content: center; font-weight: bold; margin-bottom: 10px; margin-top: 5px; }
         button#btn-upload:hover { background: #555; border-color: #aaa; }
@@ -217,8 +202,6 @@
         button#btn-build { border-left: 4px solid #e91e63; }
         button#btn-freeze.thaw-mode { border-left-color: #e67e22; }
         button#btn-freeze.thaw-mode.active { background: #a04000; border-color: #e67e22; }
-        button.btn-misc { border-left: 4px solid #9b59b6; }
-        button.btn-misc.active { background: #4a2c5a; border-color: #be7add; }
 
         /* Custom Model Button */
         button#btn-custom { border-left: 4px solid #f39c12; }
@@ -274,8 +257,6 @@
 <body>
 
     <input type="file" id="file-input" accept=".glb,.gltf,.obj" style="display: none;" onchange="handleFileUpload(this)">
-
-    <input type="file" id="audio-input" accept=".mp3,.wav,.ogg" style="display: none;" onchange="handleAudioUpload(this)">
     
     <div id="flash-layer">
         <video id="flash-meme-vid" playsinline preload="auto"
@@ -419,25 +400,6 @@
                 </button>
             </div>
 
-            <div class="section-label">Misc</div>
-            <div class="control-group">
-                <button id="btn-jukebox" class="btn-misc" onclick="selectShape('jukebox')">
-                    <span class="shape-icon icon-music"></span> Jukebox
-                </button>
-            </div>
-            
-            <div id="jukebox-controls" style="display: none; margin-top: 10px; border-top: 1px solid #555; padding-top: 10px;">
-                <div class="section-label" style="color: #be7add;">Music Controls</div>
-                <div class="control-group" style="flex-direction: row; gap: 5px;">
-                    <button onclick="controlJukeboxMusic('play')" title="Resume All"
-                        style="text-align:center; justify-content:center;">▶</button>
-                    <button onclick="controlJukeboxMusic('pause')" title="Pause All"
-                        style="text-align:center; justify-content:center;">⏸</button>
-                    <button onclick="controlJukeboxMusic('clear')" title="Stop & Clear"
-                        style="border-left: 4px solid #e74c3c; justify-content:center;">■ Clear Music</button>
-                </div>
-            </div>
-
             <div class="section-label">Explosives</div>
             <div class="control-group">
                 <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
@@ -468,12 +430,8 @@
         let spawnedMeshes = [];    
         let sceneRef = null;
         let viewTargetMesh = null; 
-
-        let pendingJukeboxMesh = null;
-        let activeJukeboxSounds = [];
         
-        let customModelTemplate = null;
-        
+        let customModelTemplate = null; 
 
         // Movement State
         const moveState = { up: false, down: false, left: false, right: false };
@@ -551,157 +509,72 @@
             document.getElementById('file-input').click();
         }
 
-        function triggerAudioUpload(mesh) {
-                pendingJukeboxMesh = mesh;
-                // Reset value so we can upload the same song twice if needed
-                document.getElementById('audio-input').value = "";
-                document.getElementById('audio-input').click();
-            }
-
-            function handleAudioUpload(input) {
-                if (input.files && input.files[0] && pendingJukeboxMesh) {
-                    const scene = workshop.shaman.sandbox3d.scene;
-
-                    // --- ERROR FIX START ---
-                    // We access the audio engine via the scene's engine instance safely
-                    const engine = scene.getEngine();
-                    if (engine.getAudioEngine()) {
-                        engine.getAudioEngine().unlock();
-                    }
-                    // --- ERROR FIX END ---
-
-                    const file = input.files[0];
-                    const blobUrl = URL.createObjectURL(file);
-
-                    // Clean up existing sound on this specific mesh if overwriting
-                    if (pendingJukeboxMesh.metadata && pendingJukeboxMesh.metadata.sound) {
-                        pendingJukeboxMesh.metadata.sound.stop();
-                        pendingJukeboxMesh.metadata.sound.dispose();
-                    }
-
-                    const music = new BABYLON.Sound("JukeboxMusic", blobUrl, scene, function () {
-                        music.loop = true;
-                        music.spatialSound = true;
-                        music.maxDistance = 100;
-                        music.rolloffFactor = 1.0;
-
-                        music.attachToMesh(pendingJukeboxMesh);
-                        music.play();
-
-                        // Store metadata on mesh
-                        if (!pendingJukeboxMesh.metadata) pendingJukeboxMesh.metadata = {};
-                        pendingJukeboxMesh.metadata.isJukebox = true;
-                        pendingJukeboxMesh.metadata.sound = music;
-
-                        // Track in global list for the UI controls
-                        activeJukeboxSounds.push(music);
-
-                        // Visual Feedback
-                        const oldColor = pendingJukeboxMesh.material.emissiveColor;
-                        pendingJukeboxMesh.material.emissiveColor = new BABYLON.Color3(0.8, 0.2, 1);
-                        setTimeout(() => {
-                            if (pendingJukeboxMesh && !pendingJukeboxMesh.isDisposed()) {
-                                pendingJukeboxMesh.material.emissiveColor = new BABYLON.Color3(0.2, 0, 0.3);
-                            }
-                        }, 500);
-
-                        pendingJukeboxMesh = null;
-                    }, {
-                        autoplay: false,
-                        streaming: true
-                    });
-                }
-            }
-
         function handleFileUpload(input) {
-            // Capture the mesh immediately to avoid issues if the global variable changes during load
-            const targetMesh = pendingJukeboxMesh;
-
-            if (input.files && input.files[0] && targetMesh) {
-                const scene = workshop.shaman.sandbox3d.scene;
-                const engine = scene.getEngine();
-
-                // 1. Unlock Audio Engine (User Gesture requirement)
-                if (engine.audioEngine) {
-                    engine.audioEngine.unlock();
-                }
-
+            if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const blobUrl = URL.createObjectURL(file);
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                if(sceneRef) {
+                    document.getElementById('custom-name').innerText = file.name.length > 15 ? file.name.substring(0,12) + "..." : file.name;
 
-                // 2. Clean up existing sound on this specific mesh
-                if (targetMesh.metadata && targetMesh.metadata.sound) {
-                    targetMesh.metadata.sound.stop();
-                    targetMesh.metadata.sound.dispose();
-                }
+                    BABYLON.SceneLoader.ImportMesh("", "", blobUrl, sceneRef, 
+                        function (meshes, particleSystems, skeletons) {
+                            if(meshes.length === 0) return;
 
-                // 3. Create the Sound
-                // CHANGED: streaming is now FALSE to ensure 3D Spatial Audio works
-                const music = new BABYLON.Sound("JukeboxMusic", blobUrl, scene, function () {
+                            let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                            let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-                    // Check if mesh was deleted while audio was loading
-                    if (targetMesh.isDisposed()) {
-                        music.dispose();
-                        return;
-                    }
+                            meshes.forEach(m => {
+                                m.setParent(null); 
+                                const b = m.getHierarchyBoundingVectors();
+                                min = BABYLON.Vector3.Minimize(min, b.min);
+                                max = BABYLON.Vector3.Maximize(max, b.max);
+                            });
 
-                    music.loop = true;
-                    music.spatialSound = true;
+                            const width = max.x - min.x;
+                            const height = max.y - min.y;
+                            const depth = max.z - min.z;
+                            const center = min.add(max).scale(0.5);
 
-                    // Adjust these to make it louder/hearable from further away
-                    music.maxDistance = 200;
-                    music.rolloffFactor = 1.0;
-                    music.setVolume(1.0);
+                            const hitBox = BABYLON.MeshBuilder.CreateBox("customHitbox", {width: width, height: height, depth: depth}, sceneRef);
+                            hitBox.isVisible = false; 
+                            
+                            meshes.forEach(m => {
+                                m.parent = hitBox;
+                                m.position = m.position.subtract(center);
+                            });
 
-                    music.attachToMesh(targetMesh);
-                    music.play();
-
-                    // Store metadata
-                    if (!targetMesh.metadata) targetMesh.metadata = {};
-                    targetMesh.metadata.isJukebox = true;
-                    targetMesh.metadata.sound = music;
-
-                    // Track globally
-                    activeJukeboxSounds.push(music);
-
-                    // Visual Feedback (Flash Purple)
-                    if (targetMesh.material) {
-                        targetMesh.material.emissiveColor = new BABYLON.Color3(0.8, 0.2, 1);
-                        setTimeout(() => {
-                            if (targetMesh && !targetMesh.isDisposed()) {
-                                targetMesh.material.emissiveColor = new BABYLON.Color3(0.2, 0, 0.3);
+                            hitBox.setEnabled(false);
+                            
+                            if (customModelTemplate && customModelTemplate.mesh) {
+                                customModelTemplate.mesh.dispose();
                             }
-                        }, 500);
-                    }
 
-                    // Clear the global pending flag
-                    pendingJukeboxMesh = null;
-                }, {
-                    autoplay: false,
-                    streaming: false // <--- THIS WAS THE MAIN CAUSE OF SILENCE
-                });
+                            customModelTemplate = {
+                                mesh: hitBox,
+                                dimensions: { width, height, depth }
+                            };
+
+                            document.getElementById('custom-model-container').style.display = 'block';
+                            selectShape('custom');
+                            
+                            // Open objects panel if hidden
+                            const right = document.getElementById('right-panel');
+                            if(right.classList.contains('minimized')) toggleRightUI();
+
+                            input.value = "";
+                        }, 
+                        null, 
+                        function (scene, message, exception) {
+                            console.error("Error loading file:", message);
+                            alert("Failed to load model.");
+                        },
+                        "." + ext
+                    );
+                }
             }
         }
-
-        function controlJukeboxMusic(action) {
-                // Filter out disposed sounds first
-                activeJukeboxSounds = activeJukeboxSounds.filter(s => s && !s._isDisposed);
-
-                activeJukeboxSounds.forEach(sound => {
-                    if (action === 'play') {
-                        if (!sound.isPlaying) sound.play();
-                    } else if (action === 'pause') {
-                        if (sound.isPlaying) sound.pause();
-                    } else if (action === 'clear') {
-                        sound.stop();
-                        sound.dispose();
-                    }
-                });
-
-                if (action === 'clear') {
-                    activeJukeboxSounds = [];
-                }
-            }
 
         function toggleLeftUI() {
             const left = document.getElementById('left-panel');
@@ -774,56 +647,47 @@
         }
 
         function selectShape(shape) {
-                selectedShape = shape;
-                const instruct = document.getElementById('txt-instruct');
-
-                // Toggle Jukebox UI Visibility
-                const jbControls = document.getElementById('jukebox-controls');
-                if (shape === 'jukebox') {
-                    jbControls.style.display = 'block';
-                } else {
-                    jbControls.style.display = 'none';
+            selectedShape = shape;
+            const instruct = document.getElementById('txt-instruct');
+            
+            document.querySelectorAll('button').forEach(b => {
+                if(!b.classList.contains('btn-minimize') && b.id !== 'btn-enter-game' && b.id !== 'btn-build' && b.id !== 'btn-upload') {
+                    b.classList.remove('active');
                 }
+            });
 
-                document.querySelectorAll('button').forEach(b => {
-                    if (!b.classList.contains('btn-minimize') && b.id !== 'btn-enter-game' && b.id !== 'btn-build' && b.id !== 'btn-upload') {
-                        b.classList.remove('active');
-                    }
-                });
-
-                if (shape === 'none') {
-                    isBuildMode = false;
-                    document.getElementById('btn-build').classList.remove('active');
-                }
-
-                if (shape === 'view') {
-                    workshop.shaman.sandbox3d.resetCameraTarget();
-                }
-                else {
-                    viewTargetMesh = null;
-                }
-
-                let btnId = 'btn-' + shape;
-                if (shape === 'cylinder') btnId = 'btn-cyl';
-                if (shape === 'triangle') btnId = 'btn-tri';
-                if (shape === 'frag_bomb') btnId = 'btn-frag';
-                if (shape === 'flashbang') btnId = 'btn-flashbang';
-                if (shape === 'jukebox') btnId = 'btn-jukebox';
-
-                const activeBtn = document.getElementById(btnId);
-                if (activeBtn) activeBtn.classList.add('active');
-
-                if (shape === 'none') {
-                    const btnTools = document.getElementById('btn-none-tools');
-                    if (btnTools) btnTools.classList.add('active');
-                    const btnRight = document.getElementById('btn-none');
-                    if (btnRight) btnRight.classList.add('active');
-                }
-
-                if (shape === 'freeze' && freezeAction === 'thaw') {
-                    document.getElementById('btn-freeze').classList.add('thaw-mode');
-                }
+            if (shape === 'none') {
+                isBuildMode = false;
+                document.getElementById('btn-build').classList.remove('active');
             }
+
+            if (shape === 'view') {
+                workshop.shaman.sandbox3d.resetCameraTarget();
+            }
+            else {
+                viewTargetMesh = null;
+            }
+
+            let btnId = 'btn-' + shape;
+            if (shape === 'cylinder') btnId = 'btn-cyl';
+            if (shape === 'triangle') btnId = 'btn-tri';
+            if (shape === 'frag_bomb') btnId = 'btn-frag';
+            if (shape === 'flashbang') btnId = 'btn-flashbang';
+            
+            const activeBtn = document.getElementById(btnId);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            if (shape === 'none') {
+                 const btnTools = document.getElementById('btn-none-tools');
+                 if(btnTools) btnTools.classList.add('active');
+                 const btnRight = document.getElementById('btn-none');
+                 if(btnRight) btnRight.classList.add('active');
+            }
+
+            if(shape === 'freeze' && freezeAction === 'thaw') {
+                document.getElementById('btn-freeze').classList.add('thaw-mode');
+            }
+        }
 
             let targetFPS = 0; // 0 represents Unlimited/Native
             let lastFrameTime = performance.now();
@@ -883,23 +747,10 @@
 
         function clearObjects() {
             if (!sceneRef) return;
-            if (selectedShape === 'view') toggleViewMode();
-
+            if(selectedShape === 'view') toggleViewMode();
             viewTargetMesh = null;
-
-            // Corrected loop: We must check each mesh individually
-            spawnedMeshes.forEach(mesh => {
-                if (mesh && !mesh.isDisposed()) {
-                    // Check if this specific mesh is a Jukebox with active audio
-                    if (mesh.metadata && mesh.metadata.sound) {
-                        mesh.metadata.sound.stop();
-                        mesh.metadata.sound.dispose();
-                    }
-                    mesh.dispose();
-                }
-            });
-
-            spawnedMeshes = []; // Reset the list
+            spawnedMeshes.forEach(mesh => { if(mesh && !mesh.isDisposed()) mesh.dispose(); });
+            spawnedMeshes = [];
         }
 
         // ==========================================
@@ -1106,10 +957,6 @@
 
                                     if (selectedShape === 'eraser') {
                                         if (mesh.name === "ground" || mesh.name === "ramp") return;
-                                        if (mesh.metadata && mesh.metadata.sound) {
-                                            mesh.metadata.sound.stop();
-                                            mesh.metadata.sound.dispose();
-                                        }
                                         mesh.dispose();
                                         const index = spawnedMeshes.indexOf(mesh);
                                         if (index > -1) spawnedMeshes.splice(index, 1);
@@ -1128,11 +975,6 @@
                                             const forceMagnitude = 50 * (mesh.scaling.x);
                                             mesh.physicsImpostor.applyImpulse(forceDirection.scale(forceMagnitude), pickInfo.pickedPoint);
                                         }
-                                        return;
-                                    }
-
-                                    if (mesh.metadata && mesh.metadata.isJukebox && selectedShape !== 'eraser' && selectedShape !== 'push') {
-                                        triggerAudioUpload(mesh);
                                         return;
                                     }
 
@@ -1215,6 +1057,7 @@
                             if (type === 'frag_bomb') mat.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0); 
                         }
 
+                        // --- NEW FLASHBANG MESH ---
                         else if (type === 'flashbang') {
                             // Flashbangs look like canisters (Cylinders)
                             mesh = BABYLON.MeshBuilder.CreateCylinder("flashbang", { height: scale * 1.5, diameter: scale * 0.5 }, scene);
@@ -1222,19 +1065,6 @@
                             // Flashbang color (Yellow/White tip)
                             mat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
                             mat.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0);
-                        }
-
-                        else if (type === 'jukebox') {
-                            // A Jukebox is a Box with a distinct look
-                            mesh = BABYLON.MeshBuilder.CreateBox("jukebox", { size: scale }, scene);
-                            mesh.position.copyFrom(spawnPos);
-
-                            // Give it a "Speaker" look (dark with purple emissive hint)
-                            mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-                            mat.emissiveColor = new BABYLON.Color3(0.2, 0, 0.3);
-
-                            // Tag it immediately
-                            mesh.metadata = { isJukebox: true, sound: null };
                         }
 
                         if (mesh) {
@@ -1371,14 +1201,13 @@
                         setTimeout(() => {
                             layer.style.transition = 'opacity 1.5s ease-out';
                             layer.style.opacity = '0';
-                        }, 3500);
+                        }, 3700);
 
                         // Complete cleanup
                         setTimeout(() => {
                             video.pause();
                             video.style.display = 'none';
-                            layer.style.backgroundColor = 'white';
-                        }, 4500);
+                        }, 5250);
                     },
 
                     spawnFragments: function (center, scene) {

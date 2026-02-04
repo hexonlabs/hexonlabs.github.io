@@ -545,47 +545,48 @@
             }
 
             function handleAudioUpload(input) {
-                if (input.files && input.files[0] && pendingJukeboxMesh) {
-                    const file = input.files[0];
-                    const blobUrl = URL.createObjectURL(file);
+                    if (input.files && input.files[0] && pendingJukeboxMesh) {
+                        const file = input.files[0];
+                        const blobUrl = URL.createObjectURL(file);
+                        const scene = workshop.shaman.sandbox3d.scene;
 
-                    // Access the Shaman's scope to attach sound
-                    const scene = workshop.shaman.sandbox3d.scene;
-
-                    // Stop previous sound if one exists on this specific box
-                    if (pendingJukeboxMesh.metadata && pendingJukeboxMesh.metadata.sound) {
-                        pendingJukeboxMesh.metadata.sound.dispose();
-                    }
-
-                    // Create Spatial Sound
-                    const music = new BABYLON.Sound("JukeboxMusic", blobUrl, scene, null, {
-                        loop: true,
-                        autoplay: true,
-                        spatialSound: true,
-                        maxDistance: 100, // Music fades out at 100m
-                        rolloffFactor: 1.0 // Standard attenuation
-                    });
-
-                    // Attach logic
-                    music.attachToMesh(pendingJukeboxMesh);
-
-                    // Store in metadata so we can dispose it if we delete the box
-                    if (!pendingJukeboxMesh.metadata) pendingJukeboxMesh.metadata = {};
-                    pendingJukeboxMesh.metadata.isJukebox = true;
-                    pendingJukeboxMesh.metadata.sound = music;
-
-                    // Visual feedback: Flash the box purple
-                    const originalColor = pendingJukeboxMesh.material.emissiveColor;
-                    pendingJukeboxMesh.material.emissiveColor = new BABYLON.Color3(0.8, 0.2, 1);
-                    setTimeout(() => {
-                        if (pendingJukeboxMesh && !pendingJukeboxMesh.isDisposed()) {
-                            pendingJukeboxMesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                        // 1. Clean up existing sound on this specific box first
+                        if (pendingJukeboxMesh.metadata && pendingJukeboxMesh.metadata.sound) {
+                            pendingJukeboxMesh.metadata.sound.dispose();
                         }
-                    }, 500);
 
-                    pendingJukeboxMesh = null; // Clear pending
+                        // 2. Create the sound, but move the logic inside the 'ready' callback (the 4th argument)
+                        const music = new BABYLON.Sound("JukeboxMusic", blobUrl, scene, function () {
+                            // --- THIS RUNS ONLY WHEN LOADED ---
+
+                            // Now it is safe to play and attach
+                            music.attachToMesh(pendingJukeboxMesh);
+                            music.play();
+
+                            // Store in metadata
+                            if (!pendingJukeboxMesh.metadata) pendingJukeboxMesh.metadata = {};
+                            pendingJukeboxMesh.metadata.isJukebox = true;
+                            pendingJukeboxMesh.metadata.sound = music;
+
+                            // Visual feedback
+                            pendingJukeboxMesh.material.emissiveColor = new BABYLON.Color3(0.8, 0.2, 1);
+                            setTimeout(() => {
+                                if (pendingJukeboxMesh && !pendingJukeboxMesh.isDisposed()) {
+                                    pendingJukeboxMesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                                }
+                            }, 500);
+
+                            pendingJukeboxMesh = null;
+                            // ----------------------------------
+                        }, {
+                            loop: true,
+                            autoplay: false, // We trigger .play() manually inside the callback for safety
+                            spatialSound: true,
+                            maxDistance: 100,
+                            rolloffFactor: 1.0
+                        });
+                    }
                 }
-            }
 
         function handleFileUpload(input) {
             if (input.files && input.files[0]) {

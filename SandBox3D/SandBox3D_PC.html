@@ -563,10 +563,10 @@
                     const scene = workshop.shaman.sandbox3d.scene;
 
                     // --- ERROR FIX START ---
-                    // We access the audio engine via the scene's engine instance safely
+                    // "getAudioEngine()" is not a function. It is a property "audioEngine".
                     const engine = scene.getEngine();
-                    if (engine.getAudioEngine()) {
-                        engine.getAudioEngine().unlock();
+                    if (engine.audioEngine) {
+                        engine.audioEngine.unlock();
                     }
                     // --- ERROR FIX END ---
 

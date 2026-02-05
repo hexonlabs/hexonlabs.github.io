@@ -285,14 +285,14 @@
                 style="border-left: 4px solid #4aa3df; margin-bottom: 10px;">
                 <span class="shape-icon"
                     style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span>
-                GRAPHICS SETTINGS
+                Game Settings
             </button>
             
             <div id="graphics-sub-panel"
                 style="display: none; background: rgba(20, 20, 20, 0.5); padding: 10px; border-radius: 4px; margin-bottom: 10px; border: 1px solid #444;">
                 <div class="slider-group">
                     <div class="slider-label"><span>Resolution Scale</span><span id="val-res">100%</span></div>
-                    <input type="range" id="opt-res" min="25" max="100" value="100" step="5" oninput="updateGraphics()">
+                    <input type="range" id="opt-res" min="25" max="100" value="100" step="5" oninput="updateGameSettings()">
                 </div>
             
                 <div class="section-label">Performance</div>
@@ -306,7 +306,11 @@
             
                 <div class="slider-group">
                     <div class="slider-label"><span>View Distance</span><span id="val-view">500m</span></div>
-                    <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateGraphics()">
+                    <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateGameSettings()">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>FOV (Camera)</span><span id="val-fov">1.2</span></div>
+                    <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
                 </div>
             </div>
 
@@ -572,23 +576,23 @@
                 btn.classList.toggle('active', isHidden);
             }
 
-            function updateGraphics() {
+            function updateGameSettings() {
                 // 1. Get Values from UI
                 const resScale = document.getElementById('opt-res').value;
                 const viewDist = document.getElementById('opt-view').value;
+                const fovVal = document.getElementById('opt-fov').value;
 
                 // 2. Update UI Labels
                 document.getElementById('val-res').innerText = resScale + "%";
                 document.getElementById('val-view').innerText = viewDist + "m";
+                document.getElementById('val-fov').innerText = fovVal;
 
                 // 3. Apply to Engine (Shaman Logic)
                 const sb3d = workshop.shaman.sandbox3d;
                 if (sb3d.engine && sb3d.cameraFree) {
-                    // Apply Resolution Scaling
                     sb3d.engine.setHardwareScalingLevel(1 / (resScale / 100));
-
-                    // Apply View Distance (Far Clip Plane)
                     sb3d.cameraFree.maxZ = parseFloat(viewDist);
+                    sb3d.cameraFree.fov = parseFloat(fovVal);
                 }
             }
 
@@ -815,6 +819,7 @@
 
                         this.cameraFree = new BABYLON.UniversalCamera("CameraFree", new BABYLON.Vector3(0, 20, -40), scene);
                         this.cameraFree.setTarget(BABYLON.Vector3.Zero());
+                        this.cameraFree.fov = 1.2;
                         
                         this.cameraFree.keysUp = [];
                         this.cameraFree.keysDown = [];
@@ -822,11 +827,11 @@
                         this.cameraFree.keysRight = [];
                         
                         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-                        light.intensity = 0.8;
+                        light.intensity = 1.2;
                         const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
-                        dirLight.intensity = 0.5;
+                        dirLight.intensity = 0.8;
 
-                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 200, height: 200}, scene);
+                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 500, height: 500}, scene);
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
                         groundMat.diffuseColor = new BABYLON.Color3(0.15, 0.15, 0.2);
                         groundMat.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
@@ -834,7 +839,7 @@
                         ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.5, friction: 0.5 }, scene);
 
                         const ramp = BABYLON.MeshBuilder.CreateBox("ramp", {width: 15, height: 1, depth: 30}, scene);
-                        ramp.position = new BABYLON.Vector3(30, 4, 0); 
+                        ramp.position = new BABYLON.Vector3(30, 1, 0); 
                         ramp.rotation.z = Math.PI / 8;
                         const rampMat = new BABYLON.StandardMaterial("rampMat", scene);
                         rampMat.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.3);
@@ -909,16 +914,25 @@
                         const mat = new BABYLON.StandardMaterial("pillarMat", scene);
                         mat.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.35);
 
-                        for(let i=0; i < 15; i++) {
-                            const height = 10 + Math.random() * 15;
-                            const size = 2 + Math.random() * 3;
-                            const pillar = BABYLON.MeshBuilder.CreateBox("pillar" + i, {height: height, width: size, depth: size}, scene);
-                            let x = (Math.random() - 0.5) * 160;
-                            let z = (Math.random() - 0.5) * 160;
-                            if(Math.abs(x) < 20 && Math.abs(z) < 20) { x += 40; }
-                            pillar.position = new BABYLON.Vector3(x, height/2, z);
-                            pillar.material = mat;
-                            pillar.physicsImpostor = new BABYLON.PhysicsImpostor(pillar, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.1 }, scene);
+                        for (let i = 0; i < 25; i++) {
+                            const pillar = BABYLON.MeshBuilder.CreateBox("pillar", { width: 4, height: 15, depth: 4 }, scene);
+
+                            // Distribution math for 500x500 map:
+                            // (Math.random() * TotalSize) - (HalfSize)
+                            let posX = Math.random() * 500 - 250;
+                            let posZ = Math.random() * 500 - 250;
+
+                            pillar.position = new BABYLON.Vector3(posX, 7.5, posZ);
+
+                            const pMat = new BABYLON.StandardMaterial("pMat", scene);
+                            pMat.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+                            pillar.material = pMat;
+
+                            pillar.physicsImpostor = new BABYLON.PhysicsImpostor(pillar, BABYLON.PhysicsImpostor.BoxImpostor, {
+                                mass: 0,
+                                restitution: 0.1,
+                                friction: 0.5
+                            }, scene);
                         }
                     },
 

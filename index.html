@@ -20,6 +20,7 @@
             --md-sys-color-outline: #747775;
             
             --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --md-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -39,219 +40,158 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            overflow-x: hidden;
+            overflow: hidden; /* Prevent scrolling when modal is open */
         }
 
         /* --- Background Animation --- */
         .bg-shape-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            overflow: hidden;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden;
         }
 
         .hexagon-spinner {
-            width: 65vh;
-            height: 65vh;
-            color: var(--md-sys-color-primary);
-            opacity: 0.08;
+            width: 65vh; height: 65vh; color: var(--md-sys-color-primary); opacity: 0.08;
             animation: spin 12s linear infinite;
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         /* --- Main Layout --- */
         .container {
-            max-width: 500px; /* Narrow Setup Screen width */
-            width: 100%;
-            padding: 40px 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            z-index: 1;
-            /* Glassmorphism */
-            background: rgba(248, 249, 250, 0.65);
-            border-radius: 32px;
-            margin: 20px;
+            max-width: 500px; width: 100%; padding: 40px 24px;
+            display: flex; flex-direction: column; gap: 24px; z-index: 1;
+            background: rgba(248, 249, 250, 0.65); border-radius: 32px; margin: 20px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        /* Header */
-        header {
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .logo-icon {
-            font-size: 56px;
-            color: var(--md-sys-color-primary);
-            margin-bottom: 16px;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 400;
-            color: #1f1f1f;
-            margin-bottom: 4px;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            color: #5e5e5e;
-            font-weight: 400;
-        }
+        header { text-align: center; margin-bottom: 8px; }
+        .logo-icon { font-size: 56px; color: var(--md-sys-color-primary); margin-bottom: 16px; }
+        h1 { font-size: 32px; font-weight: 400; color: #1f1f1f; margin-bottom: 4px; }
+        .subtitle { font-size: 16px; color: #5e5e5e; font-weight: 400; }
 
         /* Primary Action (GitHub) */
-        .primary-action-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 8px;
-        }
+        .primary-action-container { display: flex; justify-content: center; margin-bottom: 8px; }
 
         .fab-primary {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            padding: 16px 32px;
-            border-radius: 100px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            box-shadow: var(--md-elevation-1);
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            font-weight: 500;
-            position: relative;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+            padding: 16px 32px; border-radius: 100px; text-decoration: none;
+            transition: all 0.2s ease; box-shadow: var(--md-elevation-1); border: none;
+            cursor: pointer; width: 100%; font-size: 16px; font-weight: 500; position: relative; overflow: hidden;
         }
+        .fab-primary:hover { background-color: #0842a0; box-shadow: 0 4px 8px 3px rgba(0,0,0,0.15); }
 
-        .fab-primary:hover {
-            background-color: #0842a0;
-            box-shadow: 0 4px 8px 3px rgba(0,0,0,0.15);
-        }
-
-        /* Lists (Projects) */
-        .section-header {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--md-sys-color-primary);
-            margin-bottom: 8px;
-            margin-top: 8px;
-            padding-left: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .list-group {
+        /* --- Category Cards (Main Menu) --- */
+        .category-grid {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
 
-        .list-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background-color: var(--md-sys-color-surface);
-            padding: 16px 20px;
-            border-radius: 20px; /* Soft shapes */
-            text-decoration: none;
-            color: #1f1f1f;
-            transition: background-color 0.2s;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
+        .category-card {
+            display: flex; align-items: center; gap: 16px;
+            background-color: var(--md-sys-color-surface); padding: 20px;
+            border-radius: 24px; text-decoration: none; color: #1f1f1f;
+            transition: all 0.2s; position: relative; overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05); cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        .list-item:hover {
+        .category-card:hover {
             background-color: var(--md-sys-color-surface-variant);
+            transform: translateY(-2px);
+            box-shadow: var(--md-elevation-1);
         }
 
-        .item-icon {
-            color: #5e5e5e;
+        .category-icon {
+            background-color: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            width: 48px; height: 48px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
             font-size: 24px;
         }
 
-        .item-content {
-            flex-grow: 1;
-        }
-
-        .item-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-
-        .item-subtitle {
-            font-size: 12px;
-            color: #5e5e5e;
-        }
-
-        .item-arrow {
-            color: #bcbcbc;
-            font-size: 20px;
-        }
+        .category-info { flex-grow: 1; }
+        .category-title { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+        .category-desc { font-size: 12px; color: #5e5e5e; }
 
         /* Footer */
-        footer {
-            margin-top: 16px;
-            text-align: center;
-            font-size: 11px;
-            color: #8e918f;
+        footer { margin-top: 16px; text-align: center; font-size: 11px; color: #8e918f; }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
         }
+
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .modal-box {
+            background-color: var(--md-sys-color-surface); width: 90%; max-width: 400px;
+            border-radius: 28px; padding: 24px; box-shadow: var(--md-elevation-3);
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+            display: flex; flex-direction: column; max-height: 80vh; overflow-y: auto;
+        }
+
+        .modal-overlay.open .modal-box { transform: scale(1); }
+
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .modal-title { font-size: 22px; color: #1f1f1f; font-weight: 400; }
+        
+        .list-group { display: flex; flex-direction: column; gap: 8px; }
+
+        /* Project Items inside Modal */
+        .list-item {
+            display: flex; align-items: center; gap: 16px;
+            background-color: var(--md-sys-color-surface-variant);
+            padding: 16px; border-radius: 16px; text-decoration: none;
+            color: #1f1f1f; transition: background-color 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .list-item:hover { background-color: #e2e7ec; }
+
+        .item-icon { color: #5e5e5e; font-size: 24px; }
+        .item-content { flex-grow: 1; }
+        .item-title { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+        .item-subtitle { font-size: 12px; color: #5e5e5e; }
+        .item-arrow { color: #bcbcbc; font-size: 20px; }
+
+        .modal-close-btn {
+            align-self: flex-end; margin-top: 16px;
+            background: none; border: none; color: var(--md-sys-color-primary);
+            font-weight: 500; font-size: 14px; padding: 10px 20px;
+            border-radius: 20px; cursor: pointer; transition: background 0.2s;
+        }
+        .modal-close-btn:hover { background-color: rgba(11, 87, 208, 0.08); }
 
         /* Ripple */
         .ripple {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple 0.6s linear;
-            background-color: rgba(0, 0, 0, 0.1);
-            pointer-events: none;
+            position: absolute; border-radius: 50%; transform: scale(0);
+            animation: ripple 0.6s linear; background-color: rgba(0, 0, 0, 0.1); pointer-events: none;
         }
-        .fab-primary .ripple {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
+        .fab-primary .ripple { background-color: rgba(255, 255, 255, 0.3); }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div class="bg-shape-container">
         <svg class="hexagon-spinner" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="50 5, 95 27.5, 95 72.5, 50 95, 5 72.5, 5 27.5" 
-                     fill="none" stroke="currentColor" stroke-width="1.5" />
-            <polygon points="50 25, 72.5 36.25, 72.5 63.75, 50 75, 27.5 63.75, 27.5 36.25" 
-                     fill="currentColor" opacity="0.5"/>
+            <polygon points="50 5, 95 27.5, 95 72.5, 50 95, 5 72.5, 5 27.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <polygon points="50 25, 72.5 36.25, 72.5 63.75, 50 75, 27.5 63.75, 27.5 36.25" fill="currentColor" opacity="0.5"/>
         </svg>
     </div>
 
-    <div class="container">
+    <div class="container" id="main-content">
         
         <header>
             <i class="material-icons-round logo-icon">handyman</i>
             <h1>Shaman's Workshop</h1>
             <div class="subtitle">Master Shaman's Project Hub</div>
-        		   <div class="subtitle">HEX Workshop v3</div>
+            <div class="subtitle">HEX Workshop v4</div>
         </header>
 
         <div class="primary-action-container">
@@ -261,10 +201,57 @@
             </a>
         </div>
 
-        <div>
-            <div class="section-header">TGBrowser Ecosystem</div>
+        <div class="category-grid">
+            
+            <div class="category-card" onclick="openModal('modal-ecosystem'); createRipple(event)">
+                <div class="category-icon">
+                    <i class="material-icons-round">layers</i>
+                </div>
+                <div class="category-info">
+                    <div class="category-title">TGBrowser Ecosystem</div>
+                    <div class="category-desc">Browser, Extensions & Lab</div>
+                </div>
+                <i class="material-icons-round" style="color: #bcbcbc;">chevron_right</i>
+            </div>
+
+            <div class="category-card" onclick="openModal('modal-3d'); createRipple(event)">
+                <div class="category-icon">
+                    <i class="material-icons-round">view_in_ar</i>
+                </div>
+                <div class="category-info">
+                    <div class="category-title">3D Architecture</div>
+                    <div class="category-desc">Physics & Rendering</div>
+                </div>
+                <i class="material-icons-round" style="color: #bcbcbc;">chevron_right</i>
+            </div>
+
+            <div class="category-card" onclick="openModal('modal-other'); createRipple(event)">
+                <div class="category-icon">
+                    <i class="material-icons-round">widgets</i>
+                </div>
+                <div class="category-info">
+                    <div class="category-title">Other Projects</div>
+                    <div class="category-desc">Utilities & Games</div>
+                </div>
+                <i class="material-icons-round" style="color: #bcbcbc;">chevron_right</i>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>2025-2026 Shaman's Workshop</p>
+        </footer>
+
+    </div>
+
+    <div id="modal-ecosystem" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <i class="material-icons-round" style="font-size: 28px; color: var(--md-sys-color-primary);">layers</i>
+                <h2 class="modal-title">TGBrowser</h2>
+            </div>
+            
             <div class="list-group">
-                
                 <a href="https://shamansworkshop.github.io/TGBrowser/tgbrowser_page" class="list-item" onclick="createRipple(event)">
                     <i class="material-icons-round item-icon">public</i>
                     <div class="item-content">
@@ -291,12 +278,18 @@
                     </div>
                     <i class="material-icons-round item-arrow">chevron_right</i>
                 </a>
-
             </div>
+            <button class="modal-close-btn" onclick="closeAllModals()">Close</button>
         </div>
+    </div>
 
-        <div>
-            <div class="section-header">3D Architecture</div>
+    <div id="modal-3d" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <i class="material-icons-round" style="font-size: 28px; color: var(--md-sys-color-primary);">view_in_ar</i>
+                <h2 class="modal-title">3D Architecture</h2>
+            </div>
+            
             <div class="list-group">
                 <a href="https://shamansworkshop.github.io/SandBox3D/sb3d_page" class="list-item" onclick="createRipple(event)">
                     <i class="material-icons-round item-icon">view_in_ar</i>
@@ -307,15 +300,22 @@
                     <i class="material-icons-round item-arrow">chevron_right</i>
                 </a>
             </div>
+            <button class="modal-close-btn" onclick="closeAllModals()">Close</button>
         </div>
+    </div>
 
-        <div>
-            <div class="section-header">Other Projects</div>
+    <div id="modal-other" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <i class="material-icons-round" style="font-size: 28px; color: var(--md-sys-color-primary);">widgets</i>
+                <h2 class="modal-title">Other Projects</h2>
+            </div>
+            
             <div class="list-group">
                 <a href="https://shamansworkshop.github.io/Other/ismycompteureron" class="list-item" onclick="createRipple(event)">
                     <i class="material-icons-round item-icon">terminal</i>
                     <div class="item-content">
-                        <div class="item-title">Is My Computer Really On?</div>
+                        <div class="item-title">Is My Computer On?</div>
                         <div class="item-subtitle">Useless Pages</div>
                     </div>
                     <i class="material-icons-round item-arrow">chevron_right</i>
@@ -333,27 +333,41 @@
                 <a href="https://shamansworkshop.github.io/Other/tvobby" class="list-item" onclick="createRipple(event)">
                     <i class="material-icons-round item-icon">sports_esports</i>
                     <div class="item-content">
-                        <div class="item-title">Parkour Obby (for Smart TVs)</div>
-                        <div class="item-subtitle">2D Game</div>
+                        <div class="item-title">Parkour Obby</div>
+                        <div class="item-subtitle">Smart TV Game</div>
                     </div>
                     <i class="material-icons-round item-arrow">chevron_right</i>
                 </a>
             </div>
+            <button class="modal-close-btn" onclick="closeAllModals()">Close</button>
         </div>
-
-        <footer>
-            <p>2025-2026 Shaman's Workshop</p>
-        </footer>
-
     </div>
 
     <script>
+        function openModal(modalId) {
+            // Close any currently open modal first
+            closeAllModals();
+            // Open the requested one
+            document.getElementById(modalId).classList.add('open');
+        }
+
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.modal-overlay');
+            modals.forEach(modal => {
+                modal.classList.remove('open');
+            });
+        }
+
+        function handleOverlayClick(event) {
+            // Close if clicking the overlay (background) directly
+            if (event.target.classList.contains('modal-overlay')) {
+                closeAllModals();
+            }
+        }
+
         function createRipple(event) {
             const button = event.currentTarget;
             
-            // Check if it's an external link (target=_blank) to avoid delaying navigation
-            const isExternal = button.getAttribute('target') === '_blank';
-
             const circle = document.createElement("span");
             const diameter = Math.max(button.clientWidth, button.clientHeight);
             const radius = diameter / 2;

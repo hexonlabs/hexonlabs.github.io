@@ -812,7 +812,7 @@
             showHomeAnimated();
             
             // Legacy Load (Example)
-            window.TGMoLink.inject('https://shamansworkshop.github.io/ModsPort-TGMod/'); 
+            window.TGMoLink.inject('https://hexonlabs.github.io/ModsPort-TGMod/'); 
         }
 
         function loadSettings() {
@@ -965,9 +965,9 @@
                 let path;
                 const isID = /^[a-z0-9]+\.[a-z0-9\._-]+$/i.test(val);
                 if (isID) {
-                    path = 'https://shamansworkshop.github.io/tgplugs/' + val;
+                    path = 'https://hexonlabs.github.io/tgplugs/' + val;
                 } else {
-                    path = 'https://shamansworkshop.github.io/tgplugs/' + val;
+                    path = 'https://hexonlabs.github.io/tgplugs/' + val;
                 }
                 window.TGMoLink.inject(path);
             }
@@ -1024,7 +1024,7 @@
         });
 
         infoFileBtn.addEventListener('click', () => {
-            createIframeAnimated('https://shamansworkshop.github.io/TGBrowser/tgb_info');
+            createIframeAnimated('https://hexonlabs.github.io/TGBrowser/tgb_info');
             menuContent.style.display = 'none';
         });
 

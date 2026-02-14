@@ -362,13 +362,6 @@
                     <div class="slider-label"><span>FOV (Camera)</span><span id="val-fov">1.2</span></div>
                     <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
                 </div>
-                <div class="section-label" style="margin-top: 10px;">Deep Optimization</div>
-                <button id="btn-compat-mode" onclick="toggleCompatibilityMode()" style="border-left: 4px solid #f1c40f;">
-                    Compatibility Mode: <span id="compat-status">OFF</span>
-                </button>
-                <div class="instruction" style="border-left-color: #f1c40f; margin-top:5px;">
-                    Reduces physics precision to boost FPS, and improves overall performance. <b>Requires Restart.</b>
-                </div>
             </div>
 
             <button id="btn-upload" onclick="triggerUpload()">
@@ -538,7 +531,6 @@
         let sceneRef = null;
         let viewTargetMesh = null;
         let throwForce = 50; 
-        const isCompatibilityMode = localStorage.getItem("sb3d_compat") === "true";
         
         let customModelTemplate = null; 
 
@@ -589,26 +581,6 @@
                 document.exitPointerLock();
             } else {
                 canvas.requestPointerLock();
-            }
-        }
-
-        setTimeout(() => {
-            const statusSpan = document.getElementById("compat-status");
-            const btn = document.getElementById("btn-compat-mode");
-            if (statusSpan) {
-                statusSpan.innerText = isCompatibilityMode ? "ON" : "OFF";
-                if (isCompatibilityMode) {
-                    btn.style.background = "#635a2d";
-                    btn.classList.add('active');
-                }
-            }
-        }, 100);
-
-        function toggleCompatibilityMode() {
-            // Confirm before reloading because they will lose their build
-            if (confirm("Game must restart to apply deep optimizations. Current progress will be lost. Continue?")) {
-                localStorage.setItem("sb3d_compat", !isCompatibilityMode);
-                location.reload();
             }
         }
 
@@ -953,13 +925,6 @@
                             if (this.cullingFrameCount > this.cullingRate) {
                                 this.cullingFrameCount = 0;
                                 this.handleDistanceCulling();
-                            }
-
-                            if (isCompatibilityMode) {
-                                this.cullingRate = 30; // Check distance only every 30 frames
-                            } else {
-                                this.engine.setHardwareScalingLevel(1.0);
-                                this.cullingRate = 10;
                             }
 
                             const currentFPS = this.engine.getFps();
@@ -1565,7 +1530,7 @@
                     },
 
                     spawnFragments: function (center, scene) {
-                        const numFrags = isCompatibilityMode ? 5 : 20;
+                        const numFrags = 20;
                         for (let i = 0; i < numFrags; i++) {
                             const frag = BABYLON.MeshBuilder.CreateBox("frag", { size: 0.5 }, scene);
                             frag.position = center.clone();

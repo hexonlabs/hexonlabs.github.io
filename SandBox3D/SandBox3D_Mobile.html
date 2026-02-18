@@ -407,6 +407,13 @@
                         <span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span>
                         Temporal Ambience: OFF
                     </button>
+                    <div id="ambient-vol-settings" class="slider-group" style="margin-top: 5px; border-left: 3px solid #9b59b6;">
+                        <div class="slider-label">
+                            <span>Ambience Volume</span>
+                            <span id="ambient-vol-display">0.5</span>
+                        </div>
+                        <input type="range" id="ambient-vol-slider" min="0.2" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
+                    </div>
                 </div>
             </div>
 
@@ -748,6 +755,20 @@
                 btn.innerHTML = '<span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span> Temporal Ambience: OFF';
                 btn.classList.remove('active');
                 btn.style.borderColor = '#9b59b6';
+            }
+        }
+
+        function updateAmbientVolume(val) {
+            const vol = parseFloat(val);
+            document.getElementById('ambient-vol-display').innerText = vol.toFixed(1);
+
+            const tempAudio = workshop.shaman.sandbox3d.TemporalAudio;
+            tempAudio.volume = vol;
+
+            if (tempAudio.gainNode && tempAudio.audioCtx) {
+                tempAudio.gainNode.gain.linearRampToValueAtTime(vol, tempAudio.audioCtx.currentTime + 0.1);
+            } else if (tempAudio.activeSound) {
+                tempAudio.activeSound.volume = Math.min(vol, 1.0);
             }
         }
 
@@ -1513,8 +1534,13 @@
         workshop.shaman.sandbox3d.TemporalAudio = {
             enabled: false,
             timer: null,
+            volume: 0.5,
             activeSound: null,
             sceneRef: null,
+
+            audioCtx: null,
+            gainNode: null,
+            sourceNodes: new Map(),
 
             library: {
                 neutral: ["snd_neu1", "snd_neu2", "snd_neu3"],
@@ -1530,6 +1556,20 @@
             toggle: function () {
                 this.enabled = !this.enabled;
 
+                if (this.enabled && !this.audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioCtx = new AudioContext();
+
+                    this.gainNode = this.audioCtx.createGain();
+                    this.gainNode.gain.value = this.volume;
+                    this.gainNode.connect(this.audioCtx.destination);
+                    console.log("[Ambience] Web Audio Context created & routed.");
+                }
+
+                if (this.enabled && this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+
                 if (this.timer) {
                     console.log("[Ambience] Clearing pending schedule...");
                     clearTimeout(this.timer);
@@ -1538,7 +1578,7 @@
 
                 if (this.enabled) {
                     console.log("[Ambience] System ACTIVATED. Triggering initial sound...");
-                    this.playMoment(); 
+                    this.playMoment();
                     return true;
                 } else {
                     console.log("[Ambience] System DEACTIVATED.");
@@ -1555,12 +1595,12 @@
                 if (!this.enabled) return;
 
                 const hour = new Date().getHours();
-                
-                let minTime = 180000; 
+
+                let minTime = 180000;
                 let maxTime = 300000;
 
                 if (hour >= 0 && hour < 6) {
-                    minTime = 60000; 
+                    minTime = 60000;
                     maxTime = 120000;
                 }
 
@@ -1575,13 +1615,13 @@
                 }, delay);
             },
 
-            triggerJumpscare: function() {
+            triggerJumpscare: function () {
                 const layer = document.getElementById('flash-layer');
                 const video = document.getElementById('flash-meme-vid');
                 if (!layer || !video) return;
 
                 layer.style.transition = 'none';
-                layer.style.backgroundColor = 'transparent'; 
+                layer.style.backgroundColor = 'transparent';
                 layer.style.opacity = '1';
 
                 video.currentTime = 0;
@@ -1625,7 +1665,7 @@
                 }
 
                 const clips = this.library[mode];
-                
+
                 if (!clips || clips.length === 0) {
                     this.scheduleNext();
                     return;
@@ -1645,7 +1685,19 @@
 
                 this.activeSound = audioEl;
                 audioEl.currentTime = 0;
-                audioEl.volume = 0.5;
+
+                if (this.audioCtx && this.gainNode) {
+                    audioEl.volume = 1.0;
+
+                    if (!this.sourceNodes.has(elementId)) {
+                        const source = this.audioCtx.createMediaElementSource(audioEl);
+                        source.connect(this.gainNode);
+                        this.sourceNodes.set(elementId, source);
+                    }
+                } else {
+                    // Fallback
+                    audioEl.volume = Math.min(this.volume, 1.0);
+                }
 
                 const playPromise = audioEl.play();
 

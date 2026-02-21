@@ -365,6 +365,12 @@
                         <button class="fps-btn" onclick="setFPS(60)">60</button>
                         <button class="fps-btn active" id="fps-unlimited" onclick="setFPS(0)">∞</button>
                     </div>
+                    <div class="control-group" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
+                        <button id="btn-webgpu" onclick="toggleWebGPU()" style="border-left: 4px solid #3498db;">
+                            <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
+                            Use WebGPU: OFF
+                        </button>
+                    </div>
                 </div>
                 <div class="slider-group">
                     <div class="slider-label"><span>Render Distance</span><span id="val-view">500m</span></div>
@@ -719,6 +725,33 @@
             btn.classList.toggle('active', isHidden);
         }
 
+        function toggleWebGPU() {
+            const isCurrentlyWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
+            const newState = !isCurrentlyWebGPU;
+
+            localStorage.setItem('sb3d_use_webgpu', newState.toString());
+
+            alert("This change requires a session restart to switch Graphics APIs, Continue?");
+            location.reload();
+        }
+
+        function updateWebGPUButtonState() {
+            const btn = document.getElementById('btn-webgpu');
+            if (!btn) return;
+
+            const isWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
+
+            if (isWebGPU) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Use WebGPU: ON';
+                btn.classList.add('active');
+                btn.style.borderColor = '#2ecc71';
+            } else {
+                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Use WebGPU: OFF';
+                btn.classList.remove('active');
+                btn.style.borderColor = '#3498db';
+            }
+        }
+
         function toggleAmbientAudio() {
             const btn = document.getElementById('btn-ambient');
             const isEnabled = workshop.shaman.sandbox3d.TemporalAudio.toggle();
@@ -940,11 +973,25 @@
                     cullingFrameCount: 0,
                     cullingRate: 10,
 
-                    init: function() {
-                        this.engine = new BABYLON.Engine(this.canvas, true);
+                    init: async function () {
+                        const useWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
+
+                        if (useWebGPU && navigator.gpu) {
+                            this.engine = new BABYLON.WebGPUEngine(this.canvas);
+                            await this.engine.initAsync();
+                        } else {
+                            if (useWebGPU && !navigator.gpu) {
+                                console.warn("WebGPU not supported on this browser. Falling back to WebGL.");
+                                localStorage.setItem('sb3d_use_webgpu', 'false');
+                                updateWebGPUButtonState();
+                            }
+                            this.engine = new BABYLON.Engine(this.canvas, true);
+                        }
+
                         this.scene = this.createScene();
                         sceneRef = this.scene;
                         workshop.shaman.sandbox3d.TemporalAudio.init(this.scene);
+
                         const fpsDiv = document.getElementById("fps-render");
                         const physDiv = document.getElementById("fps-phys");
 
@@ -984,6 +1031,7 @@
                                 this.scene.render();
                             }
                         });
+
                         window.addEventListener("resize", () => { this.engine.resize(); });
                     },
 
@@ -1721,6 +1769,7 @@
             }
         };
 
+        updateWebGPUButtonState();
         workshop.shaman.sandbox3d.init();
 
     </script>

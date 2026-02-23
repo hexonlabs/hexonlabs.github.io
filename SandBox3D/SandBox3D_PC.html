@@ -187,6 +187,85 @@
             box-shadow: 2px 2px 0 #ccc;
         }
 
+        #settings-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        #game-settings-modal {
+            position: relative;
+            width: calc(100vw - 120px);
+            height: calc(100vh - 120px);
+            max-width: 1200px;
+            background: rgba(25, 25, 25, 0.95);
+            border-radius: 12px;
+            border: 1px solid #4aa3df;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            color: #eee;
+            pointer-events: auto;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #444;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .settings-header h2 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .settings-close-btn {
+            background: #e74c3c;
+            border: 1px solid #c0392b;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .settings-close-btn:hover {
+            background: #c0392b;
+        }
+
+        .settings-content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .settings-content-grid::-webkit-scrollbar { width: 8px; }
+        .settings-content-grid::-webkit-scrollbar-track { background: #222; border-radius: 4px; }
+        .settings-content-grid::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+        .settings-category {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
         button#btn-enter-game { background: #27ae60; border-color: #2ecc71; justify-content: center; font-weight: bold; margin-bottom: 5px; }
         button#btn-upload { background: #333; border-color: #888; justify-content: center; font-weight: bold; margin-bottom: 10px; margin-top: 5px; }
         button#btn-upload:hover { background: #555; border-color: #aaa; }
@@ -336,6 +415,109 @@
         <div id="fps-phys" class="meter-box">PHYS: 69420</div>
     </div>
 
+    <div id="right-panel" class="ui-panel-base minimized">
+        <div class="panel-header">
+            <h2>Objects [E]</h2>
+            <button class="btn-minimize" id="btn-min-right" onclick="toggleRightUI()" title="Toggle Menu">+</button>
+        </div>
+    
+        <div class="panel-content">
+    
+            <div class="section-label">Selection</div>
+            <div class="control-group">
+                <button id="btn-none" onclick="selectShape('none')">
+                    <span class="shape-icon icon-x">X</span> None (Safe Mode)
+                </button>
+            </div>
+    
+            <div class="section-label">Properties</div>
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Size</span>
+                    <span id="size-display">1.0</span>
+                </div>
+                <input type="range" id="size-slider" min="0.2" max="5.0" step="0.1" value="1.0"
+                    oninput="updateSize(this.value)">
+            </div>
+    
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>Mass</span>
+                    <span id="mass-display">1.5</span>
+                </div>
+                <input type="range" id="mass-slider" min="0.1" max="100.0" step="0.1" value="1.5"
+                    oninput="updateMass(this.value)">
+            </div>
+            <div id="structure-settings" class="slider-group" style="display: none; border-left: 3px solid #9b59b6;">
+                <div class="slider-label"><span>Grid Size (L x H x W)</span></div>
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <input type="number" id="struct-x" value="5" min="1" max="20"
+                        style="width: 30%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
+                    <input type="number" id="struct-y" value="5" min="1" max="20"
+                        style="width: 30%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
+                    <input type="number" id="struct-z" value="1" min="1" max="20"
+                        style="width: 30%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
+                </div>
+    
+                <div class="slider-label"><span>Block Type</span></div>
+                <select id="struct-shape"
+                    style="width: 100%; background: #333; color: white; border: 1px solid #555; padding: 5px; border-radius: 4px;">
+                    <option value="box">Cube</option>
+                    <option value="sphere">Sphere</option>
+                    <option value="cylinder">Cylinder</option>
+                    <option value="triangle">Triangle</option>
+                </select>
+            </div>
+    
+            <div class="slider-group">
+                <div class="slider-label"><span>Color</span></div>
+                <input type="color" id="color-picker" value="#3498db">
+            </div>
+    
+            <div id="custom-model-container" style="display: none;">
+                <div class="section-label">Custom</div>
+                <div class="control-group">
+                    <button id="btn-custom" onclick="selectShape('custom')">
+                        <span class="shape-icon icon-custom"></span> <span id="custom-name">Spawn Upload</span>
+                    </button>
+                </div>
+            </div>
+    
+            <div class="section-label">Shapes</div>
+            <div class="control-group">
+                <button id="btn-box" class="active" onclick="selectShape('box')">
+                    <span class="shape-icon icon-box"></span> Cube
+                </button>
+                <button id="btn-sphere" onclick="selectShape('sphere')">
+                    <span class="shape-icon icon-sphere"></span> Sphere
+                </button>
+                <button id="btn-cyl" onclick="selectShape('cylinder')">
+                    <span class="shape-icon icon-cyl"></span> Cylinder
+                </button>
+                <button id="btn-tri" onclick="selectShape('triangle')">
+                    <span class="shape-icon icon-tri"></span> Triangle
+                </button>
+                <button id="btn-structure" onclick="selectShape('structure')">
+                    <span class="shape-icon icon-structure"></span> Structure
+                </button>
+            </div>
+    
+            <div class="section-label">Explosives</div>
+            <div class="control-group">
+                <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
+                    <span class="shape-icon icon-bomb"></span> Bomb
+                </button>
+                <button id="btn-frag" class="btn-explosive" onclick="selectShape('frag_bomb')">
+                    <span class="shape-icon icon-frag"></span> Cluster Bomb
+                </button>
+                <button id="btn-flashbang" onclick="selectShape('flashbang')">
+                    <span class="shape-icon icon-flash"></span> Flashbang
+                </button>
+            </div>
+    
+        </div>
+    </div>
+
     <div id="left-panel" class="ui-panel-base minimized">
         <div class="panel-header">
             <h2>Tools [Q]</h2>
@@ -351,46 +533,69 @@
                 style="border-left: 4px solid #4aa3df; margin-bottom: 10px;">
                 <span class="shape-icon"
                     style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span>
-                Game Settings
+                SB3D Settings
             </button>
             
-            <div id="graphics-sub-panel"
-                style="display: none; background: rgba(20, 20, 20, 0.5); padding: 10px; border-radius: 4px; margin-bottom: 10px; border: 1px solid #444;">
-                <div class="section-label" style="margin-top:0;">Optimization</div>
-                <div class="control-group" style="flex-direction: row; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">
-                    <div style="display: flex; width: 100%; gap: 4px; margin-top: 5px;">
-                        <button class="fps-btn" onclick="setFPS(24)">24</button>
-                        <button class="fps-btn" onclick="setFPS(30)">30</button>
-                        <button class="fps-btn" onclick="setFPS(45)">45</button>
-                        <button class="fps-btn" onclick="setFPS(60)">60</button>
-                        <button class="fps-btn active" id="fps-unlimited" onclick="setFPS(0)">∞</button>
+            <div id="settings-modal-overlay">
+                <div id="game-settings-modal">
+                    <div class="settings-header">
+                        <h2>SB3D Settings</h2>
+                        <button class="settings-close-btn" onclick="toggleGraphicsUI()">Close Setup</button>
                     </div>
-                    <div class="control-group" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
-                        <button id="btn-webgpu" onclick="toggleWebGPU()" style="border-left: 4px solid #3498db;">
-                            <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
-                            Use WebGPU: OFF
-                        </button>
-                    </div>
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>Render Distance</span><span id="val-view">500m</span></div>
-                    <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateGameSettings()">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span>FOV (Camera)</span><span id="val-fov">1.2</span></div>
-                    <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
-                </div>
-                <div class="control-group" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 10px;">
-                    <button id="btn-ambient" onclick="toggleAmbientAudio()" style="border-left: 4px solid #9b59b6;">
-                        <span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span>
-                        Temporal Ambience: OFF
-                    </button>
-                    <div id="ambient-vol-settings" class="slider-group" style="margin-top: 5px; border-left: 3px solid #9b59b6;">
-                        <div class="slider-label">
-                            <span>Ambience Volume</span>
-                            <span id="ambient-vol-display">0.5</span>
+                    
+                    <div class="settings-content-grid">
+                        
+                        <div class="settings-category">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Performance & Render</div>
+                            
+                            <div class="control-group" style="margin-bottom: 15px;">
+                                <span style="font-size: 12px; color: #ddd; margin-bottom: 5px;">Framerate Limit</span>
+                                <div style="display: flex; width: 100%; gap: 6px;">
+                                    <button class="fps-btn" onclick="setFPS(24)">24</button>
+                                    <button class="fps-btn" onclick="setFPS(30)">30</button>
+                                    <button class="fps-btn" onclick="setFPS(45)">45</button>
+                                    <button class="fps-btn" onclick="setFPS(60)">60</button>
+                                    <button class="fps-btn active" id="fps-unlimited" onclick="setFPS(0)">∞</button>
+                                </div>
+                            </div>
+            
+                            <div class="slider-group">
+                                <div class="slider-label"><span>Render Distance</span><span id="val-view">500m</span></div>
+                                <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateGameSettings()">
+                            </div>
+                            
+                            <div class="slider-group">
+                                <div class="slider-label"><span>Camera FOV</span><span id="val-fov">1.2</span></div>
+                                <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
+                            </div>
                         </div>
-                        <input type="range" id="ambient-vol-slider" min="0.2" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
+            
+                        <div class="settings-category">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Engine & Audio</div>
+            
+                            <div class="control-group" style="margin-bottom: 20px;">
+                                <button id="btn-webgpu" onclick="toggleWebGPU()" style="border-left: 4px solid #3498db; padding: 12px;">
+                                    <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
+                                    Use WebGPU: OFF
+                                </button>
+                            </div>
+            
+                            <div class="control-group">
+                                <button id="btn-ambient" onclick="toggleAmbientAudio()" style="border-left: 4px solid #9b59b6; padding: 12px;">
+                                    <span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span>
+                                    Temporal Ambience: OFF
+                                </button>
+                            </div>
+                            
+                            <div id="ambient-vol-settings" class="slider-group" style="margin-top: 10px; border-left: 3px solid #9b59b6;">
+                                <div class="slider-label">
+                                    <span>Ambience Volume</span>
+                                    <span id="ambient-vol-display">0.5</span>
+                                </div>
+                                <input type="range" id="ambient-vol-slider" min="0.2" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
+                            </div>
+                        </div>
+            
                     </div>
                 </div>
             </div>
@@ -445,107 +650,6 @@
         </div>
     </div>
 
-    <div id="right-panel" class="ui-panel-base minimized">
-        <div class="panel-header">
-            <h2>Objects [E]</h2>
-            <button class="btn-minimize" id="btn-min-right" onclick="toggleRightUI()" title="Toggle Menu">+</button>
-        </div>
-
-        <div class="panel-content">
-            
-            <div class="section-label">Selection</div>
-            <div class="control-group">
-                 <button id="btn-none" onclick="selectShape('none')">
-                    <span class="shape-icon icon-x">X</span> None (Safe Mode)
-                </button>
-            </div>
-
-            <div class="section-label">Properties</div>
-            <div class="slider-group">
-                <div class="slider-label">
-                    <span>Size</span>
-                    <span id="size-display">1.0</span>
-                </div>
-                <input type="range" id="size-slider" min="0.2" max="5.0" step="0.1" value="1.0" oninput="updateSize(this.value)">
-            </div>
-            
-            <div class="slider-group">
-                <div class="slider-label">
-                    <span>Mass</span>
-                    <span id="mass-display">1.5</span>
-                </div>
-                <input type="range" id="mass-slider" min="0.1" max="100.0" step="0.1" value="1.5" oninput="updateMass(this.value)">
-            </div>
-            <div id="structure-settings" class="slider-group" style="display: none; border-left: 3px solid #9b59b6;">
-                <div class="slider-label"><span>Grid Size (L x H x W)</span></div>
-                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                    <input type="number" id="struct-x" value="5" min="1" max="20"
-                        style="width: 30%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
-                    <input type="number" id="struct-y" value="5" min="1" max="20"
-                        style="width: 30%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
-                    <input type="number" id="struct-z" value="1" min="1" max="20"
-                        style="width: 30%; background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px;">
-                </div>
-            
-                <div class="slider-label"><span>Block Type</span></div>
-                <select id="struct-shape"
-                    style="width: 100%; background: #333; color: white; border: 1px solid #555; padding: 5px; border-radius: 4px;">
-                    <option value="box">Cube</option>
-                    <option value="sphere">Sphere</option>
-                    <option value="cylinder">Cylinder</option>
-                    <option value="triangle">Triangle</option>
-                </select>
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-label"><span>Color</span></div>
-                <input type="color" id="color-picker" value="#3498db">
-            </div>
-
-            <div id="custom-model-container" style="display: none;">
-                <div class="section-label">Custom</div>
-                <div class="control-group">
-                    <button id="btn-custom" onclick="selectShape('custom')">
-                        <span class="shape-icon icon-custom"></span> <span id="custom-name">Spawn Upload</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="section-label">Shapes</div>
-            <div class="control-group">
-                <button id="btn-box" class="active" onclick="selectShape('box')">
-                    <span class="shape-icon icon-box"></span> Cube
-                </button>
-                <button id="btn-sphere" onclick="selectShape('sphere')">
-                    <span class="shape-icon icon-sphere"></span> Sphere
-                </button>
-                <button id="btn-cyl" onclick="selectShape('cylinder')">
-                    <span class="shape-icon icon-cyl"></span> Cylinder
-                </button>
-                <button id="btn-tri" onclick="selectShape('triangle')">
-                    <span class="shape-icon icon-tri"></span> Triangle
-                </button>
-                <button id="btn-structure" onclick="selectShape('structure')">
-                    <span class="shape-icon icon-structure"></span> Structure
-                </button>
-            </div>
-
-            <div class="section-label">Explosives</div>
-            <div class="control-group">
-                <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
-                    <span class="shape-icon icon-bomb"></span> Bomb
-                </button>
-                <button id="btn-frag" class="btn-explosive" onclick="selectShape('frag_bomb')">
-                    <span class="shape-icon icon-frag"></span> Cluster Bomb
-                </button>
-                <button id="btn-flashbang" onclick="selectShape('flashbang')">
-                    <span class="shape-icon icon-flash"></span> Flashbang
-                </button>
-            </div>
-
-        </div>
-    </div>
-
     <canvas id="renderCanvas"></canvas>
 
     <script>
@@ -562,7 +666,7 @@
         let sceneRef = null;
         let viewTargetMesh = null;
         let throwForce = 50; 
-        
+        let celProcess = null;
         let customModelTemplate = null; 
 
         const moveState = { up: false, down: false, left: false, right: false };
@@ -725,12 +829,17 @@
         }
 
         function toggleGraphicsUI() {
-            const subPanel = document.getElementById('graphics-sub-panel');
+            const overlay = document.getElementById('settings-modal-overlay');
             const btn = document.getElementById('btn-graphics-toggle');
-            const isHidden = subPanel.style.display === 'none';
+            const isHidden = overlay.style.display === 'none' || overlay.style.display === '';
 
-            subPanel.style.display = isHidden ? 'block' : 'none';
-            btn.classList.toggle('active', isHidden);
+            if (isHidden) {
+                overlay.style.display = 'flex';
+                btn.classList.add('active');
+            } else {
+                overlay.style.display = 'none';
+                btn.classList.remove('active');
+            }
         }
 
         function toggleWebGPU() {

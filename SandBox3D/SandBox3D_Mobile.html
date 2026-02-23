@@ -589,6 +589,11 @@
                             </div>
                             
                             <div class="slider-group">
+                                <div class="slider-label"><span>Resolution Scale</span><span id="val-res">100%</span></div>
+                                <input type="range" id="opt-res" min="10" max="100" value="100" step="5" oninput="updateGameSettings()">
+                            </div>
+
+                            <div class="slider-group">
                                 <div class="slider-label"><span>Camera FOV</span><span id="val-fov">1.2</span></div>
                                 <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
                             </div>
@@ -916,13 +921,16 @@
         }
 
         function updateGameSettings() {
+            const resScale = document.getElementById('opt-res').value;
             const viewDist = document.getElementById('opt-view').value;
             const fovVal = document.getElementById('opt-fov').value;
+            document.getElementById('val-res').innerText = resScale + "%";
             document.getElementById('val-view').innerText = viewDist + "m";
             document.getElementById('val-fov').innerText = fovVal;
 
             const sb3d = workshop.shaman.sandbox3d;
             if (sb3d.cameraFree) {
+                sb3d.engine.setHardwareScalingLevel(1 / (resScale / 100));
                 sb3d.cameraFree.maxZ = parseFloat(viewDist);
                 sb3d.cameraFree.fov = parseFloat(fovVal);
             }

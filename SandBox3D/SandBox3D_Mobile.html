@@ -916,17 +916,13 @@
         }
 
         function updateGameSettings() {
-            const resScale = document.getElementById('opt-res').value;
             const viewDist = document.getElementById('opt-view').value;
             const fovVal = document.getElementById('opt-fov').value;
-
-            document.getElementById('val-res').innerText = resScale + "%";
             document.getElementById('val-view').innerText = viewDist + "m";
             document.getElementById('val-fov').innerText = fovVal;
 
             const sb3d = workshop.shaman.sandbox3d;
-            if (sb3d.engine && sb3d.cameraFree) {
-                sb3d.engine.setHardwareScalingLevel(1 / (resScale / 100));
+            if (sb3d.cameraFree) {
                 sb3d.cameraFree.maxZ = parseFloat(viewDist);
                 sb3d.cameraFree.fov = parseFloat(fovVal);
             }

@@ -213,7 +213,6 @@
             display: none;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(3px);
         }
 
         #game-settings-modal {
@@ -582,6 +581,14 @@
                                     <button class="fps-btn active" id="fps-unlimited" onclick="setFPS(0)">∞</button>
                                 </div>
                             </div>
+
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-frustum-cull" onclick="toggleFrustumCulling()"
+                                    style="border-left: 4px solid #e67e22; padding: 12px;">
+                                    <span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span>
+                                    Frustum Culling: OFF
+                                </button>
+                            </div>
             
                             <div class="slider-group">
                                 <div class="slider-label"><span>Render Distance</span><span id="val-view">500m</span></div>
@@ -622,6 +629,17 @@
                                     <span id="ambient-vol-display">0.5</span>
                                 </div>
                                 <input type="range" id="ambient-vol-slider" min="0.2" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
+                            </div>
+                        </div>
+
+                        <div class="settings-category">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Overlay</div>
+            
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-toggle-hud" onclick="toggleHUDVisibility()" style="border-left: 4px solid #2ecc71; padding: 10px;">
+                                    <span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span>
+                                    Show FPS Meters: ON
+                                </button>
                             </div>
                         </div>
             
@@ -710,6 +728,8 @@
         let targetFPS = 60;
         let lastFrameTime = performance.now();
         let customModelTemplate = null;
+        let isHUDVisible = true;
+        let isFrustumCullingEnabled = false;
 
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
@@ -850,6 +870,22 @@
             }
         }
 
+        function toggleHUDVisibility() {
+            isHUDVisible = !isHUDVisible;
+            const hud = document.getElementById('hud-container');
+            const btn = document.getElementById('btn-toggle-hud');
+
+            if (isHUDVisible) {
+                hud.style.display = 'flex';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span> Show FPS Meters: ON';
+                btn.style.borderColor = '#2ecc71';
+            } else {
+                hud.style.display = 'none';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Show FPS Meters: OFF';
+                btn.style.borderColor = '#e74c3c';
+            }
+        }
+
         function toggleGraphicsUI() {
             const overlay = document.getElementById('settings-modal-overlay');
             const btn = document.getElementById('btn-graphics-toggle');
@@ -861,6 +897,29 @@
             } else {
                 overlay.style.display = 'none';
                 btn.classList.remove('active');
+            }
+        }
+
+        function toggleFrustumCulling() {
+            isFrustumCullingEnabled = !isFrustumCullingEnabled;
+            const btn = document.getElementById('btn-frustum-cull');
+
+            if (isFrustumCullingEnabled) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Frustum Culling: ON';
+                btn.classList.add('active');
+                btn.style.borderColor = '#2ecc71';
+                console.log("[FrustumCulling] Enabled — off-screen meshes hidden, physics intact.");
+            } else {
+                spawnedMeshes.forEach(mesh => {
+                    if (mesh && !mesh.isDisposed() && mesh.isEnabled()) {
+                        mesh.isVisible = true;
+                        mesh.getChildMeshes().forEach(child => child.isVisible = true);
+                    }
+                });
+                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Frustum Culling: OFF';
+                btn.classList.remove('active');
+                btn.style.borderColor = '#e67e22';
+                console.log("[FrustumCulling] Disabled — all meshes restored.");
             }
         }
 
@@ -1196,6 +1255,7 @@
                                 if (this.cullingFrameCount > this.cullingRate) {
                                     this.cullingFrameCount = 0;
                                     this.handleDistanceCulling();
+                                    this.handleFrustumCulling();
                                 }
 
                                 const currentFPS = this.engine.getFps();
@@ -1307,6 +1367,32 @@
                                     mesh.setEnabled(true);
                                     if (mesh.physicsImpostor) mesh.physicsImpostor.wakeUp();
                                 }
+                            }
+                        }
+                    },
+
+                    handleFrustumCulling: function () {
+                        if (!this.cameraFree || !isFrustumCullingEnabled) return;
+
+                        const transform = this.cameraFree.getTransformationMatrix();
+                        const frustumPlanes = BABYLON.Frustum.GetPlanes(transform);
+
+                        for (let i = 0; i < spawnedMeshes.length; i++) {
+                            const mesh = spawnedMeshes[i];
+                            if (!mesh || mesh.isDisposed()) continue;
+
+                            if (!mesh.isEnabled()) continue;
+
+                            const boundingInfo = mesh.getBoundingInfo();
+                            if (!boundingInfo) continue;
+
+                            const inFrustum = boundingInfo.isInFrustum(frustumPlanes);
+
+                            if (mesh.isVisible !== inFrustum) {
+                                mesh.isVisible = inFrustum;
+                                mesh.getChildMeshes().forEach(child => {
+                                    child.isVisible = inFrustum;
+                                });
                             }
                         }
                     },

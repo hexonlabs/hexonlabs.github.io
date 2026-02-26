@@ -644,6 +644,13 @@
                             </div>
 
                             <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
+                                    <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
+                                    Post-FX Shaders: OFF
+                                </button>
+                            </div>
+
+                            <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-perf-safeguard" onclick="toggleSafeguard()" style="border-left: 4px solid #f1c40f;">
                                     <span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON
                                 </button>
@@ -955,6 +962,38 @@
             btn.innerHTML = performanceSafeguardActive ?
                 '<span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON' :
                 '<span class="shape-icon" style="background: #555; border-radius: 2px;"></span> Performance Safeguard: OFF';
+        }
+
+        function togglePostFX() {
+            const isCurrentlyOn = localStorage.getItem('sb3d_postfx') === 'true';
+            const newState = !isCurrentlyOn;
+
+            const message = newState
+                ? "Enable Post-FX Shaders?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable."
+                : "Disable Post-FX Shaders?\n\nA session restart is required to remove them.\n\nClick OK to restart and disable.";
+
+            const confirmed = confirm(message);
+            if (!confirmed) return;
+
+            localStorage.setItem('sb3d_postfx', newState.toString());
+            location.reload();
+        }
+
+        function updatePostFXButtonState() {
+            const btn = document.getElementById('btn-postfx');
+            if (!btn) return;
+            const isOn = localStorage.getItem('sb3d_postfx') === 'true';
+            const infoBox = document.getElementById('postfx-info');
+
+            if (isOn) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Post-FX Shaders: ON';
+                btn.style.borderLeftColor = '#e74c3c';
+                if (infoBox) infoBox.style.display = 'block';
+            } else {
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Post-FX Shaders: OFF';
+                btn.style.borderLeftColor = '#e74c3c';
+                if (infoBox) infoBox.style.display = 'none';
+            }
         }
 
         function togglePhysicsSleeping() {
@@ -1429,7 +1468,33 @@
                                 } else {
                                     isSafeguardInCooldown = true;
                                     lowFpsCounter = 0;
-                                    this.engine.runRenderLoop(() => { this.scene.render(); });
+
+                                    const _fpsDiv = document.getElementById("fps-render");
+                                    const _physDiv = document.getElementById("fps-phys");
+
+                                    this.engine.runRenderLoop(() => {
+                                        const now = performance.now();
+                                        const currentFPS = this.engine.getFps();
+
+                                        if (_fpsDiv) _fpsDiv.innerText = "FPS: " + currentFPS.toFixed(0);
+                                        if (_physDiv) _physDiv.innerText = "PHYS: " + currentFPS.toFixed(0);
+
+                                        if (targetFPS === 0) {
+                                            this.handleKillZone();
+                                            this.handleInput();
+                                            this.scene.render();
+                                            return;
+                                        }
+
+                                        const delta = now - lastFrameTime;
+                                        const interval = 1000 / targetFPS;
+                                        if (delta >= interval) {
+                                            lastFrameTime = now - (delta % interval);
+                                            this.handleKillZone();
+                                            this.handleInput();
+                                            this.scene.render();
+                                        }
+                                    });
 
                                     console.warn("[SB3D] Safeguard: User resumed. Starting 60s cooldown...");
 
@@ -1439,9 +1504,6 @@
                                     }, 60000);
                                 }
                             }
-                        } else if (fps < 10) {
-                            const fpsCounter = document.getElementById('fps-render');
-                            if (fpsCounter) fpsCounter.style.color = "#00ff00";
                         } else {
                             lowFpsCounter = 0;
                         }
@@ -1482,6 +1544,45 @@
 
                         this.createPillars(scene);
                         this.setupInteraction(scene);
+
+                        // ==========================================
+                        // POST-PROCESSING PIPELINE (if enabled)
+                        // ==========================================
+                        if (localStorage.getItem('sb3d_postfx') === 'true') {
+                            try {
+                                const pipeline = new BABYLON.DefaultRenderingPipeline(
+                                    "sb3dPostFX", true, scene, [this.cameraFree]
+                                );
+
+                                pipeline.bloomEnabled = true;
+                                pipeline.bloomThreshold = 0.8;
+                                pipeline.bloomWeight = 0.35;
+                                pipeline.bloomKernel = 64;
+                                pipeline.bloomScale = 0.5;
+
+                                pipeline.chromaticAberrationEnabled = true;
+                                pipeline.chromaticAberration.aberrationAmount = 30;
+                                pipeline.chromaticAberration.radialIntensity = 1;
+
+                                pipeline.fxaaEnabled = true;
+
+                                pipeline.imageProcessingEnabled = true;
+                                pipeline.imageProcessing.vignetteEnabled = true;
+                                pipeline.imageProcessing.vignetteWeight = 2.5;
+                                pipeline.imageProcessing.vignetteCameraFov = 0.5;
+                                pipeline.imageProcessing.vignetteBlendMode = BABYLON.ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
+
+                                pipeline.imageProcessing.toneMappingEnabled = true;
+                                pipeline.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+                                pipeline.imageProcessing.contrast = 1.15;
+                                pipeline.imageProcessing.exposure = 1.05;
+
+                                console.log("[SB3D] Post-FX pipeline active ✓");
+                            } catch (e) {
+                                console.warn("[SB3D] Post-FX pipeline failed to init:", e);
+                            }
+                        }
+
                         return scene;
                     },
 
@@ -2202,6 +2303,7 @@
             }
         };
 
+        updatePostFXButtonState();
         updateWebGPUButtonState();
         workshop.shaman.sandbox3d.init();
 

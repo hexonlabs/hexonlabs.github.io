@@ -280,6 +280,44 @@
             border: 1px solid #333;
         }
 
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #111;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-in-out;
+        }
+        .loader-content { text-align: center; }
+        .loader-spinner {
+            width: 60px; height: 60px;
+            border: 3px solid rgba(74, 163, 223, 0.1);
+            border-top: 3px solid #4aa3df;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text { 
+            color: #4aa3df; 
+            font-family: 'Segoe UI', sans-serif; 
+            letter-spacing: 5px; 
+            font-weight: bold; 
+            font-size: 14px;
+            text-shadow: 0 0 10px rgba(74, 163, 223, 0.3);
+        }
+        .loader-subtext {
+            color: #555;
+            font-size: 10px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
         button#btn-enter-game { background: #27ae60; border-color: #2ecc71; justify-content: center; font-weight: bold; margin-bottom: 5px; }
         
         button#btn-upload { background: #333; border-color: #888; justify-content: center; font-weight: bold; margin-bottom: 10px; margin-top: 5px; }
@@ -386,6 +424,14 @@
     </style>
 </head>
 <body>
+
+    <div id="loading-screen">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Sand Box 3D for Mobile</div>
+            <div class="loader-subtext">Setting up your sandbox...</div>
+        </div>
+    </div>
 
     <input type="file" id="file-input" accept=".glb,.gltf,.obj" style="display: none;" onchange="handleFileUpload(this)">
 
@@ -583,10 +629,23 @@
                             </div>
 
                             <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-physics-sleep" onclick="togglePhysicsSleeping()" style="border-left: 4px solid #2ecc71; padding: 12px;">
+                                    <span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span>
+                                    Idle Physics Sleep: ON
+                                </button>
+                            </div>
+
+                            <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-frustum-cull" onclick="toggleFrustumCulling()"
                                     style="border-left: 4px solid #e67e22; padding: 12px;">
                                     <span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span>
                                     Frustum Culling: OFF
+                                </button>
+                            </div>
+
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-perf-safeguard" onclick="toggleSafeguard()" style="border-left: 4px solid #f1c40f;">
+                                    <span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON
                                 </button>
                             </div>
             
@@ -730,6 +789,10 @@
         let customModelTemplate = null;
         let isHUDVisible = true;
         let isFrustumCullingEnabled = false;
+        let isPhysicsSleepingEnabled = true;
+        let performanceSafeguardActive = true;
+        let isSafeguardInCooldown = false;
+        let lowFpsCounter = 0;
 
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
@@ -819,38 +882,38 @@
         }
 
         function updateThrowForce(val) {
-                throwForce = parseFloat(val);
-                document.getElementById('throw-display').innerText = throwForce;
-            }
+            throwForce = parseFloat(val);
+            document.getElementById('throw-display').innerText = throwForce;
+        }
 
-            function triggerThrow() {
-                const sb3d = workshop.shaman.sandbox3d;
-                if (!sb3d.scene || !sb3d.cameraFree) return;
+        function triggerThrow() {
+            const sb3d = workshop.shaman.sandbox3d;
+            if (!sb3d.scene || !sb3d.cameraFree) return;
 
-                const cam = sb3d.cameraFree;
-                const forward = cam.getDirection(BABYLON.Vector3.Forward());
+            const cam = sb3d.cameraFree;
+            const forward = cam.getDirection(BABYLON.Vector3.Forward());
 
-                const projectile = BABYLON.MeshBuilder.CreateSphere("projectile", { diameter: 0.5 }, sb3d.scene);
-                projectile.position = cam.position.add(forward.scale(1.5));
+            const projectile = BABYLON.MeshBuilder.CreateSphere("projectile", { diameter: 0.5 }, sb3d.scene);
+            projectile.position = cam.position.add(forward.scale(1.5));
 
-                const pMat = new BABYLON.StandardMaterial("pMat", sb3d.scene);
-                pMat.diffuseColor = new BABYLON.Color3(0.9, 0.9, 1.0);
-                projectile.material = pMat;
+            const pMat = new BABYLON.StandardMaterial("pMat", sb3d.scene);
+            pMat.diffuseColor = new BABYLON.Color3(0.9, 0.9, 1.0);
+            projectile.material = pMat;
 
-                projectile.physicsImpostor = new BABYLON.PhysicsImpostor(
-                    projectile,
-                    BABYLON.PhysicsImpostor.SphereImpostor,
-                    { mass: 1, restitution: 0.5, friction: 0.5 },
-                    sb3d.scene
-                );
+            projectile.physicsImpostor = new BABYLON.PhysicsImpostor(
+                projectile,
+                BABYLON.PhysicsImpostor.SphereImpostor,
+                { mass: 1, restitution: 0.5, friction: 0.5 },
+                sb3d.scene
+            );
 
-                projectile.physicsImpostor.applyImpulse(
-                    forward.scale(throwForce),
-                    projectile.getAbsolutePosition()
-                );
+            projectile.physicsImpostor.applyImpulse(
+                forward.scale(throwForce),
+                projectile.getAbsolutePosition()
+            );
 
-                spawnedMeshes.push(projectile);
-            }
+            spawnedMeshes.push(projectile);
+        }
 
         function toggleLeftUI() {
             const left = document.getElementById('left-panel');
@@ -886,6 +949,38 @@
             }
         }
 
+        function toggleSafeguard() {
+            performanceSafeguardActive = !performanceSafeguardActive;
+            const btn = document.getElementById('btn-perf-safeguard');
+            btn.innerHTML = performanceSafeguardActive ?
+                '<span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON' :
+                '<span class="shape-icon" style="background: #555; border-radius: 2px;"></span> Performance Safeguard: OFF';
+        }
+
+        function togglePhysicsSleeping() {
+            isPhysicsSleepingEnabled = !isPhysicsSleepingEnabled;
+            const btn = document.getElementById('btn-physics-sleep');
+
+            if (isPhysicsSleepingEnabled) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Idle Physics Sleep: ON';
+                btn.classList.add('active');
+                btn.style.borderColor = '#2ecc71';
+            } else {
+                spawnedMeshes.forEach(mesh => {
+                    if (mesh && !mesh.isDisposed() && mesh.physicsImpostor) {
+                        mesh.physicsImpostor.wakeUp();
+                        if (mesh.metadata) {
+                            mesh.metadata.anchorPosition = null;
+                            mesh.metadata.isSleeping = false;
+                        }
+                    }
+                });
+                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Idle Physics Sleep: OFF';
+                btn.classList.remove('active');
+                btn.style.borderColor = '#e67e22';
+            }
+        }
+
         function toggleGraphicsUI() {
             const overlay = document.getElementById('settings-modal-overlay');
             const btn = document.getElementById('btn-graphics-toggle');
@@ -912,8 +1007,16 @@
             } else {
                 spawnedMeshes.forEach(mesh => {
                     if (mesh && !mesh.isDisposed() && mesh.isEnabled()) {
-                        mesh.isVisible = true;
-                        mesh.getChildMeshes().forEach(child => child.isVisible = true);
+                        if (mesh.name.includes("customInstance") || mesh.name.includes("customHitbox")) {
+                            mesh.isVisible = false;
+                        } else {
+                            mesh.isVisible = true;
+                        }
+
+                        const children = mesh.getChildMeshes();
+                        for (let j = 0; j < children.length; j++) {
+                            children[j].isVisible = true;
+                        }
                     }
                 });
                 btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Frustum Culling: OFF';
@@ -1245,17 +1348,37 @@
                                 }
                             }
 
+                            this.scene.executeWhenReady(() => {
+                                const hideLoader = () => {
+                                    const loader = document.getElementById('loading-screen');
+                                    if (loader) {
+                                        loader.style.opacity = '0';
+                                        loader.style.pointerEvents = 'none';
+                                        setTimeout(() => loader.remove(), 800);
+                                    }
+                                };
+
+                                if (document.readyState === 'complete') {
+                                    hideLoader();
+                                } else {
+                                    window.addEventListener('load', hideLoader);
+                                }
+                            });
+
                             const fpsDiv = document.getElementById("fps-render");
                             const physDiv = document.getElementById("fps-phys");
 
                             this.engine.runRenderLoop(() => {
                                 const now = performance.now();
+                                const currentFps = this.engine.getFps();
+                                this.checkPerformanceSafeguard(currentFps);
 
                                 this.cullingFrameCount++;
                                 if (this.cullingFrameCount > this.cullingRate) {
                                     this.cullingFrameCount = 0;
                                     this.handleDistanceCulling();
                                     this.handleFrustumCulling();
+                                    this.handlePhysicsSleeping();
                                 }
 
                                 const currentFPS = this.engine.getFps();
@@ -1287,6 +1410,40 @@
                             });
 
                             window.addEventListener("resize", () => { this.engine.resize(); });
+                        }
+                    },
+
+                    checkPerformanceSafeguard: function (fps) {
+                        if (!performanceSafeguardActive || isSafeguardInCooldown) return;
+
+                        if (fps < 5) {
+                            lowFpsCounter++;
+
+                            if (lowFpsCounter > 3) {
+                                this.engine.stopRenderLoop();
+
+                                const restart = confirm("Session Paused\n\nYour sandbox is running below 5 FPS. This may crash your browser.\n\nClick OK to RESTART and clear the scene.\nClick CANCEL to resume (Prompt will reappear in 60 seconds).");
+
+                                if (restart) {
+                                    window.location.reload();
+                                } else {
+                                    isSafeguardInCooldown = true;
+                                    lowFpsCounter = 0;
+                                    this.engine.runRenderLoop(() => { this.scene.render(); });
+
+                                    console.warn("[SB3D] Safeguard: User resumed. Starting 60s cooldown...");
+
+                                    setTimeout(() => {
+                                        isSafeguardInCooldown = false;
+                                        console.log("[SB3D] Safeguard: Cooldown finished. Monitoring active.");
+                                    }, 60000);
+                                }
+                            }
+                        } else if (fps < 10) {
+                            const fpsCounter = document.getElementById('fps-render');
+                            if (fpsCounter) fpsCounter.style.color = "#e74c3c";
+                        } else {
+                            lowFpsCounter = 0;
                         }
                     },
 
@@ -1379,20 +1536,60 @@
 
                         for (let i = 0; i < spawnedMeshes.length; i++) {
                             const mesh = spawnedMeshes[i];
-                            if (!mesh || mesh.isDisposed()) continue;
+                            if (!mesh || mesh.isDisposed() || !mesh.isEnabled()) continue;
 
-                            if (!mesh.isEnabled()) continue;
-
+                            mesh.computeWorldMatrix(true);
                             const boundingInfo = mesh.getBoundingInfo();
-                            if (!boundingInfo) continue;
-
                             const inFrustum = boundingInfo.isInFrustum(frustumPlanes);
 
-                            if (mesh.isVisible !== inFrustum) {
+                            if (mesh.name.includes("customInstance") || mesh.name.includes("customHitbox")) {
+                                mesh.isVisible = false;
+                            } else {
                                 mesh.isVisible = inFrustum;
-                                mesh.getChildMeshes().forEach(child => {
-                                    child.isVisible = inFrustum;
-                                });
+                            }
+
+                            const children = mesh.getChildMeshes();
+                            for (let j = 0; j < children.length; j++) {
+                                children[j].isVisible = inFrustum;
+                            }
+                        }
+                    },
+
+                    handlePhysicsSleeping: function () {
+                        if (!isPhysicsSleepingEnabled) return;
+                        const now = performance.now();
+                        const sleepRadius = 0.05;
+
+                        for (let i = 0; i < spawnedMeshes.length; i++) {
+                            const mesh = spawnedMeshes[i];
+                            if (!mesh || mesh.isDisposed() || !mesh.physicsImpostor) continue;
+
+                            if (mesh.metadata && mesh.metadata.originalMass === 0) continue;
+
+                            if (!mesh.metadata) mesh.metadata = {};
+
+                            if (!mesh.metadata.anchorPosition) {
+                                mesh.metadata.anchorPosition = mesh.position.clone();
+                                mesh.metadata.lastMovedTime = now;
+                                mesh.metadata.isSleeping = false;
+                                continue;
+                            }
+
+                            const distFromAnchor = BABYLON.Vector3.Distance(mesh.position, mesh.metadata.anchorPosition);
+
+                            if (distFromAnchor > sleepRadius) {
+                                mesh.metadata.anchorPosition.copyFrom(mesh.position);
+                                mesh.metadata.lastMovedTime = now;
+
+                                if (mesh.metadata.isSleeping) {
+                                    mesh.physicsImpostor.wakeUp();
+                                    mesh.metadata.isSleeping = false;
+                                }
+                            } else {
+                                if (!mesh.metadata.isSleeping && (now - mesh.metadata.lastMovedTime > 10000)) {
+                                    mesh.physicsImpostor.sleep();
+                                    mesh.metadata.isSleeping = true;
+                                }
                             }
                         }
                     },

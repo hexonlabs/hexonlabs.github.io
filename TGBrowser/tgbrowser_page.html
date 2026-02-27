@@ -8,10 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <script src="https://hexonlabs.github.io/hexonui/widescreen/wide.js"></script>
+    <script src="https://hexonlabs.github.io/hexoneventtheme/event.js"></script>
 
     <style>
         :root {
-            /* RECOLORED: Monochrome HEXON Tokens */
             --md-sys-color-primary: #ffffff;
             --md-sys-color-on-primary: #000000;
             --md-sys-color-secondary-container: #333333;
@@ -23,7 +23,6 @@
             --md-sys-color-background: #000000;
             --md-sys-color-outline: #444444;
 
-            /* Status Colors (Subtle Dark Mode versions) */
             --md-sys-color-error-container: #410002;
             --md-sys-color-on-error-container: #ffdad6;
             --md-sys-color-warning-container: #332b00;
@@ -47,7 +46,6 @@
             overflow-y: auto;
             padding: 50px 0;
             font-family: 'Roboto', sans-serif;
-            /* ADDED: SB3D Centering Logic */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -63,7 +61,6 @@
             font-family: 'Roboto', sans-serif;
         }
 
-        /* --- Background Animation --- */
         .bg-shape-container {
             position: fixed;
             top: 0;
@@ -96,7 +93,6 @@
             }
         }
 
-        /* --- Main Layout --- */
         .container {
             max-width: 600px;
             width: 100%;
@@ -118,7 +114,6 @@
             pointer-events: none;
         }
 
-        /* Header / Logo Area */
         header {
             text-align: center;
             margin-bottom: 8px;
@@ -143,7 +138,6 @@
             font-weight: 400;
         }
 
-        /* Hero Text */
         .hero-text {
             text-align: center;
         }
@@ -155,7 +149,6 @@
             line-height: 1.6;
         }
 
-        /* Primary Action */
         .primary-action-container {
             width: 100%;
             display: flex;
@@ -205,7 +198,6 @@
             font-weight: 400;
         }
 
-        /* Documentation Links */
         .links-container {
             width: 100%;
             display: flex;
@@ -228,7 +220,6 @@
             background-color: rgba(255, 255, 255, 0.08);
         }
 
-        /* Beta Button */
         .beta-wrapper {
             margin-top: 16px;
             text-align: center;
@@ -255,14 +246,12 @@
             border-color: var(--md-sys-color-outline);
         }
 
-        /* Footer */
         footer {
             margin-top: 32px;
             font-size: 11px;
             color: #ffffff;
         }
 
-        /* Ripple Effect */
         .ripple {
             position: absolute;
             border-radius: 50%;
@@ -284,7 +273,6 @@
             }
         }
 
-        /* --- POP-UP MODAL STYLES --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -292,9 +280,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            /* Dimmed background */
             z-index: 200;
-            /* Higher than main content */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -314,7 +300,6 @@
             width: 90%;
             max-width: 320px;
             border-radius: 28px;
-            /* MD3 Dialog Radius */
             padding: 24px;
             box-shadow: var(--md-elevation-3);
             transform: scale(0.9);
@@ -359,7 +344,6 @@
             cursor: pointer;
             transition: background 0.2s;
             background-color: var(--md-sys-color-surface-variant);
-            /* Slight bg for items */
             position: relative;
             overflow: hidden;
         }
@@ -389,7 +373,6 @@
             background-color: rgba(255, 255, 255, 0.08);
         }
 
-        /* --- LOADING OVERLAY --- */
         #loader-overlay {
             position: fixed;
             top: 0;
@@ -499,7 +482,7 @@
 
         <div class="primary-action-container">
             <a href="#" class="fab-extended"
-                onclick="initiateLaunch(event, 'https://hexonlabs.github.io/TGBrowser/tgbrowser-main/stable/tgbrowser_stable5.html')">
+                onclick="initiateLaunch(event, 'https://hexonlabs.github.io/TGBrowser/tgbrowser-main/stable/tgbrowser_stable6.html')">
                 <i class="material-icons-round" style="font-size: 28px;">play_circle</i>
                 <div class="fab-content">
                     <span class="fab-title">Start Stable 5</span>
@@ -543,15 +526,9 @@
 
             <div class="beta-list">
                 <a href="#" class="beta-item"
-                    onclick="initiateLaunch(event, 'https://hexonlabs.github.io/TGBrowser/tgbrowser-main/beta/tgbrowser_beta6.html')">
-                    <span style="font-weight: 500;">Beta 6</span>
-                    <span style="font-size: 12px; color: #5e5e5e;">v26.01.22a</span>
-                </a>
-
-                <a href="#" class="beta-item"
-                    onclick="initiateLaunch(event, 'https://hexonlabs.github.io/TGBrowser/tgbrowser-main/beta/tgbrowser_beta4.html')">
-                    <span style="font-weight: 500;">Beta 4</span>
-                    <span style="font-size: 12px; color: #5e5e5e;">v25.12.20b-br1</span>
+                    onclick="initiateLaunch(event, 'https://hexonlabs.github.io/404')">
+                    <span style="font-weight: 500;">No Beta available...</span>
+                    <span style="font-size: 12px; color: #5e5e5e;">v???</span>
                 </a>
             </div>
 
@@ -562,7 +539,6 @@
     </div>
 
     <script>
-        // --- MODAL LOGIC ---
         function openBetaModal() {
             document.getElementById('beta-modal').classList.add('open');
         }
@@ -571,34 +547,27 @@
             document.getElementById('beta-modal').classList.remove('open');
         }
 
-        // Close if user clicks the dark background (overlay) but not the box
         function handleOverlayClick(event) {
             if (event.target.id === 'beta-modal') {
                 closeBetaModal();
             }
         }
 
-        // --- LAUNCH ANIMATION LOGIC ---
         function initiateLaunch(event, targetUrl) {
             event.preventDefault();
 
-            // Close modal if open
             closeBetaModal();
 
-            // 1. Trigger Ripple
             createRipple(event);
 
-            // 2. Elements
             const mainUI = document.getElementById('main-ui');
             const loader = document.getElementById('loader-overlay');
             const bar = document.getElementById('progress-fill');
             const status = document.getElementById('loading-status');
 
-            // 3. Transition UI
             mainUI.classList.add('fade-out');
             loader.classList.add('active');
 
-            // 4. Run Loading Simulation
             let progress = 0;
             const totalDuration = 3000;
             const stepTime = 50;
@@ -618,10 +587,8 @@
                     }, 500);
                 }
 
-                // Update Visuals
                 bar.style.width = Math.min(progress, 100) + "%";
 
-                // Update Text Status
                 if (progress < 25) status.innerText = "Initializing...";
                 else if (progress < 50) status.innerText = "Loading Core Modules...";
                 else if (progress < 75) status.innerText = "Verifying Integrity...";
@@ -630,7 +597,6 @@
             }, stepTime);
         }
 
-        // --- RIPPLE UTILITY ---
         function createRipple(event) {
             const button = event.currentTarget;
             const circle = document.createElement("span");
@@ -649,6 +615,5 @@
             button.appendChild(circle);
         }
     </script>
-    <script src="https://hexonlabs.github.io/hexoneventtheme/event.js"></script>
 </body>
 </html>

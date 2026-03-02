@@ -8,6 +8,7 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/cannon.js"></script> 
     <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
     <style>
         html, body {
@@ -604,6 +605,13 @@
                     style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span>
                 SB3D Settings
             </button>
+
+            <button id="btn-toggle-inspector" onclick="showBabylonInspector()"
+                style="border-left: 4px solid #f1c40f; margin-bottom: 10px;">
+                <span class="shape-icon"
+                    style="background: transparent; border: 2px solid #f1c40f; border-radius: 2px; width: 10px; height: 10px;"></span>
+                Show Babylon Inspector
+            </button>
             
             <div id="settings-modal-overlay">
                 <div id="game-settings-modal">
@@ -1031,6 +1039,20 @@
             } else {
                 overlay.style.display = 'none';
                 btn.classList.remove('active');
+            }
+        }
+
+        function showBabylonInspector() {
+            if (sceneRef) {
+                if (sceneRef.debugLayer.isVisible()) {
+                    sceneRef.debugLayer.hide();
+                } else {
+                    sceneRef.debugLayer.show({
+                        embedMode: true,
+                        handleResize: true,
+                        overlay: true
+                    });
+                }
             }
         }
 

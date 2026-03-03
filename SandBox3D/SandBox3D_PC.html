@@ -628,13 +628,6 @@
                             </div>
 
                             <div class="control-group" style="margin-top: 15px;">
-                                <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
-                                    <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
-                                    Post-FX Shaders: OFF
-                                </button>
-                            </div>
-
-                            <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-perf-safeguard" onclick="toggleSafeguard()" style="border-left: 4px solid #f1c40f;">
                                     <span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON
                                 </button>
@@ -678,6 +671,38 @@
                         </div>
 
                         <div class="settings-category">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Environment</div>
+                        
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-daynight" onclick="toggleDayNight()" style="border-left: 4px solid #f39c12; padding: 12px;">
+                                    <span class="shape-icon" style="background: #f39c12; border-radius: 50%;"></span>
+                                    Day/Night Cycle: OFF
+                                </button>
+                            </div>
+                        
+                            <div id="daynight-panel"
+                                style="display: none; margin-top: 4px; padding: 10px; background: rgba(0,0,0,0.25); border-left: 3px solid #f39c12; border-radius: 0 4px 4px 0;">
+                        
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>🕐 Time of Day</span>
+                                        <span id="val-tod">12:00</span>
+                                    </div>
+                                    <input type="range" id="opt-tod" min="0" max="1440" step="1" value="720" oninput="setTimeOfDay(this.value)">
+                                </div>
+                        
+                                <div class="control-group" style="margin-top: 8px;">
+                                    <button id="btn-sync-time" onclick="toggleSyncDeviceTime()"
+                                        style="border-left: 4px solid #3498db; padding: 10px;">
+                                        <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
+                                        Sync Device Time: OFF
+                                    </button>
+                                </div>
+                        
+                            </div>
+                        </div>
+
+                        <div class="settings-category">
                             <div class="section-label" style="font-size: 14px; margin-top: 0;">Overlay</div>
             
                             <div class="control-group" style="margin-top: 15px;">
@@ -686,8 +711,120 @@
                                     Show FPS Meters: ON
                                 </button>
                             </div>
+
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-flashlight-enable" onclick="toggleFlashlightEnable()" style="border-left: 4px solid #f1c40f; padding: 12px;">
+                                    <span class="shape-icon" style="background: #555; border-radius: 50%;"></span>
+                                    Flashlight: Disabled
+                                </button>
+                            </div>
                         </div>
-            
+
+                        <div class="settings-category">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Rendering Pipeline</div>
+                        
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
+                                    <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
+                                    Post-FX Shaders: OFF
+                                </button>
+                            </div>
+                            
+                            <div id="filmfx-panel"
+                                style="display: none; margin-top: 4px; padding: 10px; background: rgba(0,0,0,0.25); border-left: 3px solid #e74c3c; border-radius: 0 4px 4px 0;">
+                                <button id="btn-filmfx" onclick="toggleFilmFX()"
+                                    style="border-left: 4px solid #c0392b; padding: 10px; margin-bottom: 8px;">
+                                    <span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span>
+                                    Film FX (Sharpen + Grain): OFF
+                                </button>
+                            
+                                <div id="filmfx-sliders" style="display: none;">
+                            
+                                    <div
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Sharpen</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Strength</span><span id="val-sharpen">0.6</span></div>
+                                        <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                            
+                                    <div
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Grain</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Intensity</span><span id="val-grain">28</span></div>
+                                        <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Anim Speed</span><span id="val-grain-speed">1.0</span></div>
+                                        <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                            
+                                    <div
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Bloom</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Threshold</span><span id="val-bloom-threshold">0.8</span></div>
+                                        <input type="range" id="opt-bloom-threshold" min="0.0" max="1.0" step="0.05" value="0.8"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Weight</span><span id="val-bloom-weight">0.35</span></div>
+                                        <input type="range" id="opt-bloom-weight" min="0.0" max="1.0" step="0.05" value="0.35"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Kernel</span><span id="val-bloom-kernel">64</span></div>
+                                        <input type="range" id="opt-bloom-kernel" min="16" max="128" step="8" value="64"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                            
+                                    <div
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Chromatic Aberration</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Amount</span><span id="val-chroma-amount">30</span></div>
+                                        <input type="range" id="opt-chroma-amount" min="0" max="100" step="1" value="30"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Radial Intensity</span><span id="val-chroma-radial">1.0</span></div>
+                                        <input type="range" id="opt-chroma-radial" min="0.0" max="3.0" step="0.1" value="1.0"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                            
+                                    <div
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Vignette</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Weight</span><span id="val-vignette-weight">2.5</span></div>
+                                        <input type="range" id="opt-vignette-weight" min="0.0" max="6.0" step="0.1" value="2.5"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>FOV Spread</span><span id="val-vignette-fov">0.5</span></div>
+                                        <input type="range" id="opt-vignette-fov" min="0.1" max="1.0" step="0.05" value="0.5"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                            
+                                    <div
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Image Processing</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Contrast</span><span id="val-ip-contrast">1.15</span></div>
+                                        <input type="range" id="opt-ip-contrast" min="0.5" max="3.0" step="0.05" value="1.15"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span>Exposure</span><span id="val-ip-exposure">1.05</span></div>
+                                        <input type="range" id="opt-ip-exposure" min="0.2" max="3.0" step="0.05" value="1.05"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -742,6 +879,36 @@
         </div>
     </div>
 
+    <div id="flashlight-hud" style="
+        display: none;
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        pointer-events: auto;
+    ">
+        <button id="btn-flashlight-hud" onclick="toggleFlashlight()" style="
+            background: rgba(30,30,30,0.85);
+            border: 1px solid #555;
+            color: #ccc;
+            padding: 6px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s, border-color 0.15s;
+        ">
+            <span id="flashlight-hud-dot"
+                style="width: 8px; height: 8px; border-radius: 50%; background: #555; display: inline-block;"></span>
+            FLASHLIGHT
+        </button>
+    </div>
+
     <canvas id="renderCanvas"></canvas>
 
     <script>
@@ -767,6 +934,35 @@
         let isSafeguardInCooldown = false;
         let lowFpsCounter = 0;
         let isInspectorEnabled = false;
+        let isFilmFXEnabled = false;
+        let filmFXSharpenProcess = null;
+        let filmFXGrainProcess = null;
+        let filmFXAnimFrame = null;
+        let sb3dPostPipeline = null;
+        let isDayNightEnabled = false;
+        let isSyncingDeviceTime = false;
+        let syncDeviceTimeInterval = null;
+        let dayNightLightRef = null;
+        let dayNightDirRef = null;
+        let dayNightSkyRef = null;
+        let isFlashlightEnabled = false;
+        let isFlashlightOn = false;
+        let flashlightRef = null;
+        let filmFXParams = {
+            sharpen: 0.6,
+            grainIntensity: 28,
+            grainAnimSpeed: 1.0,
+            bloomThreshold: 0.8,
+            bloomWeight: 0.35,
+            bloomKernel: 64,
+            chromaAmount: 30,
+            chromaRadial: 1.0,
+            vignetteWeight: 2.5,
+            vignetteFov: 0.5,
+            contrast: 1.15,
+            exposure: 1.05,
+        };
+        
 
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
@@ -942,6 +1138,82 @@
             }
         }
 
+        function toggleFlashlightEnable() {
+            isFlashlightEnabled = !isFlashlightEnabled;
+
+            const btn = document.getElementById('btn-flashlight-enable');
+            const hud = document.getElementById('flashlight-hud');
+
+            if (isFlashlightEnabled) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #f1c40f; border-radius: 50%; box-shadow: 0 0 6px #f1c40f;"></span> Flashlight: Enabled';
+                btn.style.borderLeftColor = '#f1c40f';
+                btn.classList.add('active');
+                hud.style.display = 'block';
+            } else {
+                btn.innerHTML = '<span class="shape-icon" style="background: #555; border-radius: 50%;"></span> Flashlight: Disabled';
+                btn.style.borderLeftColor = '#f1c40f';
+                btn.classList.remove('active');
+                hud.style.display = 'none';
+
+                if (isFlashlightOn) toggleFlashlight();
+            }
+        }
+
+        function toggleFlashlight() {
+            if (!sceneRef || !workshop.shaman.sandbox3d.cameraFree) return;
+
+            isFlashlightOn = !isFlashlightOn;
+
+            const btn = document.getElementById('btn-flashlight-hud');
+            const dot = document.getElementById('flashlight-hud-dot');
+
+            if (isFlashlightOn) {
+                if (!flashlightRef) {
+                    flashlightRef = new BABYLON.SpotLight(
+                        "sb3dFlashlight",
+                        BABYLON.Vector3.Zero(),
+                        new BABYLON.Vector3(0, 0, 1),
+                        Math.PI / 2,
+                        8,
+                        sceneRef
+                    );
+                    flashlightRef.intensity = 6;
+                    flashlightRef.range = 80;
+                    flashlightRef.diffuse = new BABYLON.Color3(1, 0.97, 0.88);
+                    flashlightRef.specular = new BABYLON.Color3(1, 1, 1);
+
+                    sceneRef.registerBeforeRender(syncFlashlightToCamera);
+                    console.log("[Flashlight] SpotLight created & registered ✓");
+                }
+
+                flashlightRef.setEnabled(true);
+                btn.style.background = 'rgba(60,55,20,0.92)';
+                btn.style.borderColor = '#f1c40f';
+                btn.style.color = '#f1c40f';
+                dot.style.background = '#f1c40f';
+                dot.style.boxShadow = '0 0 6px #f1c40f';
+                console.log("[Flashlight] ON");
+            } else {
+                if (flashlightRef) flashlightRef.setEnabled(false);
+                btn.style.background = 'rgba(30,30,30,0.85)';
+                btn.style.borderColor = '#555';
+                btn.style.color = '#ccc';
+                dot.style.background = '#555';
+                dot.style.boxShadow = 'none';
+                console.log("[Flashlight] OFF");
+            }
+        }
+
+        function syncFlashlightToCamera() {
+            if (!flashlightRef || !isFlashlightOn) return;
+
+            const cam = workshop.shaman.sandbox3d.cameraFree;
+            if (!cam) return;
+
+            flashlightRef.position = cam.position.clone();
+            flashlightRef.direction = cam.getForwardRay().direction.clone();
+        }
+
         function toggleSafeguard() {
             performanceSafeguardActive = !performanceSafeguardActive;
             const btn = document.getElementById('btn-perf-safeguard');
@@ -965,21 +1237,285 @@
             location.reload();
         }
 
+        function toggleFilmFX() {
+            isFilmFXEnabled = !isFilmFXEnabled;
+
+            const btn = document.getElementById('btn-filmfx');
+
+            if (isFilmFXEnabled) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Film FX (Sharpen + Grain): ON';
+                btn.style.borderLeftColor = '#e74c3c';
+                btn.classList.add('active');
+                applyFilmFX();
+            } else {
+                btn.innerHTML = '<span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span> Film FX (Sharpen + Grain): OFF';
+                btn.style.borderLeftColor = '#c0392b';
+                btn.classList.remove('active');
+                removeFilmFX();
+            }
+        }
+
+        function applyFilmFX() {
+            const sb3d = workshop.shaman.sandbox3d;
+            if (!sb3d.scene || !sb3d.cameraFree) return;
+
+            removeFilmFX();
+
+            try {
+                filmFXSharpenProcess = new BABYLON.SharpenPostProcess(
+                    "sb3dSharpen", 1.0, sb3d.cameraFree,
+                    BABYLON.Texture.BILINEAR_SAMPLINGMODE, sb3d.engine, false
+                );
+                filmFXSharpenProcess.edgeAmount = filmFXParams.sharpen;
+                filmFXSharpenProcess.colorAmount = 1.0;
+
+                filmFXGrainProcess = new BABYLON.GrainPostProcess(
+                    "sb3dGrain", 1.0, sb3d.cameraFree,
+                    BABYLON.Texture.BILINEAR_SAMPLINGMODE, sb3d.engine, false
+                );
+                filmFXGrainProcess.intensity = filmFXParams.grainIntensity;
+                filmFXGrainProcess.animated = true;
+
+                let grainTime = 0;
+                function animateGrain() {
+                    if (!isFilmFXEnabled) return;
+                    grainTime += 0.016 * filmFXParams.grainAnimSpeed;
+                    if (filmFXGrainProcess) filmFXGrainProcess.intensity = filmFXParams.grainIntensity;
+                    filmFXAnimFrame = requestAnimationFrame(animateGrain);
+                }
+                animateGrain();
+
+                console.log("[FilmFX] Sharpen + Animated Grain applied ✓");
+            } catch (e) {
+                console.warn("[FilmFX] Failed to apply film effects:", e);
+            }
+        }
+
+        function removeFilmFX() {
+            if (filmFXAnimFrame) { cancelAnimationFrame(filmFXAnimFrame); filmFXAnimFrame = null; }
+            if (filmFXSharpenProcess) { filmFXSharpenProcess.dispose(); filmFXSharpenProcess = null; }
+            if (filmFXGrainProcess) { filmFXGrainProcess.dispose(); filmFXGrainProcess = null; }
+            console.log("[FilmFX] Post processes removed.");
+        }
+
+        function updateFilmFXParams() {
+            filmFXParams.sharpen = parseFloat(document.getElementById('opt-sharpen').value);
+            filmFXParams.grainIntensity = parseFloat(document.getElementById('opt-grain').value);
+            filmFXParams.grainAnimSpeed = parseFloat(document.getElementById('opt-grain-speed').value);
+            filmFXParams.bloomThreshold = parseFloat(document.getElementById('opt-bloom-threshold').value);
+            filmFXParams.bloomWeight = parseFloat(document.getElementById('opt-bloom-weight').value);
+            filmFXParams.bloomKernel = parseInt(document.getElementById('opt-bloom-kernel').value);
+            filmFXParams.chromaAmount = parseFloat(document.getElementById('opt-chroma-amount').value);
+            filmFXParams.chromaRadial = parseFloat(document.getElementById('opt-chroma-radial').value);
+            filmFXParams.vignetteWeight = parseFloat(document.getElementById('opt-vignette-weight').value);
+            filmFXParams.vignetteFov = parseFloat(document.getElementById('opt-vignette-fov').value);
+            filmFXParams.contrast = parseFloat(document.getElementById('opt-ip-contrast').value);
+            filmFXParams.exposure = parseFloat(document.getElementById('opt-ip-exposure').value);
+
+            document.getElementById('val-sharpen').innerText = filmFXParams.sharpen.toFixed(2);
+            document.getElementById('val-grain').innerText = filmFXParams.grainIntensity.toFixed(0);
+            document.getElementById('val-grain-speed').innerText = filmFXParams.grainAnimSpeed.toFixed(1);
+            document.getElementById('val-bloom-threshold').innerText = filmFXParams.bloomThreshold.toFixed(2);
+            document.getElementById('val-bloom-weight').innerText = filmFXParams.bloomWeight.toFixed(2);
+            document.getElementById('val-bloom-kernel').innerText = filmFXParams.bloomKernel;
+            document.getElementById('val-chroma-amount').innerText = filmFXParams.chromaAmount.toFixed(0);
+            document.getElementById('val-chroma-radial').innerText = filmFXParams.chromaRadial.toFixed(1);
+            document.getElementById('val-vignette-weight').innerText = filmFXParams.vignetteWeight.toFixed(1);
+            document.getElementById('val-vignette-fov').innerText = filmFXParams.vignetteFov.toFixed(2);
+            document.getElementById('val-ip-contrast').innerText = filmFXParams.contrast.toFixed(2);
+            document.getElementById('val-ip-exposure').innerText = filmFXParams.exposure.toFixed(2);
+
+            if (sb3dPostPipeline) {
+                sb3dPostPipeline.bloomThreshold = filmFXParams.bloomThreshold;
+                sb3dPostPipeline.bloomWeight = filmFXParams.bloomWeight;
+                sb3dPostPipeline.bloomKernel = filmFXParams.bloomKernel;
+
+                if (sb3dPostPipeline.chromaticAberration) {
+                    sb3dPostPipeline.chromaticAberration.aberrationAmount = filmFXParams.chromaAmount;
+                    sb3dPostPipeline.chromaticAberration.radialIntensity = filmFXParams.chromaRadial;
+                }
+
+                if (sb3dPostPipeline.imageProcessing) {
+                    sb3dPostPipeline.imageProcessing.vignetteWeight = filmFXParams.vignetteWeight;
+                    sb3dPostPipeline.imageProcessing.vignetteCameraFov = filmFXParams.vignetteFov;
+                    sb3dPostPipeline.imageProcessing.contrast = filmFXParams.contrast;
+                    sb3dPostPipeline.imageProcessing.exposure = filmFXParams.exposure;
+                }
+            }
+
+            if (isFilmFXEnabled) {
+                if (filmFXSharpenProcess) filmFXSharpenProcess.edgeAmount = filmFXParams.sharpen;
+                if (filmFXGrainProcess) filmFXGrainProcess.intensity = filmFXParams.grainIntensity;
+            }
+        }
+
         function updatePostFXButtonState() {
             const btn = document.getElementById('btn-postfx');
             if (!btn) return;
             const isOn = localStorage.getItem('sb3d_postfx') === 'true';
             const infoBox = document.getElementById('postfx-info');
+            const filmPanel = document.getElementById('filmfx-panel');
+            const filmSliders = document.getElementById('filmfx-sliders');
 
             if (isOn) {
                 btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Post-FX Shaders: ON';
                 btn.style.borderLeftColor = '#e74c3c';
+                btn.classList.add('active');
                 if (infoBox) infoBox.style.display = 'block';
+                if (filmPanel) filmPanel.style.display = 'block';
+                if (filmSliders) filmSliders.style.display = 'block';
             } else {
                 btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Post-FX Shaders: OFF';
                 btn.style.borderLeftColor = '#e74c3c';
+                btn.classList.remove('active');
                 if (infoBox) infoBox.style.display = 'none';
+                if (filmPanel) filmPanel.style.display = 'none';
+                if (filmSliders) filmSliders.style.display = 'none';
             }
+        }
+
+        
+        function toggleDayNight() {
+            isDayNightEnabled = !isDayNightEnabled;
+
+            const btn = document.getElementById('btn-daynight');
+            const panel = document.getElementById('daynight-panel');
+
+            if (isDayNightEnabled) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%; box-shadow: 0 0 6px #f39c12;"></span> Day/Night Cycle: ON';
+                btn.style.borderLeftColor = '#f39c12';
+                btn.classList.add('active');
+                panel.style.display = 'block';
+
+                const slider = document.getElementById('opt-tod');
+                if (slider) setTimeOfDay(slider.value);
+            } else {
+                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%;"></span> Day/Night Cycle: OFF';
+                btn.style.borderLeftColor = '#f39c12';
+                btn.classList.remove('active');
+                panel.style.display = 'none';
+
+                if (dayNightLightRef) { dayNightLightRef.intensity = 1.2; dayNightLightRef.diffuse = new BABYLON.Color3(1, 1, 1); dayNightLightRef.groundColor = new BABYLON.Color3(0.1, 0.1, 0.15); }
+                if (dayNightDirRef) { dayNightDirRef.intensity = 0.8; dayNightDirRef.diffuse = new BABYLON.Color3(1, 1, 1); }
+                if (sceneRef) sceneRef.clearColor = new BABYLON.Color4(0.1, 0.1, 0.15, 1);
+
+                if (isSyncingDeviceTime) toggleSyncDeviceTime();
+            }
+        }
+
+        function setTimeOfDay(minutesRaw) {
+            const minutes = parseInt(minutesRaw);
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            const label = String(hours).padStart(2, '0') + ':' + String(mins).padStart(2, '0');
+            document.getElementById('val-tod').innerText = label;
+
+            const slider = document.getElementById('opt-tod');
+            if (slider) slider.value = minutes;
+
+            if (!isDayNightEnabled || !sceneRef) return;
+
+            const t = minutes / 1440;
+
+            const sunAngle = (t - 0.25) * Math.PI * 2;
+            const sunX = Math.cos(sunAngle);
+            const sunY = Math.sin(sunAngle);
+
+            const isDay = sunY > 0;
+            const isDawn = t > 0.2 && t < 0.35;
+            const isDusk = t > 0.65 && t < 0.8;
+            const isNight = !isDay;
+
+            // ── Sky/clear color ──
+            let skyR, skyG, skyB;
+            if (isNight) {
+                const nightDepth = Math.max(0, -sunY);
+                skyR = 0.01 + nightDepth * 0.02;
+                skyG = 0.01 + nightDepth * 0.02;
+                skyB = 0.05 + nightDepth * 0.08;
+            } else if (isDawn) {
+                const p = (t - 0.2) / 0.15;
+                skyR = 0.05 + p * 0.55;
+                skyG = 0.02 + p * 0.35;
+                skyB = 0.08 + p * 0.25;
+            } else if (isDusk) {
+                const p = 1 - (t - 0.65) / 0.15;
+                skyR = 0.05 + p * 0.55;
+                skyG = 0.02 + p * 0.25;
+                skyB = 0.08 + p * 0.35;
+            } else {
+                const dayStrength = Math.min(sunY * 2, 1);
+                skyR = 0.25 * dayStrength;
+                skyG = 0.45 * dayStrength;
+                skyB = 0.75 * dayStrength;
+            }
+            sceneRef.clearColor = new BABYLON.Color4(skyR, skyG, skyB, 1);
+
+            if (dayNightLightRef) {
+                const ambIntensity = isNight
+                    ? Math.max(0.05, 0.1 - Math.abs(sunY) * 0.1)
+                    : 0.3 + sunY * 0.9;
+
+                dayNightLightRef.intensity = ambIntensity;
+
+                if (isNight) {
+                    dayNightLightRef.diffuse = new BABYLON.Color3(0.3, 0.3, 0.6);
+                    dayNightLightRef.groundColor = new BABYLON.Color3(0.02, 0.02, 0.04);
+                } else if (isDawn || isDusk) {
+                    dayNightLightRef.diffuse = new BABYLON.Color3(1.0, 0.6, 0.3);
+                    dayNightLightRef.groundColor = new BABYLON.Color3(0.1, 0.05, 0.02);
+                } else {
+                    dayNightLightRef.diffuse = new BABYLON.Color3(1, 1, 1);
+                    dayNightLightRef.groundColor = new BABYLON.Color3(0.1, 0.1, 0.15);
+                }
+            }
+
+            if (dayNightDirRef) {
+                if (isNight) {
+                    dayNightDirRef.intensity = 0;
+                } else {
+                    dayNightDirRef.intensity = Math.max(0, sunY) * 1.2;
+                    dayNightDirRef.direction = new BABYLON.Vector3(sunX, -Math.abs(sunY), -0.5).normalize();
+
+                    if (isDawn || isDusk) {
+                        dayNightDirRef.diffuse = new BABYLON.Color3(1.0, 0.5, 0.2);
+                    } else {
+                        dayNightDirRef.diffuse = new BABYLON.Color3(1.0, 0.98, 0.9);
+                    }
+                }
+            }
+        }
+
+        function toggleSyncDeviceTime() {
+            isSyncingDeviceTime = !isSyncingDeviceTime;
+
+            const btn = document.getElementById('btn-sync-time');
+            const slider = document.getElementById('opt-tod');
+
+            if (isSyncingDeviceTime) {
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Sync Device Time: ON';
+                btn.style.borderLeftColor = '#2ecc71';
+                btn.classList.add('active');
+                if (slider) slider.disabled = true; 
+
+                applyDeviceTime();
+                syncDeviceTimeInterval = setInterval(applyDeviceTime, 10000);
+            } else {
+                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Sync Device Time: OFF';
+                btn.style.borderLeftColor = '#3498db';
+                btn.classList.remove('active');
+                if (slider) slider.disabled = false;
+
+                clearInterval(syncDeviceTimeInterval);
+                syncDeviceTimeInterval = null;
+            }
+        }
+
+        function applyDeviceTime() {
+            const now = new Date();
+            const minutes = now.getHours() * 60 + now.getMinutes();
+            setTimeOfDay(minutes);
+            console.log(`[DayNight] Synced to device time: ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`);
         }
 
         function togglePhysicsSleeping() {
@@ -1028,7 +1564,7 @@
                     sceneRef.debugLayer.show({
                         embedMode: true,
                         handleResize: true,
-                        overlay: true
+                        overlay: true,
                     });
                 }
             }
@@ -1451,6 +1987,8 @@
                         light.intensity = 1.2;
                         const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
                         dirLight.intensity = 0.8;
+                        dayNightLightRef = light;
+                        dayNightDirRef = dirLight;
 
                         const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 500, height: 500}, scene);
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
@@ -1480,28 +2018,28 @@
                                 );
 
                                 pipeline.bloomEnabled = true;
-                                pipeline.bloomThreshold = 0.8;
-                                pipeline.bloomWeight = 0.35;
-                                pipeline.bloomKernel = 64;
+                                pipeline.bloomThreshold = filmFXParams.bloomThreshold;
+                                pipeline.bloomWeight = filmFXParams.bloomWeight;
+                                pipeline.bloomKernel = filmFXParams.bloomKernel;
                                 pipeline.bloomScale = 0.5;
 
                                 pipeline.chromaticAberrationEnabled = true;
-                                pipeline.chromaticAberration.aberrationAmount = 30;
-                                pipeline.chromaticAberration.radialIntensity = 1;
+                                pipeline.chromaticAberration.aberrationAmount = filmFXParams.chromaAmount;
+                                pipeline.chromaticAberration.radialIntensity = filmFXParams.chromaRadial;
 
                                 pipeline.fxaaEnabled = true;
 
                                 pipeline.imageProcessingEnabled = true;
                                 pipeline.imageProcessing.vignetteEnabled = true;
-                                pipeline.imageProcessing.vignetteWeight = 2.5;
-                                pipeline.imageProcessing.vignetteCameraFov = 0.5;
+                                pipeline.imageProcessing.vignetteWeight = filmFXParams.vignetteWeight;
+                                pipeline.imageProcessing.vignetteCameraFov = filmFXParams.vignetteFov;
                                 pipeline.imageProcessing.vignetteBlendMode = BABYLON.ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
-
                                 pipeline.imageProcessing.toneMappingEnabled = true;
                                 pipeline.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
-                                pipeline.imageProcessing.contrast = 1.15;
-                                pipeline.imageProcessing.exposure = 1.05;
+                                pipeline.imageProcessing.contrast = filmFXParams.contrast;
+                                pipeline.imageProcessing.exposure = filmFXParams.exposure;
 
+                                sb3dPostPipeline = pipeline;
                                 console.log("[SB3D] Post-FX pipeline active ✓");
                             } catch (e) {
                                 console.warn("[SB3D] Post-FX pipeline failed to init:", e);

@@ -538,8 +538,8 @@
         <div class="loader-content">
             <div class="loader-spinner"></div>
             <div class="loader-text">Sand Box 3D for PC</div>
-            <div class="loader-subtext">Setting up your sandbox...</div>
             <div class="loader-subtext">Version: v26.03.06-pc</div>
+            <div class="loader-subtext">Setting up your sandbox...</div>
             <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
     </div>
@@ -648,6 +648,10 @@
                     <option value="sphere">Sphere</option>
                     <option value="cylinder">Cylinder</option>
                     <option value="triangle">Triangle</option>
+                    <option value="glass_box">Glass Cube</option>
+                    <option value="glass_sphere">Glass Sphere</option>
+                    <option value="glass_cylinder">Glass Cylinder</option>
+                    <option value="glass_triangle">Glass Triangle</option>
                 </select>
             </div>
     
@@ -664,6 +668,13 @@
                     </button>
                 </div>
             </div>
+
+            <div class="section-label">Modes</div>
+            <div class="control-group">
+                <button id="btn-structure" onclick="selectShape('structure')">
+                    <span class="shape-icon icon-structure"></span> Structure
+                </button>
+            </div>
     
             <div class="section-label">Shapes</div>
             <div class="control-group">
@@ -679,8 +690,21 @@
                 <button id="btn-tri" onclick="selectShape('triangle')">
                     <span class="shape-icon icon-tri"></span> Triangle
                 </button>
-                <button id="btn-structure" onclick="selectShape('structure')">
-                    <span class="shape-icon icon-structure"></span> Structure
+            </div>
+
+            <div class="section-label">Glass Shapes</div>
+            <div class="control-group">
+                <button id="btn-glass_box" onclick="selectShape('glass_box')">
+                    <span class="shape-icon icon-box" style="opacity: 0.5;"></span> Glass Cube
+                </button>
+                <button id="btn-glass_sphere" onclick="selectShape('glass_sphere')">
+                    <span class="shape-icon icon-sphere" style="opacity: 0.5;"></span> Glass Sphere
+                </button>
+                <button id="btn-glass_cyl" onclick="selectShape('glass_cylinder')">
+                    <span class="shape-icon icon-cyl" style="opacity: 0.5;"></span> Glass Cylinder
+                </button>
+                <button id="btn-glass_tri" onclick="selectShape('glass_triangle')">
+                    <span class="shape-icon icon-tri" style="opacity: 0.5;"></span> Glass Triangle
                 </button>
             </div>
     
@@ -763,6 +787,13 @@
                                 </button>
                             </div>
 
+                            <div class="control-group" style="margin-bottom: 20px;">
+                                <button id="btn-webgpu" onclick="toggleWebGPU()" style="border-left: 4px solid #3498db; padding: 12px;">
+                                    <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
+                                    Not using WebGPU
+                                </button>
+                            </div>
+
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-perf-safeguard" onclick="toggleSafeguard()" style="border-left: 4px solid #f1c40f;">
                                     <span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Crash Protection ACTIVE
@@ -781,14 +812,7 @@
                         </div>
 
                         <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Engine & Audio</div>
-            
-                            <div class="control-group" style="margin-bottom: 20px;">
-                                <button id="btn-webgpu" onclick="toggleWebGPU()" style="border-left: 4px solid #3498db; padding: 12px;">
-                                    <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
-                                    Not using WebGPU
-                                </button>
-                            </div>
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Audio & Language</div>
             
                             <div class="control-group">
                                 <button id="btn-ambient" onclick="toggleAmbientAudio()" style="border-left: 4px solid #9b59b6; padding: 12px;">
@@ -803,6 +827,14 @@
                                     <span id="ambient-vol-display">0.5</span>
                                 </div>
                                 <input type="range" id="ambient-vol-slider" min="0.1" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
+                            </div>
+
+                            <div style="margin-bottom: 10px;">
+                                <select id="lang-select" onchange="onLangChange(this.value)"
+                                    style="width:100%; background:#252525; color:#eee; border:1px solid #555; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
+                                    <option value="en">English (Default)</option>
+                                    <option value="genz">lol pick me 💀</option>
+                                </select>
                             </div>
                         </div>
 
@@ -1060,7 +1092,6 @@
         let sceneRef = null;
         let viewTargetMesh = null;
         let throwForce = 50; 
-        let celProcess = null;
         let customModelTemplate = null; 
         let isHUDVisible = true;
         let isFrustumCullingEnabled = false;
@@ -1083,6 +1114,7 @@
         let isFlashlightEnabled = false;
         let isFlashlightOn = false;
         let flashlightRef = null;
+        let activeLang = localStorage.getItem('sb3d_lang') || 'en';
         let filmFXParams = {
             sharpen: 0.6,
             grainIntensity: 28,
@@ -1101,6 +1133,107 @@
 
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
+        const SB3D_LANGS = {
+            en: {
+                panelTools: "Tools [Q]",
+                panelObjects: "Objects [E]",
+                labelSelection: "Selection",
+                labelProperties: "Properties",
+                labelModes: "Modes",
+                labelShapes: "Shapes",
+                labelGlass: "Glass Shapes",
+                labelExplosives: "Explosives",
+                labelActions: "Actions",
+                labelCustom: "Custom",
+                btnNone: "None (Safe Mode)",
+                btnStructure: "Structure",
+                btnCube: "Cube",
+                btnSphere: "Sphere",
+                btnCylinder: "Cylinder",
+                btnTriangle: "Triangle",
+                btnGlassCube: "Glass Cube",
+                btnGlassSphere: "Glass Sphere",
+                btnGlassCyl: "Glass Cylinder",
+                btnGlassTri: "Glass Triangle",
+                btnBomb: "Bomb",
+                btnCluster: "Cluster Bomb",
+                btnFlashbang: "Flashbang",
+                btnPossess: "Possess Object",
+                btnThrow: "Throw Object",
+                btnPush: "Force Push",
+                btnEraser: "Eraser",
+                btnFreeze: "Freeze",
+                btnBuild: "Build Mode",
+                btnFullscreen: "FULLSCREEN",
+                btnUpload: "Upload 3D Model",
+                btnSettings: "SB3D Settings",
+                btnClear: "CLEAR SCENE",
+                btnInspector: "Show/Hide Babylon Inspector",
+                labelThrowPower: "Throw Power",
+                labelSize: "Size",
+                labelMass: "Mass",
+                labelColor: "Color",
+                labelGridSize: "Grid Size (L x H x W)",
+                labelBlockType: "Block Type",
+                instruct: "<b>WASD</b>: Fly &nbsp;|&nbsp; <b>L-SHIFT</b>: Toggle Mouse<br><b>Q</b>: Tools Panel &nbsp;|&nbsp; <b>E</b>: Objects Panel<br><b>Click</b>: Use Tool",
+                settingsTitle: "Settings",
+                settingsClose: "Close Settings",
+                settingSystem: "System",
+                settingAudio: "Audio",
+                loaderSub: "Setting up your sandbox...",
+                skipBtn: "Skip Setup",
+                spawnUpload: "Spawn Upload",
+            },
+            genz: {
+                panelTools: "Toolbox 💀 [Q]",
+                panelObjects: "Stuff [E]",
+                labelSelection: "Pick ur fighter",
+                labelProperties: "Tweaking",
+                labelModes: "Modes fr",
+                labelShapes: "Drip Shapes",
+                labelGlass: "Glass Era",
+                labelExplosives: "KABOOM collection",
+                labelActions: "Yapping Actions",
+                btnNone: "Nah do nothing (scaredy mode)",
+                btnStructure: "Build Diff",
+                btnCube: "Cube (boring but iconic)",
+                btnSphere: "Ball (slay)",
+                btnCylinder: "Tube thingy",
+                btnTriangle: "Pointy boi",
+                btnGlassCube: "See-through cube ngl",
+                btnGlassSphere: "Glass ball era",
+                btnGlassCyl: "Transparent tube",
+                btnGlassTri: "Glass pointy boi",
+                btnBomb: "Big rip 💣",
+                btnCluster: "Cluster jump scare 💥",
+                btnFlashbang: "MY EYES 🔦",
+                btnPossess: "Become the object 👁️",
+                btnThrow: "Yeet it 🤲",
+                btnPush: "SHOVE 💨",
+                btnEraser: "delete delete delete",
+                btnFreeze: "Icy ahh 🧊",
+                btnBuild: "Craft arc ⚙️",
+                btnFullscreen: "GO FULL SCREEN RN",
+                btnUpload: "Drop ur 3D thing here",
+                btnSettings: "Tweak SB3D",
+                btnClear: "NUKE EVERYTHING",
+                btnInspector: "Open or close the nerd panel",
+                labelThrowPower: "Yeet force",
+                labelSize: "Chonk level",
+                labelMass: "Thiccness",
+                labelColor: "Drip color",
+                labelGridSize: "Grid Size (L x H x W)",
+                labelBlockType: "Block Vibe",
+                instruct: "<b>WASD</b>: fly around bestie &nbsp;|&nbsp; <b>L-SHIFT</b>: mouse toggle<br><b>Q</b>: tools &nbsp;|&nbsp; <b>E</b>: objects<br><b>Click</b>: touch grass (in-game)",
+                settingsTitle: "Tweaks 🛠️",
+                settingsClose: "Aight close this",
+                settingSystem: "System stuff",
+                settingAudio: "Ear damage",
+                loaderSub: "Cooking ur sandbox fr...",
+                skipBtn: "Skip this (i'm impatient)",
+                spawnUpload: "Spawn my thing",
+            }
+        };
 
         (function () {
             const ls = document.getElementById('loading-screen');
@@ -1121,6 +1254,13 @@
                     setTimeout(() => ls.style.background = '#111', 80);
                 }, 700);
             }
+        })();
+
+        (function () {
+            const savedLang = localStorage.getItem('sb3d_lang') || 'en';
+            activeLang = savedLang;
+            const sel = document.getElementById('lang-select');
+            if (sel) sel.value = savedLang;
         })();
 
         window.addEventListener('keydown', (e) => {
@@ -1206,6 +1346,107 @@
                 return;
             }
             document.getElementById('file-input').click();
+        }
+
+        function applyLanguage(lang) {
+            const t = SB3D_LANGS[lang];
+            if (!t) return;
+
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+            const setQuery = (sel, val) => { const el = document.querySelector(sel); if (el) el.innerHTML = val; };
+
+            document.querySelector('#left-panel .panel-header h2').innerHTML = t.panelTools;
+            document.querySelector('#right-panel .panel-header h2').innerHTML = t.panelObjects;
+
+            document.querySelectorAll('.section-label').forEach(el => {
+                const raw = el.innerText.trim().toUpperCase();
+                const map = {
+                    'SELECTION': t.labelSelection, 'PROPERTIES': t.labelProperties,
+                    'MODES': t.labelModes, 'SHAPES': t.labelShapes,
+                    'GLASS SHAPES': t.labelGlass, 'EXPLOSIVES': t.labelExplosives,
+                    'ACTIONS': t.labelActions, 'CUSTOM': t.labelCustom,
+                };
+                if (map[raw]) el.innerText = map[raw];
+            });
+
+            document.querySelectorAll('#btn-none, #btn-none-tools').forEach(el => {
+                el.innerHTML = `<span class="shape-icon icon-x">X</span> ${t.btnNone}`;
+            });
+
+            const btnMap = {
+                'btn-structure': `<span class="shape-icon icon-structure"></span> ${t.btnStructure}`,
+                'btn-box': `<span class="shape-icon icon-box"></span> ${t.btnCube}`,
+                'btn-sphere': `<span class="shape-icon icon-sphere"></span> ${t.btnSphere}`,
+                'btn-cyl': `<span class="shape-icon icon-cyl"></span> ${t.btnCylinder}`,
+                'btn-tri': `<span class="shape-icon icon-tri"></span> ${t.btnTriangle}`,
+                'btn-glass_box': `<span class="shape-icon icon-box" style="opacity:0.5;"></span> ${t.btnGlassCube}`,
+                'btn-glass_sphere': `<span class="shape-icon icon-sphere" style="opacity:0.5;"></span> ${t.btnGlassSphere}`,
+                'btn-glass_cyl': `<span class="shape-icon icon-cyl" style="opacity:0.5;"></span> ${t.btnGlassCyl}`,
+                'btn-glass_tri': `<span class="shape-icon icon-tri" style="opacity:0.5;"></span> ${t.btnGlassTri}`,
+                'btn-bomb': `<span class="shape-icon icon-bomb"></span> ${t.btnBomb}`,
+                'btn-frag': `<span class="shape-icon icon-frag"></span> ${t.btnCluster}`,
+                'btn-flashbang': `<span class="shape-icon icon-flash"></span> ${t.btnFlashbang}`,
+                'btn-view': `<span class="shape-icon icon-eye"></span> ${t.btnPossess}`,
+                'btn-throw': `<span class="shape-icon icon-throw"></span> ${t.btnThrow}`,
+                'btn-push': `<span class="shape-icon icon-hand"></span> ${t.btnPush}`,
+                'btn-eraser': `<span class="shape-icon icon-eraser"></span> ${t.btnEraser}`,
+                'btn-freeze': `<span class="shape-icon icon-ice"></span> ${t.btnFreeze}`,
+                'btn-build': `<span class="shape-icon icon-glue"></span> ${t.btnBuild}`,
+                'btn-enter-game': `<span class="shape-icon icon-play"></span> ${t.btnFullscreen}`,
+                'btn-upload': `<span class="shape-icon icon-upload"></span> ${t.btnUpload}`,
+                'btn-graphics-toggle': `<span class="shape-icon" style="background:transparent;border:2px solid #4aa3df;border-radius:2px;width:10px;height:10px;"></span> ${t.btnSettings}`,
+                'btn-clear': t.btnClear,
+                'btn-toggle-inspector': `<span class="shape-icon" style="background:transparent;border:2px solid #f1c40f;border-radius:2px;width:10px;height:10px;"></span> ${t.btnInspector}`,
+                'btn-custom': `<span class="shape-icon icon-custom"></span> <span id="custom-name">${t.spawnUpload}</span>`,
+            };
+            for (const [id, html] of Object.entries(btnMap)) {
+                const el = document.getElementById(id); if (el) el.innerHTML = html;
+            }
+
+            set('txt-instruct', t.instruct);
+            setText('btn-clear', t.btnClear);
+
+            document.querySelector('.settings-header h2').innerHTML = t.settingsTitle;
+            document.querySelector('.settings-close-btn').innerText = t.settingsClose;
+
+            document.querySelectorAll('.settings-category .section-label').forEach(el => {
+                const raw = el.innerText.trim().toUpperCase();
+                if (raw === 'SYSTEM') el.innerText = t.settingSystem;
+                if (raw === 'AUDIO') el.innerText = t.settingAudio;
+            });
+
+            document.querySelectorAll('.slider-label span:first-child').forEach(el => {
+                const raw = el.innerText.trim();
+                if (raw === 'Size') el.innerText = t.labelSize;
+                else if (raw === 'Mass') el.innerText = t.labelMass;
+                else if (raw === 'Color') el.innerText = t.labelColor;
+                else if (raw === 'Throw Power') el.innerText = t.labelThrowPower;
+                else if (raw === 'Block Type') el.innerText = t.labelBlockType;
+                else if (raw === 'Grid Size (L x H x W)') el.innerText = t.labelGridSize;
+            });
+
+            document.querySelector('.loader-subtext:last-of-type') &&
+                (document.querySelector('.loader-subtext:last-of-type').innerText = t.loaderSub);
+
+            const skipBtn = document.getElementById('skip-loading-btn');
+            if (skipBtn) skipBtn.innerText = t.skipBtn;
+        }
+
+        function onLangChange(lang) {
+            const label = lang === 'genz' ? 'fr no cap apply this?? 💀' : 'Apply English? fr fr';
+            const msg = lang === 'genz'
+                ? '💀 aight switching to gen z mode — game gotta restart tho. u good?'
+                : 'Switch back to English? Game will restart to apply it.';
+
+            const confirmed = confirm(`${msg}\n\n${label}`);
+            if (!confirmed) {
+                document.getElementById('lang-select').value = activeLang;
+                return;
+            }
+
+            localStorage.setItem('sb3d_lang', lang);
+            location.reload();
         }
 
         function handleFileUpload(input) {
@@ -1395,8 +1636,8 @@
             const newState = !isCurrentlyOn;
 
             const message = newState
-                ? "Enable Post-FX Shaders?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable."
-                : "Disable Post-FX Shaders?\n\nA session restart is required to remove them.\n\nClick OK to restart and disable.";
+                ? "Enable Post Processing?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable."
+                : "Disable Post Processing?\n\nA session restart is required to remove them and then go back to the default look.\n\nClick OK to restart and disable.";
 
             const confirmed = confirm(message);
             if (!confirmed) return;
@@ -1431,12 +1672,12 @@
             const btn = document.getElementById('btn-filmfx');
 
             if (isFilmFXEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Film FX (Sharpen + Grain): ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Film Effects is ON';
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.add('active');
                 applyFilmFX();
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span> Film FX (Sharpen + Grain): OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span> Film Effects is OFF';
                 btn.style.borderLeftColor = '#c0392b';
                 btn.classList.remove('active');
                 removeFilmFX();
@@ -1926,6 +2167,8 @@
             if (shape === 'triangle') btnId = 'btn-tri';
             if (shape === 'frag_bomb') btnId = 'btn-frag';
             if (shape === 'flashbang') btnId = 'btn-flashbang';
+            if (shape === 'glass_cylinder') btnId = 'btn-glass_cyl';
+            if (shape === 'glass_triangle') btnId = 'btn-glass_tri';
             
             const activeBtn = document.getElementById(btnId);
             if(activeBtn) activeBtn.classList.add('active');
@@ -2429,6 +2672,7 @@
                         if(lookState.right) cam.rotation.y += lookSpeed;
                         if(lookState.up) cam.rotation.x -= lookSpeed;
                         if(lookState.down) cam.rotation.x += lookSpeed;
+                        cam.rotation.x = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, cam.rotation.x));
 
                         if (selectedShape === 'view' && viewTargetMesh && viewTargetMesh.physicsImpostor) {
                             cam.position.copyFrom(viewTargetMesh.position);
@@ -2488,6 +2732,7 @@
                                     const sensitivity = 0.002;
                                     this.cameraFree.rotation.y += event.movementX * sensitivity;
                                     this.cameraFree.rotation.x += event.movementY * sensitivity;
+                                    this.cameraFree.rotation.x = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, this.cameraFree.rotation.x));
                                 }
                             }
                         });
@@ -2614,57 +2859,67 @@
                         }
                     },
 
-                    spawnObject: function(type, pickInfo, scene) {
+                    spawnObject: function (type, pickInfo, scene) {
                         const normal = pickInfo.getNormal(true);
-                        if(!normal) return;
+                        if (!normal) return;
 
                         let mesh;
-                        const mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
-                        
+                        let mat;
+                        const isGlass = type.startsWith('glass_');
+                        const baseType = isGlass ? type.replace('glass_', '') : type;
                         const pickerVal = document.getElementById('color-picker').value;
-                        mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
-                        
-                        const scale = currentSize; 
+
+                        if (isGlass) {
+                            mat = new BABYLON.PBRMaterial("glassMat" + Date.now(), scene);
+                            mat.metallic = 0.0;
+                            mat.roughness = 0.05;
+                            mat.alpha = 0.45;
+                            mat.subSurface.isRefractionEnabled = true;
+                            mat.subSurface.indexOfRefraction = 1.5;
+                            mat.albedoColor = BABYLON.Color3.FromHexString(pickerVal);
+                        } else {
+                            mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
+                            mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
+                        }
+
+                        const scale = currentSize;
                         const pivotOffset = scale * 0.5 + (isBuildMode ? 0 : 0.01);
                         const spawnPos = pickInfo.pickedPoint.add(normal.scale(pivotOffset));
 
-                        if (type === 'custom' && customModelTemplate) {
+                        if (baseType === 'custom' && customModelTemplate) {
                             mesh = customModelTemplate.mesh.instantiateHierarchy(null, { doNotInstantiate: true });
                             mesh.name = "customInstance_" + Date.now();
-
                             mesh.alwaysSelectAsActiveMesh = false;
                             mesh.getChildMeshes().forEach(c => c.alwaysSelectAsActiveMesh = false);
-
                             mesh.setEnabled(true);
                             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
                             const customOffset = (customModelTemplate.dimensions.height * scale) / 2;
                             mesh.position = pickInfo.pickedPoint.add(normal.scale(customOffset));
                         }
-                        else if (type === 'box') {
-                            mesh = BABYLON.MeshBuilder.CreateBox("box", {size: scale}, scene);
-                            mesh.position.copyFrom(spawnPos);
-                        } 
-                        else if (type === 'sphere') {
-                            mesh = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: scale}, scene);
+                        else if (baseType === 'box') {
+                            mesh = BABYLON.MeshBuilder.CreateBox(isGlass ? "glass_box" : "box", { size: scale }, scene);
                             mesh.position.copyFrom(spawnPos);
                         }
-                        else if (type === 'cylinder') {
-                            mesh = BABYLON.MeshBuilder.CreateCylinder("cyl", {height: scale, diameter: scale/2}, scene);
+                        else if (baseType === 'sphere') {
+                            mesh = BABYLON.MeshBuilder.CreateSphere(isGlass ? "glass_sphere" : "sphere", { diameter: scale }, scene);
                             mesh.position.copyFrom(spawnPos);
                         }
-                        else if (type === 'triangle') {
-                            mesh = BABYLON.MeshBuilder.CreateCylinder("tri", {height: scale, diameter: scale, tessellation: 3}, scene);
+                        else if (baseType === 'cylinder') {
+                            mesh = BABYLON.MeshBuilder.CreateCylinder(isGlass ? "glass_cyl" : "cyl", { height: scale, diameter: scale / 2 }, scene);
                             mesh.position.copyFrom(spawnPos);
                         }
-                        else if (type === 'bomb' || type === 'frag_bomb') {
-                            mesh = BABYLON.MeshBuilder.CreateSphere("bomb", {diameter: scale}, scene);
+                        else if (baseType === 'triangle') {
+                            mesh = BABYLON.MeshBuilder.CreateCylinder(isGlass ? "glass_tri" : "tri", { height: scale, diameter: scale, tessellation: 3 }, scene);
                             mesh.position.copyFrom(spawnPos);
-                            mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); 
-                            mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0); 
-                            if (type === 'frag_bomb') mat.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0); 
                         }
-
-                        else if (type === 'flashbang') {
+                        else if (baseType === 'bomb' || baseType === 'frag_bomb') {
+                            mesh = BABYLON.MeshBuilder.CreateSphere("bomb", { diameter: scale }, scene);
+                            mesh.position.copyFrom(spawnPos);
+                            mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+                            mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0);
+                            if (baseType === 'frag_bomb') mat.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0);
+                        }
+                        else if (baseType === 'flashbang') {
                             mesh = BABYLON.MeshBuilder.CreateCylinder("flashbang", { height: scale * 1.5, diameter: scale * 0.5 }, scene);
                             mesh.position.copyFrom(spawnPos);
                             mat.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
@@ -2672,31 +2927,31 @@
                         }
 
                         if (mesh) {
-                            if(type !== 'custom') mesh.material = mat; 
-                            
+                            if (baseType !== 'custom') mesh.material = mat;
+
                             let massVal = currentMass;
-                            
-                            if (type === 'custom' && customModelTemplate) {
+
+                            if (baseType === 'custom' && customModelTemplate) {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 5 * scale, restitution: 0.1, friction: 0.5 }, scene);
                             }
-                            else if (type === 'box') {
+                            else if (baseType === 'box') {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: massVal, restitution: 0.1, friction: 0.8 }, scene);
-                            } else if (type === 'sphere' || type.includes('bomb')) {
+                            } else if (baseType === 'sphere' || baseType.includes('bomb')) {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.SphereImpostor, { mass: massVal, restitution: 0.4, friction: 0.5 }, scene);
-                            } else if (type === 'cylinder' || type === 'triangle') {
+                            } else if (baseType === 'cylinder' || baseType === 'triangle') {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: massVal, restitution: 0.1, friction: 0.8 }, scene);
                             }
-                            else if (type === 'flashbang') {
+                            else if (baseType === 'flashbang') {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: massVal, restitution: 0.3, friction: 0.5 }, scene);
                                 this.armBomb(mesh, scene, false, true);
                             }
 
-                            if (type.includes('bomb')) this.armBomb(mesh, scene, type === 'frag_bomb');
-                            
-                            if(isBuildMode && pickInfo.pickedMesh && pickInfo.pickedMesh.physicsImpostor && !type.includes('bomb')) {
+                            if (baseType.includes('bomb')) this.armBomb(mesh, scene, baseType === 'frag_bomb');
+
+                            if (isBuildMode && pickInfo.pickedMesh && pickInfo.pickedMesh.physicsImpostor && !baseType.includes('bomb')) {
                                 const joint = new BABYLON.PhysicsJoint(BABYLON.PhysicsJoint.LockJoint, {});
                                 pickInfo.pickedMesh.physicsImpostor.addJoint(mesh.physicsImpostor, joint);
-                                if(mesh.material) mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                                if (mesh.material && mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
                             }
                             spawnedMeshes.push(mesh);
                         }
@@ -2735,22 +2990,36 @@
 
                     createSingleBlock: function (type, position, scale, scene) {
                         let mesh;
-                        const mat = new BABYLON.StandardMaterial("structMat" + Date.now() + Math.random(), scene);
+                        let mat;
+                        const isGlass = type.startsWith('glass_');
+                        const baseType = isGlass ? type.replace('glass_', '') : type;
                         const pickerVal = document.getElementById('color-picker').value;
-                        mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
 
-                        if (type === 'box') mesh = BABYLON.MeshBuilder.CreateBox("s_box", { size: scale }, scene);
-                        else if (type === 'sphere') mesh = BABYLON.MeshBuilder.CreateSphere("s_sphere", { diameter: scale }, scene);
-                        else if (type === 'cylinder') mesh = BABYLON.MeshBuilder.CreateCylinder("s_cyl", { height: scale, diameter: scale / 2 }, scene);
-                        else if (type === 'triangle') mesh = BABYLON.MeshBuilder.CreateCylinder("s_tri", { height: scale, diameter: scale, tessellation: 3 }, scene);
+                        if (isGlass) {
+                            mat = new BABYLON.PBRMaterial("structGlassMat" + Date.now() + Math.random(), scene);
+                            mat.metallic = 0.0;
+                            mat.roughness = 0.05;
+                            mat.alpha = 0.45;
+                            mat.subSurface.isRefractionEnabled = true;
+                            mat.subSurface.indexOfRefraction = 1.5;
+                            mat.albedoColor = BABYLON.Color3.FromHexString(pickerVal);
+                        } else {
+                            mat = new BABYLON.StandardMaterial("structMat" + Date.now() + Math.random(), scene);
+                            mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
+                        }
+
+                        if (baseType === 'box') mesh = BABYLON.MeshBuilder.CreateBox("s_box", { size: scale }, scene);
+                        else if (baseType === 'sphere') mesh = BABYLON.MeshBuilder.CreateSphere("s_sphere", { diameter: scale }, scene);
+                        else if (baseType === 'cylinder') mesh = BABYLON.MeshBuilder.CreateCylinder("s_cyl", { height: scale, diameter: scale / 2 }, scene);
+                        else if (baseType === 'triangle') mesh = BABYLON.MeshBuilder.CreateCylinder("s_tri", { height: scale, diameter: scale, tessellation: 3 }, scene);
 
                         if (mesh) {
                             mesh.position = position;
                             mesh.material = mat;
 
                             let impostorType = BABYLON.PhysicsImpostor.BoxImpostor;
-                            if (type === 'sphere') impostorType = BABYLON.PhysicsImpostor.SphereImpostor;
-                            if (type === 'cylinder' || type === 'triangle') impostorType = BABYLON.PhysicsImpostor.CylinderImpostor;
+                            if (baseType === 'sphere') impostorType = BABYLON.PhysicsImpostor.SphereImpostor;
+                            if (baseType === 'cylinder' || baseType === 'triangle') impostorType = BABYLON.PhysicsImpostor.CylinderImpostor;
 
                             mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, impostorType, {
                                 mass: currentMass,
@@ -3075,6 +3344,7 @@
             }
         };
 
+        applyLanguage(activeLang);
         updatePostFXButtonState();
         updateWebGPUButtonState();
         workshop.shaman.sandbox3d.init();

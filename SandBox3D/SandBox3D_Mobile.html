@@ -319,6 +319,30 @@
             letter-spacing: 2px;
         }
 
+        #skip-loading-btn {
+            display: none;
+            margin-top: 18px;
+            padding: 8px 24px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.7);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            animation: fadeInBtn 0.5s ease forwards;
+        }
+        #skip-loading-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-color: rgba(255,255,255,0.7);
+        }
+        @keyframes fadeInBtn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
         button#btn-enter-game { background: #27ae60; border-color: #2ecc71; justify-content: center; font-weight: bold; margin-bottom: 5px; }
         
         button#btn-upload { background: #333; border-color: #888; justify-content: center; font-weight: bold; margin-bottom: 10px; margin-top: 5px; }
@@ -419,6 +443,114 @@
             text-align: center;
         }
 
+        @keyframes glitch-skew {
+            0%   { transform: skewX(0deg); }
+            5%   { transform: skewX(-8deg); }
+            10%  { transform: skewX(4deg); }
+            15%  { transform: skewX(0deg); }
+            85%  { transform: skewX(0deg); }
+            90%  { transform: skewX(6deg); }
+            95%  { transform: skewX(-3deg); }
+            100% { transform: skewX(0deg); }
+        }
+        @keyframes glitch-clip {
+            0%   { clip-path: inset(0 0 95% 0); transform: translate(-4px, 0); }
+            10%  { clip-path: inset(30% 0 50% 0); transform: translate(4px, 0); }
+            20%  { clip-path: inset(60% 0 20% 0); transform: translate(-2px, 0); }
+            30%  { clip-path: inset(10% 0 80% 0); transform: translate(6px, 0); }
+            40%  { clip-path: inset(80% 0 5%  0); transform: translate(-6px, 0); }
+            50%  { clip-path: inset(45% 0 45% 0); transform: translate(3px, 0); }
+            60%  { clip-path: inset(5%  0 85% 0); transform: translate(-3px, 0); }
+            70%  { clip-path: inset(70% 0 15% 0); transform: translate(5px, 0); }
+            80%  { clip-path: inset(20% 0 70% 0); transform: translate(-5px, 0); }
+            100% { clip-path: inset(0 0 95% 0);   transform: translate(0, 0); }
+        }
+        @keyframes rgb-drift {
+            0%   { text-shadow: -3px 0 #ff0000, 3px 0 #00ffff, 0 0 8px #fff; }
+            25%  { text-shadow: 5px 0 #ff0000, -5px 0 #00ffff, 0 0 12px #4aa3df; }
+            50%  { text-shadow: -6px 0 #ff0000, 6px 0 #00ffff, 2px -2px #fff; }
+            75%  { text-shadow: 3px 2px #ff0000, -3px -2px #00ffff, 0 0 20px #4aa3df; }
+            100% { text-shadow: -3px 0 #ff0000, 3px 0 #00ffff, 0 0 8px #fff; }
+        }
+        @keyframes scanlines-roll {
+            0%   { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            3%        { opacity: 0.2; }
+            6%        { opacity: 1; }
+            30%       { opacity: 0.85; }
+            32%       { opacity: 0.05; }
+            34%       { opacity: 1; }
+            70%       { opacity: 0.9; }
+            72%       { opacity: 0.1; }
+            74%       { opacity: 1; }
+        }
+        @keyframes hbar-sweep {
+            0%   { top: -10%; opacity: 0.8; }
+            100% { top: 110%;  opacity: 0; }
+        }
+
+        .glitch-mode {
+            animation: glitch-skew 0.4s infinite steps(1), flicker 1.2s infinite;
+        }
+        .glitch-mode .loader-text {
+            animation: rgb-drift 0.3s infinite;
+            color: #fff;
+        }
+        .glitch-mode::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0) 0px,
+                rgba(0,0,0,0) 2px,
+                rgba(0,255,255,0.04) 2px,
+                rgba(0,255,255,0.04) 4px
+            );
+            pointer-events: none;
+            z-index: 2;
+            animation: scanlines-roll 0.6s linear infinite;
+        }
+        .glitch-mode::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 6px;
+            background: rgba(0, 255, 255, 0.35);
+            animation: hbar-sweep 0.9s linear infinite;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .glitch-bar {
+            position: absolute;
+            left: 0; right: 0;
+            height: 4px;
+            background: rgba(255, 0, 80, 0.7);
+            animation: hbar-sweep 0.6s linear infinite;
+            animation-delay: 0.3s;
+            z-index: 4;
+            pointer-events: none;
+        }
+        .glitch-ghost {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 1;
+            animation: glitch-clip 0.5s infinite steps(1);
+            color: #ff0050;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+            letter-spacing: 5px;
+            font-weight: bold;
+        }
+
         #fps-render { color: #00ff00; }
         #fps-phys { color: #f39c12; }
 
@@ -427,10 +559,14 @@
 <body>
 
     <div id="loading-screen">
+        <div class="glitch-ghost">Sand Box 3D for PC</div>
+        <div class="glitch-bar"></div>
         <div class="loader-content">
             <div class="loader-spinner"></div>
-            <div class="loader-text">Sand Box 3D for Mobile</div>
+            <div class="loader-text">Sand Box 3D for PC</div>
             <div class="loader-subtext">Setting up your sandbox...</div>
+            <div class="loader-subtext">Version: v26.03.06-pc</div>
+            <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
     </div>
 
@@ -616,14 +752,14 @@
             <div id="settings-modal-overlay">
                 <div id="game-settings-modal">
                     <div class="settings-header">
-                        <h2>SB3D Settings</h2>
-                        <button class="settings-close-btn" onclick="toggleGraphicsUI()">Close Setup</button>
+                        <h2>Settings</h2>
+                        <button class="settings-close-btn" onclick="toggleGraphicsUI()">Close Settings</button>
                     </div>
                     
                     <div class="settings-content-grid">
                         
                         <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Performance & Render</div>
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">System</div>
                             
                             <div class="control-group" style="margin-bottom: 15px;">
                                 <span style="font-size: 12px; color: #ddd; margin-bottom: 5px;">Framerate Limit</span>
@@ -639,7 +775,7 @@
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-physics-sleep" onclick="togglePhysicsSleeping()" style="border-left: 4px solid #2ecc71; padding: 12px;">
                                     <span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span>
-                                    Idle Physics Sleep: ON
+                                    Objects will sleep when inactive
                                 </button>
                             </div>
 
@@ -647,13 +783,13 @@
                                 <button id="btn-frustum-cull" onclick="toggleFrustumCulling()"
                                     style="border-left: 4px solid #e67e22; padding: 12px;">
                                     <span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span>
-                                    Frustum Culling: OFF
+                                    Frustum Culling is OFF
                                 </button>
                             </div>
 
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-perf-safeguard" onclick="toggleSafeguard()" style="border-left: 4px solid #f1c40f;">
-                                    <span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON
+                                    <span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Crash Protection ACTIVE
                                 </button>
                             </div>
             
@@ -679,14 +815,14 @@
                             <div class="control-group" style="margin-bottom: 20px;">
                                 <button id="btn-webgpu" onclick="toggleWebGPU()" style="border-left: 4px solid #3498db; padding: 12px;">
                                     <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
-                                    Use WebGPU: OFF
+                                    Not using WebGPU
                                 </button>
                             </div>
             
                             <div class="control-group">
                                 <button id="btn-ambient" onclick="toggleAmbientAudio()" style="border-left: 4px solid #9b59b6; padding: 12px;">
                                     <span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span>
-                                    Temporal Ambience: OFF
+                                    Ambient Environment is OFF
                                 </button>
                             </div>
                             
@@ -695,7 +831,7 @@
                                     <span>Ambience Volume</span>
                                     <span id="ambient-vol-display">0.5</span>
                                 </div>
-                                <input type="range" id="ambient-vol-slider" min="0.2" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
+                                <input type="range" id="ambient-vol-slider" min="0.1" max="2.0" step="0.1" value="0.5" oninput="updateAmbientVolume(this.value)">
                             </div>
                         </div>
 
@@ -705,7 +841,7 @@
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-daynight" onclick="toggleDayNight()" style="border-left: 4px solid #f39c12; padding: 12px;">
                                     <span class="shape-icon" style="background: #f39c12; border-radius: 50%;"></span>
-                                    Day/Night Cycle: OFF
+                                    Time System is OFF
                                 </button>
                             </div>
                         
@@ -713,7 +849,7 @@
                         
                                 <div class="slider-group">
                                     <div class="slider-label">
-                                        <span>🕐 Time of Day</span>
+                                        <span>Time</span>
                                         <span id="val-tod">12:00</span>
                                     </div>
                                     <input type="range" id="opt-tod" min="0" max="1440" step="1" value="720"
@@ -723,7 +859,7 @@
                                 <div class="control-group" style="margin-top: 8px;">
                                     <button id="btn-sync-time" onclick="toggleSyncDeviceTime()" style="border-left: 4px solid #3498db; padding: 10px;">
                                         <span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span>
-                                        Sync Device Time: OFF
+                                        Not syncing with current time
                                     </button>
                                 </div>
                         
@@ -736,14 +872,14 @@
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-toggle-hud" onclick="toggleHUDVisibility()" style="border-left: 4px solid #2ecc71; padding: 10px;">
                                     <span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span>
-                                    Show FPS Meters: ON
+                                    Showing FPS Meters
                                 </button>
                             </div>
 
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-flashlight-enable" onclick="toggleFlashlightEnable()" style="border-left: 4px solid #f1c40f; padding: 12px;">
                                     <span class="shape-icon" style="background: #555; border-radius: 50%;"></span>
-                                    Flashlight: Disabled
+                                    Flashlights OFF
                                 </button>
                             </div>
                         </div>
@@ -754,7 +890,7 @@
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
                                     <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
-                                    Post-FX Shaders: OFF
+                                    Post Processing is OFF
                                 </button>
                             </div>
                         
@@ -763,14 +899,14 @@
                                 <button id="btn-filmfx" onclick="toggleFilmFX()"
                                     style="border-left: 4px solid #c0392b; padding: 10px; margin-bottom: 8px;">
                                     <span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span>
-                                    Film FX (Sharpen + Grain): OFF
+                                    Film Effects is OFF
                                 </button>
                         
                                 <div id="filmfx-sliders" style="display: none;">
                         
                                     <div
                                         style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Sharpen</div>
+                                        Sharpness</div>
                                     <div class="slider-group">
                                         <div class="slider-label"><span>Strength</span><span id="val-sharpen">0.6</span></div>
                                         <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6"
@@ -779,13 +915,13 @@
                         
                                     <div
                                         style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Grain</div>
+                                        Grain Effects</div>
                                     <div class="slider-group">
                                         <div class="slider-label"><span>Intensity</span><span id="val-grain">28</span></div>
                                         <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Anim Speed</span><span id="val-grain-speed">1.0</span></div>
+                                        <div class="slider-label"><span>Animation Speed</span><span id="val-grain-speed">1.0</span></div>
                                         <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0"
                                             oninput="updateFilmFXParams()">
                                     </div>
@@ -1008,6 +1144,39 @@
         const moveState = { up: false, down: false, left: false, right: false };
         const lookState = { up: false, down: false, left: false, right: false };
 
+        (function () {
+            const ls = document.getElementById('loading-screen');
+            if (!ls) return;
+            if (localStorage.getItem('sb3d_postfx') === 'true') {
+                ls.classList.add('glitch-mode');
+                ls.style.position = 'relative';
+
+                setInterval(() => {
+                    const jx = (Math.random() - 0.5) * 14;
+                    const jy = (Math.random() - 0.5) * 6;
+                    ls.style.transform = `translate(${jx}px, ${jy}px)`;
+                    setTimeout(() => ls.style.transform = '', 60);
+                }, 300);
+
+                setInterval(() => {
+                    ls.style.background = `hsl(${Math.random() * 360}, 80%, 8%)`;
+                    setTimeout(() => ls.style.background = '#111', 80);
+                }, 700);
+            }
+        })();
+
+        setTimeout(() => {
+            const btn = document.getElementById('skip-loading-btn');
+            btn.style.display = 'inline-block';
+        }, 7000);
+
+        function skipLoading() {
+            const ls = document.getElementById('loading-screen');
+            ls.style.transition = 'opacity 0.5s ease';
+            ls.style.opacity = '0';
+            setTimeout(() => ls.style.display = 'none', 500);
+        }
+
         function enterGame() {
             const de = document.documentElement;
             if (de.requestFullscreen) de.requestFullscreen();
@@ -1151,11 +1320,11 @@
 
             if (isHUDVisible) {
                 hud.style.display = 'flex';
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span> Show FPS Meters: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span> Showing FPS Meters';
                 btn.style.borderColor = '#2ecc71';
             } else {
                 hud.style.display = 'none';
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Show FPS Meters: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Hiding FPS Meters';
                 btn.style.borderColor = '#e74c3c';
             }
         }
@@ -1167,12 +1336,12 @@
             const hud = document.getElementById('flashlight-hud');
 
             if (isFlashlightEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #f1c40f; border-radius: 50%; box-shadow: 0 0 6px #f1c40f;"></span> Flashlight: Enabled';
+                btn.innerHTML = '<span class="shape-icon" style="background: #f1c40f; border-radius: 50%; box-shadow: 0 0 6px #f1c40f;"></span> Flashlights ON';
                 btn.style.borderLeftColor = '#f1c40f';
                 btn.classList.add('active');
                 hud.style.display = 'block';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #555; border-radius: 50%;"></span> Flashlight: Disabled';
+                btn.innerHTML = '<span class="shape-icon" style="background: #555; border-radius: 50%;"></span> Flashlights OFF';
                 btn.style.borderLeftColor = '#f1c40f';
                 btn.classList.remove('active');
                 hud.style.display = 'none';
@@ -1240,8 +1409,8 @@
             performanceSafeguardActive = !performanceSafeguardActive;
             const btn = document.getElementById('btn-perf-safeguard');
             btn.innerHTML = performanceSafeguardActive ?
-                '<span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Performance Safeguard: ON' :
-                '<span class="shape-icon" style="background: #555; border-radius: 2px;"></span> Performance Safeguard: OFF';
+                '<span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Crash Protection ACTIVE' :
+                '<span class="shape-icon" style="background: #555; border-radius: 2px;"></span> Crash Protection OFF';
         }
 
         function togglePostFX() {
@@ -1256,7 +1425,27 @@
             if (!confirmed) return;
 
             localStorage.setItem('sb3d_postfx', newState.toString());
-            location.reload();
+
+            if (newState) {
+                document.body.style.transition = 'none';
+                let t = 0;
+                const glitchOut = setInterval(() => {
+                    const x = (Math.random() - 0.5) * 30;
+                    const y = (Math.random() - 0.5) * 10;
+                    const hue = Math.random() * 360;
+                    document.body.style.transform = `translate(${x}px,${y}px)`;
+                    document.body.style.filter = `hue-rotate(${hue}deg) saturate(3)`;
+                    t++;
+                    if (t > 14) {
+                        clearInterval(glitchOut);
+                        document.body.style.filter = '';
+                        document.body.style.transform = '';
+                        location.reload();
+                    }
+                }, 80);
+            } else {
+                location.reload();
+            }
         }
 
         function toggleFilmFX() {
@@ -1265,12 +1454,12 @@
             const btn = document.getElementById('btn-filmfx');
 
             if (isFilmFXEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Film FX (Sharpen + Grain): ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Film Effects is ON';
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.add('active');
                 applyFilmFX();
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span> Film FX (Sharpen + Grain): OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span> Film Effects is OFF';
                 btn.style.borderLeftColor = '#c0392b';
                 btn.classList.remove('active');
                 removeFilmFX();
@@ -1380,14 +1569,14 @@
             const filmSliders = document.getElementById('filmfx-sliders');
 
             if (isOn) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Post-FX Shaders: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Post Processing is ACTIVE';
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.add('active');
                 if (infoBox) infoBox.style.display = 'block';
                 if (filmPanel) filmPanel.style.display = 'block';
                 if (filmSliders) filmSliders.style.display = 'block';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Post-FX Shaders: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Post Processing is OFF';
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.remove('active');
                 if (infoBox) infoBox.style.display = 'none';
@@ -1403,7 +1592,7 @@
             const panel = document.getElementById('daynight-panel');
 
             if (isDayNightEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%; box-shadow: 0 0 6px #f39c12;"></span> Day/Night Cycle: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%; box-shadow: 0 0 6px #f39c12;"></span> Time System is ON';
                 btn.style.borderLeftColor = '#f39c12';
                 btn.classList.add('active');
                 panel.style.display = 'block';
@@ -1411,7 +1600,7 @@
                 const slider = document.getElementById('opt-tod');
                 if (slider) setTimeOfDay(slider.value);
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%;"></span> Day/Night Cycle: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%;"></span> Time System is OFF';
                 btn.style.borderLeftColor = '#f39c12';
                 btn.classList.remove('active');
                 panel.style.display = 'none';
@@ -1447,7 +1636,6 @@
             const isDusk = t > 0.65 && t < 0.8;
             const isNight = !isDay;
 
-            // ── Sky/clear color ──
             let skyR, skyG, skyB;
             if (isNight) {
                 const nightDepth = Math.max(0, -sunY);
@@ -1514,7 +1702,7 @@
             const slider = document.getElementById('opt-tod');
 
             if (isSyncingDeviceTime) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Sync Device Time: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Syncing with current time';
                 btn.style.borderLeftColor = '#2ecc71';
                 btn.classList.add('active');
                 if (slider) slider.disabled = true; 
@@ -1522,7 +1710,7 @@
                 applyDeviceTime();
                 syncDeviceTimeInterval = setInterval(applyDeviceTime, 10000);
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Sync Device Time: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Not syncing with current time';
                 btn.style.borderLeftColor = '#3498db';
                 btn.classList.remove('active');
                 if (slider) slider.disabled = false;
@@ -1544,7 +1732,7 @@
             const btn = document.getElementById('btn-physics-sleep');
 
             if (isPhysicsSleepingEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Idle Physics Sleep: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Objects will sleep when inactive';
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
             } else {
@@ -1557,7 +1745,7 @@
                         }
                     }
                 });
-                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Idle Physics Sleep: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Objects will not sleep when inactive';
                 btn.classList.remove('active');
                 btn.style.borderColor = '#e67e22';
             }
@@ -1597,7 +1785,7 @@
             const btn = document.getElementById('btn-frustum-cull');
 
             if (isFrustumCullingEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Frustum Culling: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Frustum Culling is ON';
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
                 console.log("[FrustumCulling] Enabled — off-screen meshes hidden, physics intact.");
@@ -1616,7 +1804,7 @@
                         }
                     }
                 });
-                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Frustum Culling: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Frustum Culling is OFF';
                 btn.classList.remove('active');
                 btn.style.borderColor = '#e67e22';
                 console.log("[FrustumCulling] Disabled — all meshes restored.");
@@ -1640,11 +1828,11 @@
             const isWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
 
             if (isWebGPU) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Use WebGPU: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Using WebGPU';
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Use WebGPU: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Not using WebGPU';
                 btn.classList.remove('active');
                 btn.style.borderColor = '#3498db';
             }
@@ -1655,11 +1843,11 @@
             const isEnabled = workshop.shaman.sandbox3d.TemporalAudio.toggle();
 
             if (isEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Temporal Ambience: ON';
+                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Ambient Environment is ON';
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span> Temporal Ambience: OFF';
+                btn.innerHTML = '<span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span> Ambient Environment is OFF';
                 btn.classList.remove('active');
                 btn.style.borderColor = '#9b59b6';
             }
@@ -1904,7 +2092,7 @@
                                     await this.engine.initAsync();
 
                                     this.engine.onContextLostObservable.add(() => {
-                                        if (confirm("WebGPU context crashed! Safely reboot into WebGL2?\n\n(Click 'Cancel' to stay in the void)")) {
+                                        if (confirm("Session Error\n\nWebGPU error! A switch back to WebGL2 may help.\n\nClick OK to switch\nClick CANCEL to resume")) {
                                             localStorage.setItem('sb3d_use_webgpu', 'false');
                                             window.location.reload();
                                         }
@@ -1917,7 +2105,7 @@
                             }
 
                             if (webGpuFailed) {
-                                const fallback = confirm("WebGPU is not supported or failed to initialize on this device.\n\nSwitch to the stable WebGL2 engine?\n(Cancel will leave WebGPU enabled in settings, but the screen will stay black)");
+                                const fallback = confirm("Session Error\n\nWebGPU isn't supported or failed to initialized for this device.\n\nClick OK to switch back to WebGL2\nClick CANCEL to resume");
 
                                 if (fallback) {
                                     localStorage.setItem('sb3d_use_webgpu', 'false');
@@ -1941,7 +2129,7 @@
                                 if (uploadBtn) {
                                     uploadBtn.style.opacity = '0.4';
                                     uploadBtn.style.cursor = 'not-allowed';
-                                    uploadBtn.innerHTML = '<span class="shape-icon icon-upload"></span> Locked (WebGL Only)';
+                                    uploadBtn.innerHTML = '<span class="shape-icon icon-upload"></span> Locked (WebGL2 Only)';
                                 }
                             }
 
@@ -2019,7 +2207,7 @@
                             if (lowFpsCounter > 3) {
                                 this.engine.stopRenderLoop();
 
-                                const restart = confirm("Session Paused\n\nYour sandbox is running below 5 FPS. This may crash your browser.\n\nClick OK to RESTART and clear the scene.\nClick CANCEL to resume (Prompt will reappear in 60 seconds).");
+                                const restart = confirm("Session Paused\n\nLow FPS detected, session is paused to save your system.\n\nClick OK to restart your sandbox and clear the scene.\nClick CANCEL to resume your sandbox, prompt will reappear after 60 seconds.");
 
                                 if (restart) {
                                     window.location.reload();
@@ -2054,7 +2242,7 @@
                                         }
                                     });
 
-                                    console.warn("[SB3D] Safeguard: User resumed. Starting 60s cooldown...");
+                                    console.warn("[SB3D] Safeguard: Clicked CANCEL. Starting 60s cooldown...");
 
                                     setTimeout(() => {
                                         isSafeguardInCooldown = false;

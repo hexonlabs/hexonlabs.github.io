@@ -538,7 +538,7 @@
         <div class="loader-content">
             <div class="loader-spinner"></div>
             <div class="loader-text">Sand Box 3D for PC</div>
-            <div class="loader-subtext">Version: v26.03.06-pc</div>
+            <div class="loader-subtext">Version: v26.03.07</div>
             <div class="loader-subtext">Setting up your sandbox...</div>
             <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
@@ -593,8 +593,8 @@
     <div id="crosshair"></div>
 
     <div id="hud-container">
-        <div id="fps-render" class="meter-box">FPS: 69420</div>
-        <div id="fps-phys" class="meter-box">PHYS: 69420</div>
+        <div id="fps-render" class="meter-box">FPS: SB3D by HEXON Labs</div>
+        <div id="fps-phys" class="meter-box">PHYS: SB3D by HEXON Labs</div>
     </div>
 
     <div id="right-panel" class="ui-panel-base minimized">
@@ -833,7 +833,7 @@
                                 <select id="lang-select" onchange="onLangChange(this.value)"
                                     style="width:100%; background:#252525; color:#eee; border:1px solid #555; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
                                     <option value="en">English (Default)</option>
-                                    <option value="genz">lol pick me 💀</option>
+                                    <option value="genz">brainrot 💀</option>
                                 </select>
                             </div>
                         </div>
@@ -1163,9 +1163,11 @@
                 btnPush: "Force Push",
                 btnEraser: "Eraser",
                 btnFreeze: "Freeze",
+                btnUnfreeze: "Unfreeze",
                 btnBuild: "Build Mode",
                 btnFullscreen: "FULLSCREEN",
                 btnUpload: "Upload 3D Model",
+                btnUploadLocked: "Locked (WebGL2 Only)",
                 btnSettings: "SB3D Settings",
                 btnClear: "CLEAR SCENE",
                 btnInspector: "Show/Hide Babylon Inspector",
@@ -1183,6 +1185,38 @@
                 loaderSub: "Setting up your sandbox...",
                 skipBtn: "Skip Setup",
                 spawnUpload: "Spawn Upload",
+                dynHudShow: "Showing FPS Meters",
+                dynHudHide: "Hiding FPS Meters",
+                dynFlashlightOn: "Flashlights ON",
+                dynFlashlightOff: "Flashlights OFF",
+                dynSafeguardOn: "Crash Protection ACTIVE",
+                dynSafeguardOff: "Crash Protection OFF",
+                dynPostFXOn: "Post Processing is ACTIVE",
+                dynPostFXOff: "Post Processing is OFF",
+                dynFilmFXOn: "Film Effects is ON",
+                dynFilmFXOff: "Film Effects is OFF",
+                dynTimeOn: "Time System is ACTIVE",
+                dynTimeOff: "Time System is OFF",
+                dynSyncOn: "Syncing with current time",
+                dynSyncOff: "Not syncing with current time",
+                dynSleepOn: "Objects will sleep when inactive",
+                dynSleepOff: "Objects will not sleep when inactive",
+                dynFrustumOn: "Frustum Culling is ON",
+                dynFrustumOff: "Frustum Culling is OFF",
+                dynAmbientOn: "Ambient Environment is ON",
+                dynAmbientOff: "Ambient Environment is OFF",
+                dynWebGPUOn: "Using WebGPU",
+                dynWebGPUOff: "Not using WebGPU",
+                toastPostFXEnable: "Enable Post Processing?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable.",
+                toastPostFXDisable: "Disable Post Processing?\n\nA session restart is required to remove them and then go back to the default look.\n\nClick OK to restart and disable.",
+                toastWebGPU: "This change requires a session restart to switch Graphics APIs, Continue?",
+                toastWebGPUContextLost: "Session Error\n\nAn unknown error has occured while using WebGPU.\nA switch back to WebGL2 may help.\n\nClick OK to switch\nClick CANCEL to resume",
+                toastWebGPUFail: "Session Error\n\nWebGPU isn't supported or failed to initialized for this device.\n\nClick OK to switch back to WebGL2\nClick CANCEL to resume",
+                toastSafeguard: "Session Paused\n\nLow FPS detected, session is paused to save your system.\n\nClick OK to restart your sandbox and clear the scene.\nClick CANCEL to resume your sandbox, prompt will reappear after 60 seconds.",
+                toastUploadWebGPU: "Custom 3D model uploads are disabled in WebGPU mode to prevent Context Lost crashes.\n\nPlease switch to WebGL in Game Settings to use this feature.",
+                toastUploadFail: "Failed to load model.",
+                toastLangConfirm: "Switch back to English? Game will restart to apply it.",
+                structInstruct: "<b>Click</b>: Spawn Structure<br>Adjust L/H/W in Objects Panel.",
             },
             genz: {
                 panelTools: "Toolbox 💀 [Q]",
@@ -1194,6 +1228,7 @@
                 labelGlass: "Glass Era",
                 labelExplosives: "KABOOM collection",
                 labelActions: "Yapping Actions",
+                labelCustom: "Custom",
                 btnNone: "Nah do nothing (scaredy mode)",
                 btnStructure: "Build Diff",
                 btnCube: "Cube (boring but iconic)",
@@ -1212,9 +1247,11 @@
                 btnPush: "SHOVE 💨",
                 btnEraser: "delete delete delete",
                 btnFreeze: "Icy ahh 🧊",
+                btnUnfreeze: "Un-ice it 🔥",
                 btnBuild: "Craft arc ⚙️",
                 btnFullscreen: "GO FULL SCREEN RN",
                 btnUpload: "Drop ur 3D thing here",
+                btnUploadLocked: "nuh uh (WebGL2 only bestie)",
                 btnSettings: "Tweak SB3D",
                 btnClear: "NUKE EVERYTHING",
                 btnInspector: "Open or close the nerd panel",
@@ -1232,6 +1269,38 @@
                 loaderSub: "Cooking ur sandbox fr...",
                 skipBtn: "Skip this (i'm impatient)",
                 spawnUpload: "Spawn my thing",
+                dynHudShow: "FPS meters r showing rn",
+                dynHudHide: "FPS meters said bye 👋",
+                dynFlashlightOn: "Flashlights bussin 🔦",
+                dynFlashlightOff: "Flashlights said nah",
+                dynSafeguardOn: "Crash shield is ON bestie 🛡️",
+                dynSafeguardOff: "Crash shield said peace ✌️",
+                dynPostFXOn: "Post FX is eating rn ✨",
+                dynPostFXOff: "Post FX is off (boring era)",
+                dynFilmFXOn: "Film FX slaying 🎬",
+                dynFilmFXOff: "Film FX took a nap",
+                dynTimeOn: "Time system is going crazy 🌅",
+                dynTimeOff: "Time system ghosted us",
+                dynSyncOn: "Synced to irl time fr ⏰",
+                dynSyncOff: "Not syncing w/ real time rn",
+                dynSleepOn: "Objects will doze off when idle 💤",
+                dynSleepOff: "Objects stay woke no matter what",
+                dynFrustumOn: "Frustum culling is ON no cap",
+                dynFrustumOff: "Frustum culling is lowkey OFF",
+                dynAmbientOn: "Vibes are immaculate rn 🎵",
+                dynAmbientOff: "Ambience said not today",
+                dynWebGPUOn: "WebGPU arc activated 🚀",
+                dynWebGPUOff: "WebGPU said nah we're on WebGL",
+                toastPostFXEnable: "bestie u tryna turn on Post FX? 👀\n\nBloom, chromatic aberration, FXAA & vignette bout to go crazy.\nGotta restart to apply tho.\n\nOK = restart and slay\nCANCEL = stay in boring mode",
+                toastPostFXDisable: "turning off Post FX? lowkey valid\n\nneeds a restart to go back to the default era.\n\nOK = restart and go plain\nCANCEL = nvm keep the drip",
+                toastWebGPU: "switching graphics APIs takes a restart bestie, u good with that?",
+                toastWebGPUContextLost: "Session went BRRRR 💀\n\nWebGPU had a whole moment and crashed out.\nSwitching back to WebGL2 might fix it fr.\n\nOK = switch back to WebGL2\nCANCEL = yolo resume anyway",
+                toastWebGPUFail: "WebGPU said nuh uh 🙅\n\nYour device doesn't support it or it just straight up refused.\n\nOK = fall back to WebGL2 (safe)\nCANCEL = ight bet (nothing loads lol)",
+                toastSafeguard: "yo the sandbox paused itself 😭\n\nFPS went absolutely cooked — it stopped to save ur pc.\n\nOK = restart and clear the scene\nCANCEL = resume anyway (it'll ask again in 60s)",
+                toastUploadWebGPU: "oop uploads are locked in WebGPU mode bestie 🔒\n\nSwitch to WebGL2 in SB3D Settings to drop ur 3D file.",
+                toastUploadFail: "bruh it failed to load that model 💀\nnot it bestie, try another file.",
+                toastLangConfirm: "switching back to basic English? game gotta restart tho, u good?",
+                structInstruct: "<b>Click</b>: drop the structure<br>Tweak L/H/W in the Objects panel bestie.",
             }
         };
 
@@ -1296,7 +1365,7 @@
 
         setTimeout(() => {
             const btn = document.getElementById('skip-loading-btn');
-            btn.style.display = 'inline-block';
+            if (btn) btn.style.display = 'inline-block';
         }, 7000);
 
         function skipLoading() {
@@ -1342,7 +1411,7 @@
         function triggerUpload() {
             const engine = workshop.shaman.sandbox3d.engine;
             if (engine && (engine.isWebGPU || engine instanceof BABYLON.WebGPUEngine)) {
-                alert("Custom 3D model uploads are disabled in WebGPU mode to prevent Context Lost crashes.\n\nPlease switch to WebGL in Game Settings to use this feature.");
+                alert(SB3D_LANGS[activeLang].toastUploadWebGPU);
                 return;
             }
             document.getElementById('file-input').click();
@@ -1354,7 +1423,6 @@
 
             const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
             const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-            const setQuery = (sel, val) => { const el = document.querySelector(sel); if (el) el.innerHTML = val; };
 
             document.querySelector('#left-panel .panel-header h2').innerHTML = t.panelTools;
             document.querySelector('#right-panel .panel-header h2').innerHTML = t.panelObjects;
@@ -1405,42 +1473,97 @@
             }
 
             set('txt-instruct', t.instruct);
-            setText('btn-clear', t.btnClear);
 
             document.querySelector('.settings-header h2').innerHTML = t.settingsTitle;
             document.querySelector('.settings-close-btn').innerText = t.settingsClose;
 
             document.querySelectorAll('.settings-category .section-label').forEach(el => {
                 const raw = el.innerText.trim().toUpperCase();
-                if (raw === 'SYSTEM') el.innerText = t.settingSystem;
-                if (raw === 'AUDIO & LANGUAGE') el.innerText = t.settingAudio;
+                if (raw === 'SYSTEM' || raw === 'SYSTEM STUFF') el.innerText = t.settingSystem;
+                if (raw === 'AUDIO & LANGUAGE' || raw === 'EAR DAMAGE AND TALKY-TALK') el.innerText = t.settingAudio;
             });
 
             document.querySelectorAll('.slider-label span:first-child').forEach(el => {
                 const raw = el.innerText.trim();
-                if (raw === 'Size') el.innerText = t.labelSize;
-                else if (raw === 'Mass') el.innerText = t.labelMass;
-                else if (raw === 'Color') el.innerText = t.labelColor;
-                else if (raw === 'Throw Power') el.innerText = t.labelThrowPower;
-                else if (raw === 'Block Type') el.innerText = t.labelBlockType;
-                else if (raw === 'Grid Size (L x H x W)') el.innerText = t.labelGridSize;
+                if (raw === 'Size' || raw === 'Chonk level') el.innerText = t.labelSize;
+                else if (raw === 'Mass' || raw === 'Thiccness') el.innerText = t.labelMass;
+                else if (raw === 'Color' || raw === 'Drip color') el.innerText = t.labelColor;
+                else if (raw === 'Throw Power' || raw === 'Yeet force') el.innerText = t.labelThrowPower;
+                else if (raw === 'Block Type' || raw === 'Block Vibe') el.innerText = t.labelBlockType;
             });
-
-            document.querySelector('.loader-subtext:last-of-type') &&
-                (document.querySelector('.loader-subtext:last-of-type').innerText = t.loaderSub);
 
             const skipBtn = document.getElementById('skip-loading-btn');
             if (skipBtn) skipBtn.innerText = t.skipBtn;
+
+            const loaderSubs = document.querySelectorAll('.loader-subtext');
+            if (loaderSubs.length >= 2) loaderSubs[loaderSubs.length - 1].innerText = t.loaderSub;
+
+            const hudBtn = document.getElementById('btn-toggle-hud');
+            if (hudBtn) {
+                const isShowing = isHUDVisible;
+                hudBtn.innerHTML = isShowing
+                    ? `<span class="shape-icon" style="background:#2ecc71;border-radius:2px;"></span> ${t.dynHudShow}`
+                    : `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;"></span> ${t.dynHudHide}`;
+            }
+
+            const ambBtn = document.getElementById('btn-ambient');
+            if (ambBtn) {
+                const isOn = workshop?.shaman?.sandbox3d?.TemporalAudio?.enabled;
+                ambBtn.innerHTML = isOn
+                    ? `<span class="shape-icon" style="background:#2ecc71;border-radius:50%;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynAmbientOn}`
+                    : `<span class="shape-icon" style="background:#9b59b6;border-radius:50%;"></span> ${t.dynAmbientOff}`;
+            }
+
+            const safeguardBtn = document.getElementById('btn-perf-safeguard');
+            if (safeguardBtn) {
+                safeguardBtn.innerHTML = performanceSafeguardActive
+                    ? `<span class="shape-icon" style="background:#f1c40f;border-radius:2px;"></span> ${t.dynSafeguardOn}`
+                    : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynSafeguardOff}`;
+            }
+
+            const sleepBtn = document.getElementById('btn-physics-sleep');
+            if (sleepBtn) {
+                sleepBtn.innerHTML = isPhysicsSleepingEnabled
+                    ? `<span class="shape-icon" style="background:#2ecc71;border-radius:2px;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynSleepOn}`
+                    : `<span class="shape-icon" style="background:#e67e22;border-radius:2px;"></span> ${t.dynSleepOff}`;
+            }
+
+            const frustumBtn = document.getElementById('btn-frustum-cull');
+            if (frustumBtn) {
+                frustumBtn.innerHTML = isFrustumCullingEnabled
+                    ? `<span class="shape-icon" style="background:#2ecc71;border-radius:2px;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynFrustumOn}`
+                    : `<span class="shape-icon" style="background:#e67e22;border-radius:2px;"></span> ${t.dynFrustumOff}`;
+            }
+
+            const daynightBtn = document.getElementById('btn-daynight');
+            if (daynightBtn) {
+                daynightBtn.innerHTML = isDayNightEnabled
+                    ? `<span class="shape-icon" style="background:#f39c12;border-radius:50%;box-shadow:0 0 6px #f39c12;"></span> ${t.dynTimeOn}`
+                    : `<span class="shape-icon" style="background:#f39c12;border-radius:50%;"></span> ${t.dynTimeOff}`;
+            }
+
+            const flashEnableBtn = document.getElementById('btn-flashlight-enable');
+            if (flashEnableBtn) {
+                flashEnableBtn.innerHTML = isFlashlightEnabled
+                    ? `<span class="shape-icon" style="background:#f1c40f;border-radius:50%;box-shadow:0 0 6px #f1c40f;"></span> ${t.dynFlashlightOn}`
+                    : `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynFlashlightOff}`;
+            }
+
+            const filmFXBtn = document.getElementById('btn-filmfx');
+            if (filmFXBtn) {
+                filmFXBtn.innerHTML = isFilmFXEnabled
+                    ? `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;box-shadow:0 0 6px #e74c3c;"></span> ${t.dynFilmFXOn}`
+                    : `<span class="shape-icon" style="background:#c0392b;border-radius:2px;"></span> ${t.dynFilmFXOff}`;
+            }
         }
 
         function onLangChange(lang) {
-            const label = lang === 'genz' ? 'fr no cap apply this?? 💀' : 'Apply English? fr fr';
+            const t = SB3D_LANGS[lang];
             const msg = lang === 'genz'
                 ? '💀 aight switching to gen z mode — game gotta restart tho. u good?'
-                : 'Switch back to English? Game will restart to apply it.';
+                : t.toastLangConfirm;
 
-            const confirmed = confirm(`${msg}\n\n${label}`);
-            if (!confirmed) {
+            if (!confirm(msg)) {
                 document.getElementById('lang-select').value = activeLang;
                 return;
             }
@@ -1509,7 +1632,7 @@
                         null, 
                         function (scene, message, exception) {
                             console.error("Error loading file:", message);
-                            alert("Failed to load model.");
+                            alert(SB3D_LANGS[activeLang].toastUploadFail);
                         },
                         "." + ext
                     );
@@ -1535,35 +1658,35 @@
             isHUDVisible = !isHUDVisible;
             const hud = document.getElementById('hud-container');
             const btn = document.getElementById('btn-toggle-hud');
+            const t = SB3D_LANGS[activeLang];
 
             if (isHUDVisible) {
                 hud.style.display = 'flex';
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span> Showing FPS Meters';
+                btn.innerHTML = `<span class="shape-icon" style="background:#2ecc71;border-radius:2px;"></span> ${t.dynHudShow}`;
                 btn.style.borderColor = '#2ecc71';
             } else {
                 hud.style.display = 'none';
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Hiding FPS Meters';
+                btn.innerHTML = `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;"></span> ${t.dynHudHide}`;
                 btn.style.borderColor = '#e74c3c';
             }
         }
 
         function toggleFlashlightEnable() {
             isFlashlightEnabled = !isFlashlightEnabled;
-
             const btn = document.getElementById('btn-flashlight-enable');
             const hud = document.getElementById('flashlight-hud');
+            const t = SB3D_LANGS[activeLang];
 
             if (isFlashlightEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #f1c40f; border-radius: 50%; box-shadow: 0 0 6px #f1c40f;"></span> Flashlights ON';
+                btn.innerHTML = `<span class="shape-icon" style="background:#f1c40f;border-radius:50%;box-shadow:0 0 6px #f1c40f;"></span> ${t.dynFlashlightOn}`;
                 btn.style.borderLeftColor = '#f1c40f';
                 btn.classList.add('active');
                 hud.style.display = 'block';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #555; border-radius: 50%;"></span> Flashlights OFF';
+                btn.innerHTML = `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynFlashlightOff}`;
                 btn.style.borderLeftColor = '#f1c40f';
                 btn.classList.remove('active');
                 hud.style.display = 'none';
-
                 if (isFlashlightOn) toggleFlashlight();
             }
         }
@@ -1626,35 +1749,32 @@
         function toggleSafeguard() {
             performanceSafeguardActive = !performanceSafeguardActive;
             const btn = document.getElementById('btn-perf-safeguard');
-            btn.innerHTML = performanceSafeguardActive ?
-                '<span class="shape-icon" style="background: #f1c40f; border-radius: 2px;"></span> Crash Protection ACTIVE' :
-                '<span class="shape-icon" style="background: #555; border-radius: 2px;"></span> Crash Protection OFF';
+            const t = SB3D_LANGS[activeLang];
+            btn.innerHTML = performanceSafeguardActive
+                ? `<span class="shape-icon" style="background:#f1c40f;border-radius:2px;"></span> ${t.dynSafeguardOn}`
+                : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynSafeguardOff}`;
         }
 
         function togglePostFX() {
+            const t = SB3D_LANGS[activeLang];
             const isCurrentlyOn = localStorage.getItem('sb3d_postfx') === 'true';
             const newState = !isCurrentlyOn;
+            const message = newState ? t.toastPostFXEnable : t.toastPostFXDisable;
 
-            const message = newState
-                ? "Enable Post Processing?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable."
-                : "Disable Post Processing?\n\nA session restart is required to remove them and then go back to the default look.\n\nClick OK to restart and disable.";
-
-            const confirmed = confirm(message);
-            if (!confirmed) return;
+            if (!confirm(message)) return;
 
             localStorage.setItem('sb3d_postfx', newState.toString());
 
             if (newState) {
                 document.body.style.transition = 'none';
-                let t = 0;
+                let i = 0;
                 const glitchOut = setInterval(() => {
                     const x = (Math.random() - 0.5) * 30;
                     const y = (Math.random() - 0.5) * 10;
-                    const hue = Math.random() * 360;
                     document.body.style.transform = `translate(${x}px,${y}px)`;
-                    document.body.style.filter = `hue-rotate(${hue}deg) saturate(3)`;
-                    t++;
-                    if (t > 14) {
+                    document.body.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(3)`;
+                    i++;
+                    if (i > 14) {
                         clearInterval(glitchOut);
                         document.body.style.filter = '';
                         document.body.style.transform = '';
@@ -1668,16 +1788,16 @@
 
         function toggleFilmFX() {
             isFilmFXEnabled = !isFilmFXEnabled;
-
             const btn = document.getElementById('btn-filmfx');
+            const t = SB3D_LANGS[activeLang];
 
             if (isFilmFXEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Film Effects is ON';
+                btn.innerHTML = `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;box-shadow:0 0 6px #e74c3c;"></span> ${t.dynFilmFXOn}`;
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.add('active');
                 applyFilmFX();
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span> Film Effects is OFF';
+                btn.innerHTML = `<span class="shape-icon" style="background:#c0392b;border-radius:2px;"></span> ${t.dynFilmFXOff}`;
                 btn.style.borderLeftColor = '#c0392b';
                 btn.classList.remove('active');
                 removeFilmFX();
@@ -1781,20 +1901,21 @@
         function updatePostFXButtonState() {
             const btn = document.getElementById('btn-postfx');
             if (!btn) return;
+            const t = SB3D_LANGS[activeLang];
             const isOn = localStorage.getItem('sb3d_postfx') === 'true';
             const infoBox = document.getElementById('postfx-info');
             const filmPanel = document.getElementById('filmfx-panel');
             const filmSliders = document.getElementById('filmfx-sliders');
 
             if (isOn) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px; box-shadow: 0 0 6px #e74c3c;"></span> Post Processing is ACTIVE';
+                btn.innerHTML = `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;box-shadow:0 0 6px #e74c3c;"></span> ${t.dynPostFXOn}`;
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.add('active');
                 if (infoBox) infoBox.style.display = 'block';
                 if (filmPanel) filmPanel.style.display = 'block';
                 if (filmSliders) filmSliders.style.display = 'block';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span> Post Processing is OFF';
+                btn.innerHTML = `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;"></span> ${t.dynPostFXOff}`;
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.remove('active');
                 if (infoBox) infoBox.style.display = 'none';
@@ -1803,31 +1924,27 @@
             }
         }
 
-        
         function toggleDayNight() {
             isDayNightEnabled = !isDayNightEnabled;
-
             const btn = document.getElementById('btn-daynight');
             const panel = document.getElementById('daynight-panel');
+            const t = SB3D_LANGS[activeLang];
 
             if (isDayNightEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%; box-shadow: 0 0 6px #f39c12;"></span> Time System is ACTIVE';
+                btn.innerHTML = `<span class="shape-icon" style="background:#f39c12;border-radius:50%;box-shadow:0 0 6px #f39c12;"></span> ${t.dynTimeOn}`;
                 btn.style.borderLeftColor = '#f39c12';
                 btn.classList.add('active');
                 panel.style.display = 'block';
-
                 const slider = document.getElementById('opt-tod');
                 if (slider) setTimeOfDay(slider.value);
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #f39c12; border-radius: 50%;"></span> Time System is OFF';
+                btn.innerHTML = `<span class="shape-icon" style="background:#f39c12;border-radius:50%;"></span> ${t.dynTimeOff}`;
                 btn.style.borderLeftColor = '#f39c12';
                 btn.classList.remove('active');
                 panel.style.display = 'none';
-
                 if (dayNightLightRef) { dayNightLightRef.intensity = 1.2; dayNightLightRef.diffuse = new BABYLON.Color3(1, 1, 1); dayNightLightRef.groundColor = new BABYLON.Color3(0.1, 0.1, 0.15); }
                 if (dayNightDirRef) { dayNightDirRef.intensity = 0.8; dayNightDirRef.diffuse = new BABYLON.Color3(1, 1, 1); }
                 if (sceneRef) sceneRef.clearColor = new BABYLON.Color4(0.1, 0.1, 0.15, 1);
-
                 if (isSyncingDeviceTime) toggleSyncDeviceTime();
             }
         }
@@ -1916,24 +2033,22 @@
 
         function toggleSyncDeviceTime() {
             isSyncingDeviceTime = !isSyncingDeviceTime;
-
             const btn = document.getElementById('btn-sync-time');
             const slider = document.getElementById('opt-tod');
+            const t = SB3D_LANGS[activeLang];
 
             if (isSyncingDeviceTime) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Syncing with current time';
+                btn.innerHTML = `<span class="shape-icon" style="background:#2ecc71;border-radius:50%;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynSyncOn}`;
                 btn.style.borderLeftColor = '#2ecc71';
                 btn.classList.add('active');
-                if (slider) slider.disabled = true; 
-
+                if (slider) slider.disabled = true;
                 applyDeviceTime();
                 syncDeviceTimeInterval = setInterval(applyDeviceTime, 10000);
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Not syncing with current time';
+                btn.innerHTML = `<span class="shape-icon" style="background:#3498db;border-radius:50%;"></span> ${t.dynSyncOff}`;
                 btn.style.borderLeftColor = '#3498db';
                 btn.classList.remove('active');
                 if (slider) slider.disabled = false;
-
                 clearInterval(syncDeviceTimeInterval);
                 syncDeviceTimeInterval = null;
             }
@@ -1949,22 +2064,20 @@
         function togglePhysicsSleeping() {
             isPhysicsSleepingEnabled = !isPhysicsSleepingEnabled;
             const btn = document.getElementById('btn-physics-sleep');
+            const t = SB3D_LANGS[activeLang];
 
             if (isPhysicsSleepingEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Objects will sleep when inactive';
+                btn.innerHTML = `<span class="shape-icon" style="background:#2ecc71;border-radius:2px;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynSleepOn}`;
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
             } else {
                 spawnedMeshes.forEach(mesh => {
                     if (mesh && !mesh.isDisposed() && mesh.physicsImpostor) {
                         mesh.physicsImpostor.wakeUp();
-                        if (mesh.metadata) {
-                            mesh.metadata.lastMovedTime = performance.now();
-                            mesh.metadata.isSleeping = false;
-                        }
+                        if (mesh.metadata) { mesh.metadata.lastMovedTime = performance.now(); mesh.metadata.isSleeping = false; }
                     }
                 });
-                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Objects will not sleep when inactive';
+                btn.innerHTML = `<span class="shape-icon" style="background:#e67e22;border-radius:2px;"></span> ${t.dynSleepOff}`;
                 btn.classList.remove('active');
                 btn.style.borderColor = '#e67e22';
             }
@@ -1999,27 +2112,25 @@
         }
 
         function toggleWebGPU() {
+            const t = SB3D_LANGS[activeLang];
             const isCurrentlyWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
-            const newState = !isCurrentlyWebGPU;
-
-            localStorage.setItem('sb3d_use_webgpu', newState.toString());
-
-            alert("This change requires a session restart to switch Graphics APIs, Continue?");
+            localStorage.setItem('sb3d_use_webgpu', (!isCurrentlyWebGPU).toString());
+            alert(t.toastWebGPU);
             location.reload();
         }
 
         function updateWebGPUButtonState() {
             const btn = document.getElementById('btn-webgpu');
             if (!btn) return;
-
+            const t = SB3D_LANGS[activeLang];
             const isWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
 
             if (isWebGPU) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Using WebGPU';
+                btn.innerHTML = `<span class="shape-icon" style="background:#2ecc71;border-radius:50%;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynWebGPUOn}`;
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #3498db; border-radius: 50%;"></span> Not using WebGPU';
+                btn.innerHTML = `<span class="shape-icon" style="background:#3498db;border-radius:50%;"></span> ${t.dynWebGPUOff}`;
                 btn.classList.remove('active');
                 btn.style.borderColor = '#3498db';
             }
@@ -2028,13 +2139,14 @@
         function toggleAmbientAudio() {
             const btn = document.getElementById('btn-ambient');
             const isEnabled = workshop.shaman.sandbox3d.TemporalAudio.toggle();
+            const t = SB3D_LANGS[activeLang];
 
             if (isEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 50%; box-shadow: 0 0 5px #2ecc71;"></span> Ambient Environment is ON';
+                btn.innerHTML = `<span class="shape-icon" style="background:#2ecc71;border-radius:50%;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynAmbientOn}`;
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
             } else {
-                btn.innerHTML = '<span class="shape-icon" style="background: #9b59b6; border-radius: 50%;"></span> Ambient Environment is OFF';
+                btn.innerHTML = `<span class="shape-icon" style="background:#9b59b6;border-radius:50%;"></span> ${t.dynAmbientOff}`;
                 btn.classList.remove('active');
                 btn.style.borderColor = '#9b59b6';
             }
@@ -2070,31 +2182,23 @@
         function toggleFrustumCulling() {
             isFrustumCullingEnabled = !isFrustumCullingEnabled;
             const btn = document.getElementById('btn-frustum-cull');
+            const t = SB3D_LANGS[activeLang];
 
             if (isFrustumCullingEnabled) {
-                btn.innerHTML = '<span class="shape-icon" style="background: #2ecc71; border-radius: 2px; box-shadow: 0 0 5px #2ecc71;"></span> Frustum Culling is ON';
+                btn.innerHTML = `<span class="shape-icon" style="background:#2ecc71;border-radius:2px;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynFrustumOn}`;
                 btn.classList.add('active');
                 btn.style.borderColor = '#2ecc71';
-                console.log("[FrustumCulling] Enabled — off-screen meshes hidden, physics intact.");
             } else {
                 spawnedMeshes.forEach(mesh => {
                     if (mesh && !mesh.isDisposed() && mesh.isEnabled()) {
-                        if (mesh.name.includes("customInstance") || mesh.name.includes("customHitbox")) {
-                            mesh.isVisible = false;
-                        } else {
-                            mesh.isVisible = true;
-                        }
-
-                        const children = mesh.getChildMeshes();
-                        for (let j = 0; j < children.length; j++) {
-                            children[j].isVisible = true;
-                        }
+                        if (mesh.name.includes("customInstance") || mesh.name.includes("customHitbox")) { mesh.isVisible = false; }
+                        else { mesh.isVisible = true; }
+                        mesh.getChildMeshes().forEach(c => c.isVisible = true);
                     }
                 });
-                btn.innerHTML = '<span class="shape-icon" style="background: #e67e22; border-radius: 2px;"></span> Frustum Culling is OFF';
+                btn.innerHTML = `<span class="shape-icon" style="background:#e67e22;border-radius:2px;"></span> ${t.dynFrustumOff}`;
                 btn.classList.remove('active');
                 btn.style.borderColor = '#e67e22';
-                console.log("[FrustumCulling] Disabled — all meshes restored.");
             }
         }
 
@@ -2150,7 +2254,7 @@
 
             if (shape === 'structure') {
                 structSettings.style.display = 'block';
-                instruct.innerHTML = "<b>Click</b>: Spawn Structure<br>Adjust L/H/W in Objects Panel.";
+                instruct.innerHTML = SB3D_LANGS[activeLang].structInstruct;
             } else {
                 structSettings.style.display = 'none';
             }
@@ -2233,14 +2337,15 @@
 
         function toggleFreezeLogic() {
             const btn = document.getElementById('btn-freeze');
-            if(selectedShape === 'freeze') {
-                if(freezeAction === 'freeze') {
+            const t = SB3D_LANGS[activeLang];
+            if (selectedShape === 'freeze') {
+                if (freezeAction === 'freeze') {
                     freezeAction = 'thaw';
-                    btn.innerHTML = '<span class="shape-icon icon-ice" style="background:#e67e22"></span> Unfreeze';
+                    btn.innerHTML = `<span class="shape-icon icon-ice" style="background:#e67e22"></span> ${t.btnUnfreeze}`;
                     btn.classList.add('thaw-mode');
                 } else {
                     freezeAction = 'freeze';
-                    btn.innerHTML = '<span class="shape-icon icon-ice"></span> Freeze';
+                    btn.innerHTML = `<span class="shape-icon icon-ice"></span> ${t.btnFreeze}`;
                     btn.classList.remove('thaw-mode');
                 }
             } else {
@@ -2294,7 +2399,7 @@
                                     await this.engine.initAsync();
 
                                     this.engine.onContextLostObservable.add(() => {
-                                        if (confirm("Session Error\n\nAn unknown error has occured while using WebGPU.\nA switch back to WebGL2 may help.\n\nClick OK to switch\nClick CANCEL to resume")) {
+                                        if (confirm(SB3D_LANGS[activeLang].toastWebGPUContextLost)) {
                                             localStorage.setItem('sb3d_use_webgpu', 'false');
                                             window.location.reload();
                                         }
@@ -2307,7 +2412,7 @@
                             }
 
                             if (webGpuFailed) {
-                                const fallback = confirm("Session Error\n\nWebGPU isn't supported or failed to initialized for this device.\n\nClick OK to switch back to WebGL2\nClick CANCEL to resume");
+                                const fallback = confirm(SB3D_LANGS[activeLang].toastWebGPUFail);
 
                                 if (fallback) {
                                     localStorage.setItem('sb3d_use_webgpu', 'false');
@@ -2488,7 +2593,7 @@
                             if (lowFpsCounter > 3) {
                                 this.engine.stopRenderLoop();
 
-                                const restart = confirm("Session Paused\n\nLow FPS detected, session is paused to save your system.\n\nClick OK to restart your sandbox and clear the scene.\nClick CANCEL to resume your sandbox, prompt will reappear after 60 seconds.");
+                                const restart = confirm(SB3D_LANGS[activeLang].toastSafeguard);
 
                                 if (restart) {
                                     window.location.reload();

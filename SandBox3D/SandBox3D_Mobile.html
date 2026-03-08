@@ -86,15 +86,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .instruction {
-            font-size: 12px;
-            color: #aaa;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            background: rgba(0,0,0,0.3);
-            padding: 5px;
-            border-radius: 4px;
-        }
         .control-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 
         .slider-group {
@@ -825,23 +816,31 @@
                             </div>
             
                             <div class="slider-group">
-                                <div class="slider-label"><span>Render Distance</span><span id="val-view">500m</span></div>
+                                <div class="slider-label"><span id="lbl-render-dist">Render Distance</span><span id="val-view">500m</span></div>
                                 <input type="range" id="opt-view" min="50" max="1500" value="500" step="50" oninput="updateGameSettings()">
                             </div>
                             
                             <div class="slider-group">
-                                <div class="slider-label"><span>Resolution Scale</span><span id="val-res">100%</span></div>
+                                <div class="slider-label"><span id="lbl-res-scale">Resolution Scale</span><span id="val-res">100%</span></div>
                                 <input type="range" id="opt-res" min="10" max="100" value="100" step="5" oninput="updateGameSettings()">
                             </div>
 
                             <div class="slider-group">
-                                <div class="slider-label"><span>Camera FOV</span><span id="val-fov">1.2</span></div>
+                                <div class="slider-label"><span id="lbl-camera-fov">Camera FOV</span><span id="val-fov">1.2</span></div>
                                 <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
                             </div>
                         </div>
             
                         <div class="settings-category">
                             <div class="section-label" style="font-size: 14px; margin-top: 0;">Audio & Language</div>
+
+                            <div style="margin-bottom: 10px;">
+                                <select id="lang-select" onchange="onLangChange(this.value)"
+                                    style="width:100%; background:#252525; color:#eee; border:1px solid #555; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
+                                    <option value="en">English (Default)</option>
+                                    <option value="genz">brainrot 💀</option>
+                                </select>
+                            </div>
                         
                             <div class="control-group">
                                 <button id="btn-ambient" onclick="toggleAmbientAudio()" style="border-left: 4px solid #9b59b6; padding: 12px;">
@@ -852,19 +851,26 @@
                         
                             <div id="ambient-vol-settings" class="slider-group" style="margin-top: 10px; border-left: 3px solid #9b59b6;">
                                 <div class="slider-label">
-                                    <span>Ambience Volume</span>
+                                    <span id="lbl-ambience-vol">Ambience Volume</span>
                                     <span id="ambient-vol-display">0.5</span>
                                 </div>
                                 <input type="range" id="ambient-vol-slider" min="0.1" max="2.0" step="0.1" value="0.5"
                                     oninput="updateAmbientVolume(this.value)">
                             </div>
-                        
-                            <div style="margin-bottom: 10px;">
-                                <select id="lang-select" onchange="onLangChange(this.value)"
-                                    style="width:100%; background:#252525; color:#eee; border:1px solid #555; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
-                                    <option value="en">English (Default)</option>
-                                    <option value="genz">brainrot 💀</option>
-                                </select>
+
+                            <div id="explosion-vol-settings" class="slider-group" style="margin-top: 10px; border-left: 3px solid #e74c3c;">
+                                <div class="slider-label">
+                                    <span id="lbl-explosion-vol">Explosion Volume</span>
+                                    <span id="explosion-vol-display">1.0</span>
+                                </div>
+                                <input type="range" id="explosion-vol-slider" min="0.0" max="2.0" step="0.1" value="1.0" oninput="updateExplosionVolume(this.value)">
+                            </div>
+                            
+                            <div class="control-group" style="margin-top: 8px;">
+                                <button id="btn-flashvid" onclick="toggleFlashbangVideo()" style="border-left: 4px solid #f1c40f; padding: 10px;">
+                                    <span class="shape-icon" style="background:#f1c40f;border-radius:2px;"></span>
+                                    Flashbang Video is ON
+                                </button>
                             </div>
                         </div>
 
@@ -882,7 +888,7 @@
                         
                                 <div class="slider-group">
                                     <div class="slider-label">
-                                        <span>Time</span>
+                                        <span id="lbl-time">Time</span>
                                         <span id="val-tod">12:00</span>
                                     </div>
                                     <input type="range" id="opt-tod" min="0" max="1440" step="1" value="720"
@@ -936,90 +942,89 @@
                                 </button>
                         
                                 <div id="filmfx-sliders" style="display: none;">
-                        
+                            
                                     <div
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        id="lbl-fx-sharpness" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
                                         Sharpness</div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Strength</span><span id="val-sharpen">0.6</span></div>
+                                        <div class="slider-label"><span id="lbl-sharpen-str">Strength</span><span id="val-sharpen">0.6</span></div>
                                         <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6"
                                             oninput="updateFilmFXParams()">
                                     </div>
-                        
+                            
                                     <div
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        id="lbl-fx-grain" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
                                         Grain Effects</div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Intensity</span><span id="val-grain">28</span></div>
+                                        <div class="slider-label"><span id="lbl-grain-int">Intensity</span><span id="val-grain">28</span></div>
                                         <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Animation Speed</span><span id="val-grain-speed">1.0</span></div>
+                                        <div class="slider-label"><span id="lbl-grain-spd">Animation Speed</span><span id="val-grain-speed">1.0</span></div>
                                         <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0"
                                             oninput="updateFilmFXParams()">
                                     </div>
-                        
+                            
                                     <div
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        id="lbl-fx-bloom" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
                                         Bloom</div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Threshold</span><span id="val-bloom-threshold">0.8</span></div>
+                                        <div class="slider-label"><span id="lbl-bloom-thr">Threshold</span><span id="val-bloom-threshold">0.8</span></div>
                                         <input type="range" id="opt-bloom-threshold" min="0.0" max="1.0" step="0.05" value="0.8"
                                             oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Weight</span><span id="val-bloom-weight">0.35</span></div>
+                                        <div class="slider-label"><span id="lbl-bloom-wgt">Weight</span><span id="val-bloom-weight">0.35</span></div>
                                         <input type="range" id="opt-bloom-weight" min="0.0" max="1.0" step="0.05" value="0.35"
                                             oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Kernel</span><span id="val-bloom-kernel">64</span></div>
+                                        <div class="slider-label"><span id="lbl-bloom-ker">Kernel</span><span id="val-bloom-kernel">64</span></div>
                                         <input type="range" id="opt-bloom-kernel" min="16" max="128" step="8" value="64"
                                             oninput="updateFilmFXParams()">
                                     </div>
-                        
+                            
                                     <div
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        id="lbl-fx-chroma" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
                                         Chromatic Aberration</div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Amount</span><span id="val-chroma-amount">30</span></div>
+                                        <div class="slider-label"><span id="lbl-chroma-amt">Amount</span><span id="val-chroma-amount">30</span></div>
                                         <input type="range" id="opt-chroma-amount" min="0" max="100" step="1" value="30"
                                             oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Radial Intensity</span><span id="val-chroma-radial">1.0</span></div>
+                                        <div class="slider-label"><span id="lbl-chroma-rad">Radial Intensity</span><span id="val-chroma-radial">1.0</span></div>
                                         <input type="range" id="opt-chroma-radial" min="0.0" max="3.0" step="0.1" value="1.0"
                                             oninput="updateFilmFXParams()">
                                     </div>
-                        
+                            
                                     <div
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        id="lbl-fx-vignette" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
                                         Vignette</div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Weight</span><span id="val-vignette-weight">2.5</span></div>
+                                        <div class="slider-label">span id="lbl-vignette-wgt">Weight</span><span id="val-vignette-weight">2.5</span></div>
                                         <input type="range" id="opt-vignette-weight" min="0.0" max="6.0" step="0.1" value="2.5"
                                             oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>FOV Spread</span><span id="val-vignette-fov">0.5</span></div>
+                                        <div class="slider-label"><span id="lbl-vignette-fov">FOV Spread</span><span id="val-vignette-fov">0.5</span></div>
                                         <input type="range" id="opt-vignette-fov" min="0.1" max="1.0" step="0.05" value="0.5"
                                             oninput="updateFilmFXParams()">
                                     </div>
-                        
+                            
                                     <div
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        id="lbl-fx-imageproc" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
                                         Image Processing</div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Contrast</span><span id="val-ip-contrast">1.15</span></div>
+                                        <div class="slider-label"><span id="lbl-ip-contrast">Contrast</span><span id="val-ip-contrast">1.15</span></div>
                                         <input type="range" id="opt-ip-contrast" min="0.5" max="3.0" step="0.05" value="1.15"
                                             oninput="updateFilmFXParams()">
                                     </div>
                                     <div class="slider-group">
-                                        <div class="slider-label"><span>Exposure</span><span id="val-ip-exposure">1.05</span></div>
+                                        <div class="slider-label"><span id="lbl-ip-exposure">Exposure</span><span id="val-ip-exposure">1.05</span></div>
                                         <input type="range" id="opt-ip-exposure" min="0.2" max="3.0" step="0.05" value="1.05"
                                             oninput="updateFilmFXParams()">
                                     </div>
-                        
                                 </div>
                             </div>
                         </div>
@@ -1031,10 +1036,6 @@
             <button id="btn-upload" onclick="triggerUpload()">
                 <span class="shape-icon icon-upload"></span> Upload 3D Model
             </button>
-            
-            <div class="instruction">
-                <span id="txt-instruct">Use D-Pads to Move & Look.<br>Tap screen to use Tool.</span>
-            </div>
 
             <div class="section-label">Actions</div>
             <div class="control-group">
@@ -1160,6 +1161,8 @@
         let isFlashlightOn = false;
         let flashlightRef = null;
         let activeLang = localStorage.getItem('sb3d_lang') || 'en';
+        let explosionVolume = 1.0;
+        let isFlashbangVideoEnabled = true;
         let filmFXParams = {
             sharpen: 0.6,
             grainIntensity: 28,
@@ -1221,11 +1224,35 @@
                 labelColor: "Color",
                 labelGridSize: "Grid Size (L x H x W)",
                 labelBlockType: "Block Type",
-                instruct: "<b>WASD</b>: Fly &nbsp;|&nbsp; <b>L-SHIFT</b>: Toggle Mouse<br><b>Q</b>: Tools Panel &nbsp;|&nbsp; <b>E</b>: Objects Panel<br><b>Click</b>: Use Tool",
+                labelAmbienceVol: "Ambience Volume",
+                labelResScale: "Resolution Scale",
+                labelRenderDist: "Render Distance",
+                labelCameraFOV: "Camera FOV",
+                labelTime: "Time",
+                labelSharpness: "Sharpness",
+                labelGrainEffects: "Grain Effects",
+                labelGrainIntensity: "Intensity",
+                labelGrainSpeed: "Animation Speed",
+                labelBloom: "Bloom",
+                labelBloomThreshold: "Threshold",
+                labelBloomWeight: "Weight",
+                labelBloomKernel: "Kernel",
+                labelChroma: "Chromatic Aberration",
+                labelChromaAmount: "Amount",
+                labelChromaRadial: "Radial Intensity",
+                labelVignette: "Vignette",
+                labelVignetteWeight: "Weight",
+                labelVignetteFOV: "FOV Spread",
+                labelImageProc: "Image Processing",
+                labelContrast: "Contrast",
+                labelExposure: "Exposure",
                 settingsTitle: "Settings",
                 settingsClose: "Close Settings",
                 settingSystem: "System",
                 settingAudio: "Audio & Language",
+                settingEnvironment: "Environment",
+                settingOverlay: "Overlay",
+                settingRendering: "Rendering Pipeline",
                 loaderSub: "Setting up your sandbox...",
                 skipBtn: "Skip Setup",
                 spawnUpload: "Spawn Upload",
@@ -1249,6 +1276,9 @@
                 dynFrustumOff: "Frustum Culling is OFF",
                 dynAmbientOn: "Ambient Environment is ON",
                 dynAmbientOff: "Ambient Environment is OFF",
+                dynExplosionVol: "Explosion Volume",
+                dynFlashVidOn: "Flashbang Video is ON",
+                dynFlashVidOff: "Flashbang Video is OFF",
                 dynWebGPUOn: "Using WebGPU",
                 dynWebGPUOff: "Not using WebGPU",
                 toastPostFXEnable: "Enable Post Processing?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable.",
@@ -1260,7 +1290,6 @@
                 toastUploadWebGPU: "Custom 3D model uploads are disabled in WebGPU mode to prevent Context Lost crashes.\n\nPlease switch to WebGL in Game Settings to use this feature.",
                 toastUploadFail: "Failed to load model.",
                 toastLangConfirm: "Switch back to English? Game will restart to apply it.",
-                structInstruct: "<b>Click</b>: Spawn Structure<br>Adjust L/H/W in Objects Panel.",
             },
             genz: {
                 panelTools: "Toolbox 💀",
@@ -1303,13 +1332,37 @@
                 labelSize: "Chonk level",
                 labelMass: "Thiccness",
                 labelColor: "Drip color",
-                labelGridSize: "Grid Size (L x H x W)",
+                labelGridSize: "Structure size (L x H x W) bestie",
                 labelBlockType: "Block Vibe",
-                instruct: "<b>WASD</b>: fly around bestie &nbsp;|&nbsp; <b>L-SHIFT</b>: mouse toggle<br><b>Q</b>: tools &nbsp;|&nbsp; <b>E</b>: objects<br><b>Click</b>: touch grass (in-game)",
+                labelAmbienceVol: "Vibe volume 🎵",
+                labelResScale: "How crispy the pixels r",
+                labelRenderDist: "How far u can see",
+                labelCameraFOV: "Eye stretch",
+                labelTime: "What time is it rn",
+                labelSharpness: "Sharpness era 🔪",
+                labelGrainEffects: "Static noises 📺",
+                labelGrainIntensity: "How grainy fr",
+                labelGrainSpeed: "Grain speedrun",
+                labelBloom: "Glowy glowy ✨",
+                labelBloomThreshold: "Glow trigger point",
+                labelBloomWeight: "Glow Weight 🌟",
+                labelBloomKernel: "Glow spread size",
+                labelChroma: "RGB split lol 🌈",
+                labelChromaAmount: "Splitty level",
+                labelChromaRadial: "Edge rainbow drip",
+                labelVignette: "Dark corner arc 🖤",
+                labelVignetteWeight: "How dark the edges r",
+                labelVignetteFOV: "Corner darkness spread",
+                labelImageProc: "Image drip ✨",
+                labelContrast: "Light vs dark ratio",
+                labelExposure: "Brightness fr ☀️",
                 settingsTitle: "Tweaks 🛠️",
                 settingsClose: "Aight close this",
                 settingSystem: "System stuff",
                 settingAudio: "Ear damage and talky-talk",
+                settingEnvironment: "Outdoor Vibes 🌅",
+                settingOverlay: "Screen Drip 🖥️",
+                settingRendering: "Visual Glow-up Pipeline ✨",
                 loaderSub: "Cooking ur sandbox fr...",
                 skipBtn: "Skip this (i'm impatient)",
                 spawnUpload: "Spawn my thing",
@@ -1333,6 +1386,9 @@
                 dynFrustumOff: "Frustum culling is lowkey OFF",
                 dynAmbientOn: "Vibes are immaculate rn 🎵",
                 dynAmbientOff: "Ambience said not today",
+                dynExplosionVol: "Boom boom volume 💥",
+                dynFlashVidOn: "flashbang jumpscare is ON lmao",
+                dynFlashVidOff: "flashbang vid said not today",
                 dynWebGPUOn: "WebGPU arc activated 🚀",
                 dynWebGPUOff: "WebGPU said nah we're on WebGL",
                 toastPostFXEnable: "bestie u tryna turn on Post FX? 👀\n\nBloom, chromatic aberration, FXAA & vignette bout to go crazy.\nGotta restart to apply tho.\n\nOK = restart and slay\nCANCEL = stay in boring mode",
@@ -1344,7 +1400,6 @@
                 toastUploadWebGPU: "oop uploads are locked in WebGPU mode bestie 🔒\n\nSwitch to WebGL2 in SB3D Settings to drop ur 3D file.",
                 toastUploadFail: "bruh it failed to load that model 💀\nnot it bestie, try another file.",
                 toastLangConfirm: "switching back to basic English? game gotta restart tho, u good?",
-                structInstruct: "<b>Click</b>: drop the structure<br>Tweak L/H/W in the Objects panel bestie.",
             }
         };
 
@@ -1457,11 +1512,38 @@
                 'btn-toggle-inspector': `<span class="shape-icon" style="background:transparent;border:2px solid #f1c40f;border-radius:2px;width:10px;height:10px;"></span> ${t.btnInspector}`,
                 'btn-custom': `<span class="shape-icon icon-custom"></span> <span id="custom-name">${t.spawnUpload}</span>`,
             };
+            const sliderLbls = {
+                'lbl-ambience-vol': t.labelAmbienceVol,
+                'lbl-render-dist': t.labelRenderDist,
+                'lbl-res-scale': t.labelResScale,
+                'lbl-camera-fov': t.labelCameraFOV,
+                'lbl-time': t.labelTime,
+                'lbl-explosion-vol': t.dynExplosionVol,
+                'lbl-fx-sharpness': t.labelSharpness,
+                'lbl-fx-grain': t.labelGrainEffects,
+                'lbl-fx-bloom': t.labelBloom,
+                'lbl-fx-chroma': t.labelChroma,
+                'lbl-fx-vignette': t.labelVignette,
+                'lbl-fx-imageproc': t.labelImageProc,
+                'lbl-sharpen-str': t.labelSharpness,
+                'lbl-grain-int': t.labelGrainIntensity,
+                'lbl-grain-spd': t.labelGrainSpeed,
+                'lbl-bloom-thr': t.labelBloomThreshold,
+                'lbl-bloom-wgt': t.labelBloomWeight,
+                'lbl-bloom-ker': t.labelBloomKernel,
+                'lbl-chroma-amt': t.labelChromaAmount,
+                'lbl-chroma-rad': t.labelChromaRadial,
+                'lbl-vignette-wgt': t.labelVignetteWeight,
+                'lbl-vignette-fov': t.labelVignetteFOV,
+                'lbl-ip-contrast': t.labelContrast,
+                'lbl-ip-exposure': t.labelExposure,
+            };
             for (const [id, html] of Object.entries(btnMap)) {
                 const el = document.getElementById(id); if (el) el.innerHTML = html;
             }
-
-            set('txt-instruct', t.instruct);
+            for (const [id, text] of Object.entries(sliderLbls)) {
+                const el = document.getElementById(id); if (el) el.innerText = text;
+            }
 
             document.querySelector('.settings-header h2').innerHTML = t.settingsTitle;
             document.querySelector('.settings-close-btn').innerText = t.settingsClose;
@@ -1470,6 +1552,9 @@
                 const raw = el.innerText.trim().toUpperCase();
                 if (raw === 'SYSTEM' || raw === 'SYSTEM STUFF') el.innerText = t.settingSystem;
                 if (raw === 'AUDIO & LANGUAGE' || raw === 'EAR DAMAGE AND TALKY-TALK') el.innerText = t.settingAudio;
+                if (raw === 'ENVIRONMENT' || raw === 'OUTDOOR VIBES 🌅') el.innerText = t.settingEnvironment;
+                if (raw === 'OVERLAY' || raw === 'SCREEN DRIP 🖥️') el.innerText = t.settingOverlay;
+                if (raw === 'RENDERING PIPELINE' || raw === 'VISUAL GLOW-UP PIPELINE ✨') el.innerText = t.settingRendering;
             });
 
             document.querySelectorAll('.slider-label span:first-child').forEach(el => {
@@ -1544,6 +1629,22 @@
                     ? `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;box-shadow:0 0 6px #e74c3c;"></span> ${t.dynFilmFXOn}`
                     : `<span class="shape-icon" style="background:#c0392b;border-radius:2px;"></span> ${t.dynFilmFXOff}`;
             }
+
+            const syncBtn = document.getElementById('btn-sync-time');
+            if (syncBtn) {
+                syncBtn.innerHTML = isSyncingDeviceTime
+                    ? `<span class="shape-icon" style="background:#2ecc71;border-radius:50%;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynSyncOn}`
+                    : `<span class="shape-icon" style="background:#3498db;border-radius:50%;"></span> ${t.dynSyncOff}`;
+            }
+
+            const flashVidBtn = document.getElementById('btn-flashvid');
+            if (flashVidBtn) {
+                flashVidBtn.innerHTML = isFlashbangVideoEnabled
+                    ? `<span class="shape-icon" style="background:#f1c40f;border-radius:2px;"></span> ${t.dynFlashVidOn}`
+                    : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynFlashVidOff}`;
+            }
+            const explVolLbl = document.getElementById('lbl-explosion-vol');
+            if (explVolLbl) explVolLbl.innerText = t.dynExplosionVol;
         }
 
         function onLangChange(lang) {
@@ -2215,6 +2316,21 @@
             }
         }
 
+        function updateExplosionVolume(val) {
+            explosionVolume = parseFloat(val);
+            document.getElementById('explosion-vol-display').innerText = explosionVolume.toFixed(1);
+        }
+
+        function toggleFlashbangVideo() {
+            isFlashbangVideoEnabled = !isFlashbangVideoEnabled;
+            const btn = document.getElementById('btn-flashvid');
+            const t = SB3D_LANGS[activeLang];
+            btn.innerHTML = isFlashbangVideoEnabled
+                ? `<span class="shape-icon" style="background:#f1c40f;border-radius:2px;"></span> ${t.dynFlashVidOn}`
+                : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynFlashVidOff}`;
+        }
+
+
         function updateGameSettings() {
             const resScale = document.getElementById('opt-res').value;
             const viewDist = document.getElementById('opt-view').value;
@@ -2264,7 +2380,6 @@
 
         function selectShape(shape) {
             selectedShape = shape;
-            const instruct = document.getElementById('txt-instruct');
             const throwSettings = document.getElementById('throw-settings');
             const throwBtn = document.getElementById('btn-action-throw');
             const structSettings = document.getElementById('structure-settings');
@@ -2290,18 +2405,15 @@
 
             if (shape === 'structure') {
                 structSettings.style.display = 'block';
-                instruct.innerHTML = SB3D_LANGS[activeLang].structInstruct;
             } else {
                 structSettings.style.display = 'none';
             }
 
             if (shape === 'view') {
                 workshop.shaman.sandbox3d.resetCameraTarget();
-                instruct.innerHTML = "Tap object to Possess.<br>Tap 'Possess' again to Exit.";
             }
             else {
                 viewTargetMesh = null;
-                instruct.innerHTML = "Use D-Pads to Move & Look.<br>Tap screen to use Tool.";
             }
 
             let btnId = 'btn-' + shape;
@@ -2480,7 +2592,7 @@
                                 if (uploadBtn) {
                                     uploadBtn.style.opacity = '0.4';
                                     uploadBtn.style.cursor = 'not-allowed';
-                                    uploadBtn.innerHTML = '<span class="shape-icon icon-upload"></span> Locked (WebGL2 Only)';
+                                    uploadBtn.innerHTML = `<span class="shape-icon icon-upload"></span> ${SB3D_LANGS[activeLang].btnUploadLocked}`;
                                 }
                             }
 
@@ -2875,7 +2987,6 @@
                                     if (selectedShape === 'view') {
                                         if (mesh.physicsImpostor && mesh.physicsImpostor.mass > 0) {
                                             viewTargetMesh = mesh;
-                                            document.getElementById('txt-instruct').innerHTML = "Controlling Object.<br>Use D-Pads. Tap 'Possess' again to Exit.";
                                         }
                                         return;
                                     }
@@ -3145,7 +3256,7 @@
                             const snd = document.getElementById('explosion-snd');
                             if (snd) {
                                 snd.currentTime = 0;
-                                snd.volume = 1.0;
+                                snd.volume = Math.min(explosionVolume, 1.0);
                                 snd.play().catch(e => console.log("Audio blocked: Interaction required."));
                             }
                         }
@@ -3200,10 +3311,12 @@
                         layer.style.backgroundColor = 'transparent';
                         layer.style.opacity = '1';
 
-                        video.currentTime = 0;
-                        video.muted = false;
-                        video.volume = 1.0;
-                        video.style.display = 'block';
+                        if (isFlashbangVideoEnabled) {
+                            video.currentTime = 0;
+                            video.muted = false;
+                            video.volume = 1.0;
+                            video.style.display = 'block';
+                        }
 
                         video.play().catch(e => {
                             console.error("Audio/Video blocked! Ensure pointer is locked or screen clicked.", e);
@@ -3339,10 +3452,12 @@
                 layer.style.backgroundColor = 'transparent';
                 layer.style.opacity = '1';
 
-                video.currentTime = 0;
-                video.muted = false;
-                video.volume = 1.0;
-                video.style.display = 'block';
+                if (isFlashbangVideoEnabled) {
+                    video.currentTime = 0;
+                    video.muted = false;
+                    video.volume = 1.0;
+                    video.style.display = 'block';
+                }
 
                 video.play().catch(e => {
                     console.error("Jumpscare blocked! User must interact with document first.", e);

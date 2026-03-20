@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sand Box 3D for PC</title>
     
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/cannon.js"></script> 
-    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-    <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babylonjs@8.56.0/babylon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@8.56.0/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babylonjs-inspector@8.56.0/babylon.inspector.bundle.js"></script>
 
     <style>
         html, body {
@@ -286,7 +286,7 @@
             font-size: 14px;
             text-shadow: 0 0 10px rgba(74, 163, 223, 0.3);
         }
-        .loader-subtext {
+        .loader-subtext, .loader-subtext-version {
             color: #555;
             font-size: 10px;
             margin-top: 10px;
@@ -518,6 +518,115 @@
         #fps-render { color: #00ff00; }
         #fps-phys { color: #f39c12; }
 
+        #restart-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #restart-modal {
+            position: relative;
+            width: 420px;
+            background: rgba(20, 20, 20, 0.97);
+            border-radius: 12px;
+            border: 1px solid #e74c3c;
+            box-shadow: 0 10px 40px rgba(231, 76, 60, 0.25);
+            padding: 28px;
+            color: #eee;
+            pointer-events: auto;
+        }
+
+        #restart-modal h3 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+            color: #e74c3c;
+            letter-spacing: 1px;
+        }
+
+        #restart-modal .restart-subtitle {
+            font-size: 11px;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 14px;
+        }
+
+        .restart-option {
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: default;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: border-color 0.15s, background 0.15s;
+            text-align: left;
+        }
+
+        .restart-option:hover {
+            background: #252525;
+        }
+
+        .restart-option-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .restart-option-desc {
+            font-size: 11px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .restart-option.opt-babylon  { border-left: 4px solid #3498db; }
+        .restart-option.opt-all      { border-left: 4px solid #f39c12; }
+        .restart-option.opt-reset    { border-left: 4px solid #e74c3c; }
+
+        .restart-option.opt-babylon:hover  { border-color: #3498db; background: #1a2530; }
+        .restart-option.opt-all:hover      { border-color: #f39c12; background: #2a2010; }
+        .restart-option.opt-reset:hover    { border-color: #e74c3c; background: #2a1a1a; }
+
+        .restart-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .dot-blue   { background: #3498db; box-shadow: 0 0 5px #3498db; }
+        .dot-orange { background: #f39c12; box-shadow: 0 0 5px #f39c12; }
+        .dot-red    { background: #e74c3c; box-shadow: 0 0 5px #e74c3c; }
+
+        #restart-modal-close {
+            margin-top: 16px;
+            width: 100%;
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+            padding: 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            justify-content: center;
+        }
+        #restart-modal-close:hover { background: #2a2a2a; color: #ccc; border-color: #666; }
+
     </style>
 </head>
 <body>
@@ -528,7 +637,7 @@
         <div class="loader-content">
             <div class="loader-spinner"></div>
             <div class="loader-text">Sand Box 3D for PC</div>
-            <div class="loader-subtext">Version: v26.03.15</div>
+            <div class="loader-subtext-version">Version: v26.03.20</div>
             <div class="loader-subtext">Setting up your sandbox...</div>
             <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
@@ -805,6 +914,13 @@
                                 <div class="slider-label"><span id="lbl-camera-fov">Camera FOV</span><span id="val-fov">1.2</span></div>
                                 <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
                             </div>
+
+                            <button id="btn-restart-options" onclick="toggleRestartModal()"
+                                style="border-left: 4px solid #e74c3c; margin-bottom: 10px;">
+                                <span class="shape-icon"
+                                    style="background: transparent; border: 2px solid #e74c3c; border-radius: 50%; width: 10px; height: 10px;"></span>
+                                Restart Options
+                            </button>
                         </div>
 
                         <div class="settings-category">
@@ -882,6 +998,123 @@
                         </div>
 
                         <div class="settings-category">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Rendering Pipeline</div>
+                        
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
+                                    <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
+                                    Post Processing is OFF
+                                </button>
+                            </div>
+                        
+                            <div id="filmfx-panel"
+                                style="display: none; margin-top: 4px; padding: 10px; background: rgba(0,0,0,0.25); border-left: 3px solid #e74c3c; border-radius: 0 4px 4px 0;">
+                                <button id="btn-filmfx" onclick="toggleFilmFX()"
+                                    style="border-left: 4px solid #c0392b; padding: 10px; margin-bottom: 8px;">
+                                    <span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span>
+                                    Film Effects is OFF
+                                </button>
+                        
+                                <div id="filmfx-sliders" style="display: none;">
+                        
+                                    <div id="lbl-fx-sharpness"
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Sharpness</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-sharpen-str">Strength</span><span id="val-sharpen">0.6</span>
+                                        </div>
+                                        <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                        
+                                    <div id="lbl-fx-grain"
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Grain Effects</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-grain-int">Intensity</span><span id="val-grain">28</span></div>
+                                        <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-grain-spd">Animation Speed</span><span
+                                                id="val-grain-speed">1.0</span></div>
+                                        <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                        
+                                    <div id="lbl-fx-bloom"
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Bloom</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-bloom-thr">Threshold</span><span
+                                                id="val-bloom-threshold">0.8</span></div>
+                                        <input type="range" id="opt-bloom-threshold" min="0.0" max="1.0" step="0.05" value="0.8"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-bloom-wgt">Weight</span><span id="val-bloom-weight">0.35</span>
+                                        </div>
+                                        <input type="range" id="opt-bloom-weight" min="0.0" max="1.0" step="0.05" value="0.35"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-bloom-ker">Kernel</span><span id="val-bloom-kernel">64</span>
+                                        </div>
+                                        <input type="range" id="opt-bloom-kernel" min="16" max="128" step="8" value="64"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                        
+                                    <div id="lbl-fx-chroma"
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Chromatic Aberration</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-chroma-amt">Amount</span><span id="val-chroma-amount">30</span>
+                                        </div>
+                                        <input type="range" id="opt-chroma-amount" min="0" max="100" step="1" value="30"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-chroma-rad">Radial Intensity</span><span
+                                                id="val-chroma-radial">1.0</span></div>
+                                        <input type="range" id="opt-chroma-radial" min="0.0" max="3.0" step="0.1" value="1.0"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                        
+                                    <div id="lbl-fx-vignette"
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Vignette</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-vignette-wgt">Weight</span><span
+                                                id="val-vignette-weight">2.5</span></div>
+                                        <input type="range" id="opt-vignette-weight" min="0.0" max="6.0" step="0.1" value="2.5"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-vignette-fov">FOV Spread</span><span
+                                                id="val-vignette-fov">0.5</span></div>
+                                        <input type="range" id="opt-vignette-fov" min="0.1" max="1.0" step="0.05" value="0.5"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                        
+                                    <div id="lbl-fx-imageproc"
+                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                        Image Processing</div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-ip-contrast">Contrast</span><span
+                                                id="val-ip-contrast">1.15</span></div>
+                                        <input type="range" id="opt-ip-contrast" min="0.5" max="3.0" step="0.05" value="1.15"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                    <div class="slider-group">
+                                        <div class="slider-label"><span id="lbl-ip-exposure">Exposure</span><span
+                                                id="val-ip-exposure">1.05</span></div>
+                                        <input type="range" id="opt-ip-exposure" min="0.2" max="3.0" step="0.05" value="1.05"
+                                            oninput="updateFilmFXParams()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-category">
                             <div class="section-label" style="font-size: 14px; margin-top: 0;">Overlay</div>
             
                             <div class="control-group" style="margin-top: 15px;">
@@ -899,109 +1132,58 @@
                             </div>
                         </div>
 
-                        <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Rendering Pipeline</div>
+                        <div id="restart-modal-overlay">
+                            <div id="restart-modal">
+                                <h3>Restart Options</h3>
+                                <div class="restart-subtitle">SandBox3D — Session Control</div>
                         
-                            <div class="control-group" style="margin-top: 15px;">
-                                <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
-                                    <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
-                                    Post Processing is OFF
+                                <button class="restart-option opt-babylon" onclick="sb3dRestartConfirm('babylon')">
+                                    <span class="restart-option-title">
+                                        <span class="restart-dot dot-blue"></span>
+                                        Restart Babylon
+                                    </span>
+                                    <span class="restart-option-desc">
+                                        Disposes and reinitializes the Babylon.js engine &amp; scene only.<br>
+                                        Your UI state and settings are untouched.
+                                    </span>
                                 </button>
+                        
+                                <button class="restart-option opt-all" onclick="sb3dRestartConfirm('all')">
+                                    <span class="restart-option-title">
+                                        <span class="restart-dot dot-orange"></span>
+                                        Restart Session
+                                    </span>
+                                    <span class="restart-option-desc">
+                                        Full game restart — reloads the page.<br>
+                                        Persisted settings (PostFX, WebGPU, language, etc.) are kept.
+                                    </span>
+                                </button>
+                        
+                                <button class="restart-option opt-reset" onclick="sb3dRestartConfirm('reset')">
+                                    <span class="restart-option-title">
+                                        <span class="restart-dot dot-red"></span>
+                                        Restart then Clear All
+                                    </span>
+                                    <span class="restart-option-desc">
+                                        Clears ALL saved settings, then restarts.<br>
+                                        Returns sandbox to factory defaults.
+                                    </span>
+                                </button>
+                        
+                                <button id="restart-modal-close" onclick="toggleRestartModal()">Cancel</button>
                             </div>
-                            
-                            <div id="filmfx-panel"
-                                style="display: none; margin-top: 4px; padding: 10px; background: rgba(0,0,0,0.25); border-left: 3px solid #e74c3c; border-radius: 0 4px 4px 0;">
-                                <button id="btn-filmfx" onclick="toggleFilmFX()"
-                                    style="border-left: 4px solid #c0392b; padding: 10px; margin-bottom: 8px;">
-                                    <span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span>
-                                    Film Effects is OFF
+                        </div>
+
+                        <div class="settings-category" style="grid-column: 1 / -1;">
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">About</div>
+                        
+                            <div class="control-group" style="margin-top: 10px;">
+                                <button id="btn-about-versions" onclick="showAboutVersions()"
+                                    style="border-left: 4px solid #4aa3df; padding: 12px;">
+                                    <span class="shape-icon"
+                                        style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span>
+                                    Versions
                                 </button>
-                            
-                                <div id="filmfx-sliders" style="display: none;">
-                            
-                                    <div
-                                        id="lbl-fx-sharpness" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Sharpness</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-sharpen-str">Strength</span><span id="val-sharpen">0.6</span></div>
-                                        <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                            
-                                    <div
-                                        id="lbl-fx-grain" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Grain Effects</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-grain-int">Intensity</span><span id="val-grain">28</span></div>
-                                        <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-grain-spd">Animation Speed</span><span id="val-grain-speed">1.0</span></div>
-                                        <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                            
-                                    <div
-                                        id="lbl-fx-bloom" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Bloom</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-bloom-thr">Threshold</span><span id="val-bloom-threshold">0.8</span></div>
-                                        <input type="range" id="opt-bloom-threshold" min="0.0" max="1.0" step="0.05" value="0.8"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-bloom-wgt">Weight</span><span id="val-bloom-weight">0.35</span></div>
-                                        <input type="range" id="opt-bloom-weight" min="0.0" max="1.0" step="0.05" value="0.35"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-bloom-ker">Kernel</span><span id="val-bloom-kernel">64</span></div>
-                                        <input type="range" id="opt-bloom-kernel" min="16" max="128" step="8" value="64"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                            
-                                    <div
-                                        id="lbl-fx-chroma" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Chromatic Aberration</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-chroma-amt">Amount</span><span id="val-chroma-amount">30</span></div>
-                                        <input type="range" id="opt-chroma-amount" min="0" max="100" step="1" value="30"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-chroma-rad">Radial Intensity</span><span id="val-chroma-radial">1.0</span></div>
-                                        <input type="range" id="opt-chroma-radial" min="0.0" max="3.0" step="0.1" value="1.0"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                            
-                                    <div
-                                        id="lbl-fx-vignette" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Vignette</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-vignette-wgt">Weight</span><span id="val-vignette-weight">2.5</span></div>
-                                        <input type="range" id="opt-vignette-weight" min="0.0" max="6.0" step="0.1" value="2.5"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-vignette-fov">FOV Spread</span><span id="val-vignette-fov">0.5</span></div>
-                                        <input type="range" id="opt-vignette-fov" min="0.1" max="1.0" step="0.05" value="0.5"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                            
-                                    <div
-                                        id="lbl-fx-imageproc" style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Image Processing</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-ip-contrast">Contrast</span><span id="val-ip-contrast">1.15</span></div>
-                                        <input type="range" id="opt-ip-contrast" min="0.5" max="3.0" step="0.05" value="1.15"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-ip-exposure">Exposure</span><span id="val-ip-exposure">1.05</span></div>
-                                        <input type="range" id="opt-ip-exposure" min="0.2" max="3.0" step="0.05" value="1.05"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1252,9 +1434,25 @@
                 toastUploadWebGPU: "Custom 3D model uploads are disabled in WebGPU mode to prevent Context Lost crashes.\n\nPlease switch to WebGL in Game Settings to use this feature.",
                 toastUploadFail: "Failed to load model.",
                 toastLangConfirm: "Switch back to English? Game will restart to apply it.",
+                restartModalTitle: "Restart Options",
+                restartModalSubtitle: "SandBox3D — Session Control",
+                restartModalCancel: "Cancel",
+                restartBtnSettings: "Restart Options",
+                restartBabylonTitle: "Restart Babylon",
+                restartBabylonDesc: "Disposes and reinitializes the Babylon.js engine & scene only.<br>Your UI state and settings are untouched.",
+                restartAllTitle: "Restart Session",
+                restartAllDesc: "Full game restart — reloads the page.<br>Persisted settings (PostFX, WebGPU, language) are kept.",
+                restartResetTitle: "Restart then Clear All",
+                restartResetDesc: "Clears ALL saved settings, then restarts.<br>Returns sandbox to factory defaults.",
+                restartBabylonConfirmTitle: "Restart Babylon engine?",
+                restartBabylonConfirmBody: "This will dispose and reinitialize the Babylon engine and scene.\nSpawned objects will be cleared. Settings are untouched.\n\nOK to proceed — CANCEL to abort.",
+                restartAllConfirmTitle: "Restart Session?",
+                restartAllConfirmBody: "This will reload the page and restart the full game session.\nYour saved settings (PostFX, WebGPU, language, etc.) will be kept.\n\nOK to proceed — CANCEL to abort.",
+                restartResetConfirmTitle: "Restart then Clear All?",
+                restartResetConfirmBody: "WARNING: This clears ALL persisted settings and reloads.\nPostFX, WebGPU preference, language — everything wiped.\n\nOK to wipe and restart — CANCEL to abort.",
             },
             genz: {
-                pageTitle: "sandbox 3d 💀",
+                pageTitle: "sandbox 3d pc 💀",
                 panelTools: "Toolbox 💀 [Q]",
                 panelObjects: "Stuff [E]",
                 labelSelection: "Pick ur fighter",
@@ -1364,9 +1562,25 @@
                 toastUploadWebGPU: "oop uploads are locked in WebGPU mode bestie 🔒\n\nSwitch to WebGL2 in SB3D Settings to drop ur 3D file.",
                 toastUploadFail: "bruh it failed to load that model 💀\nnot it bestie, try another file.",
                 toastLangConfirm: "switching back to basic English? game gotta restart tho, u good?",
+                restartModalTitle: "⚡ restart when? 💀",
+                restartModalSubtitle: "sandbox3d — session went cooked",
+                restartModalCancel: "nah never mind",
+                restartBtnSettings: "how to nuke your session 💀",
+                restartBabylonTitle: "nuke babylon",
+                restartBabylonDesc: "nukes the babylon engine and brings it back no cap.<br>ur spawned stuff is gone but settings stay fr.",
+                restartAllTitle: "nuke dis session",
+                restartAllDesc: "full page reload bestie — game comes back fresh.<br>ur settings are safe tho (PostFX, WebGPU, lang).",
+                restartResetTitle: "NUKE ALL",
+                restartResetDesc: "wipes EVERYTHING saved then reloads 💀<br>factory reset arc activated.",
+                restartBabylonConfirmTitle: "restart babylon fr?",
+                restartBabylonConfirmBody: "this will yeet the babylon engine and cook it back up.\nspawned stuff goes bye bye. settings untouched.\n\nOK = do it\nCANCEL = nah abort",
+                restartAllConfirmTitle: "restart the whole thing?",
+                restartAllConfirmBody: "full page reload incoming bestie.\nsaved settings stay (PostFX, WebGPU, lang).\n\nOK = let's go\nCANCEL = nvm",
+                restartResetConfirmTitle: "restart AND wipe everything?? 💀",
+                restartResetConfirmBody: "bro this deletes ALL ur saved settings.\nPostFX, WebGPU, language — all gone fr.\n\nOK = yolo wipe it\nCANCEL = abort abort",
             },
             shakespeare: {
-                pageTitle: "Thee Noble Sandbox of Three Dimensions",
+                pageTitle: "Thee Noble Sandbox of Three Dimensions, PC Edition",
                 panelTools: "Instruments of Craft [Q]",
                 panelObjects: "Wares of Conjury [E]",
                 labelSelection: "Choose Thy Form",
@@ -1476,6 +1690,22 @@
                 toastUploadWebGPU: "Uploads are forbidden in WebGPU mode, noble one! 🔒\n\nSwitch to WebGL2 in SB3D Settings to summon thy 3D artefact.",
                 toastUploadFail: "Alas! The model hath failed to load! 💀\nA most grievous outcome — prithee, try another file.",
                 toastLangConfirm: "Dost thou wish to return to plain English? The game must restart to apply the change.",
+                restartModalTitle: "⚡ The Rites of Restarting",
+                restartModalSubtitle: "SandBox3D — A Session in Peril",
+                restartModalCancel: "Nay, I Shall Stay",
+                restartBtnSettings: "Rites of the Session 🎭",
+                restartBabylonTitle: "Rekindle the Engine",
+                restartBabylonDesc: "Disposes and rekindles the Babylon engine most noble.<br>Thy spawned creations shall perish, yet settings remain.",
+                restartAllTitle: "Commence Anew",
+                restartAllDesc: "A full restart of the session — the page reloads anew.<br>Thy persisted settings survive the ordeal.",
+                restartResetTitle: "Purge & Begin Again",
+                restartResetDesc: "All persisted settings shall be purged ere the restart.<br>The sandbox returneth to its original state.",
+                restartBabylonConfirmTitle: "Restart the Babylon Engine?",
+                restartBabylonConfirmBody: "The engine shall be disposed and rekindled anew.\nThy spawned objects shall perish. Settings remain untouched.\n\nOK to proceed — CANCEL to retreat.",
+                restartAllConfirmTitle: "Restart the Full Session?",
+                restartAllConfirmBody: "The page shall reload and the session begin anew.\nThy saved settings (PostFX, WebGPU, language) shall endure.\n\nOK to proceed — CANCEL to retreat.",
+                restartResetConfirmTitle: "Restart and Purge All Settings?",
+                restartResetConfirmBody: "Hark! This shall wipe ALL persisted settings before restarting.\nPostFX, WebGPU, language — all shall be undone.\n\nOK to purge and restart — CANCEL to retreat.",
             },
         };
 
@@ -1498,6 +1728,19 @@
                     setTimeout(() => ls.style.background = '#111', 80);
                 }, 700);
             }
+        })();
+
+        const SB3D_VERSION = (() => {
+            const el = document.querySelector('.loader-subtext-version');
+            if (!el) return 'Unknown';
+            const match = (el.innerText || el.textContent).match(/v[\d.]+/i);
+            return match ? match[0] : 'Unknown';
+        })();
+
+        const SB3D_EDITION = (() => {
+            const el = document.querySelector('.loader-text');
+            if (!el) return 'Unknown';
+            return (el.innerText || el.textContent).trim();
         })();
 
         (function () {
@@ -1634,6 +1877,10 @@
             document.title = t.pageTitle;
             document.querySelector('#left-panel .panel-header h2').innerHTML = t.panelTools;
             document.querySelector('#right-panel .panel-header h2').innerHTML = t.panelObjects;
+            const loaderText = document.querySelector('.loader-text');
+            if (loaderText) loaderText.innerText = t.pageTitle;
+            const glitchGhost = document.querySelector('.glitch-ghost');
+            if (glitchGhost) glitchGhost.innerText = t.pageTitle;
 
             document.querySelectorAll('.section-label').forEach(el => {
                 const raw = el.innerText.trim().toUpperCase();
@@ -1675,6 +1922,7 @@
                 'btn-clear': t.btnClear,
                 'btn-toggle-inspector': `<span class="shape-icon" style="background:transparent;border:2px solid #f1c40f;border-radius:2px;width:10px;height:10px;"></span> ${t.btnInspector}`,
                 'btn-custom': `<span class="shape-icon icon-custom"></span> <span id="custom-name">${t.spawnUpload}</span>`,
+                'btn-restart-options': `<span class="shape-icon" style="background:transparent;border:2px solid #e74c3c;border-radius:50%;width:10px;height:10px;"></span> ${t.restartBtnSettings}`,
             };
             const sliderLbls = {
                 'lbl-ambience-vol': t.labelAmbienceVol,
@@ -1729,11 +1977,30 @@
                 else if (['Block Type', 'Block Vibe', 'Block of Chosen Form'].includes(raw)) el.innerText = t.labelBlockType;
             });
 
+            const rModal = document.getElementById('restart-modal');
+            if (rModal) {
+                rModal.querySelector('h3').innerText = t.restartModalTitle;
+                rModal.querySelector('.restart-subtitle').innerText = t.restartModalSubtitle;
+                document.getElementById('restart-modal-close').innerText = t.restartModalCancel;
+
+                const opts = rModal.querySelectorAll('.restart-option');
+                const keys = [
+                    { title: t.restartBabylonTitle, desc: t.restartBabylonDesc },
+                    { title: t.restartAllTitle, desc: t.restartAllDesc },
+                    { title: t.restartResetTitle, desc: t.restartResetDesc },
+                ];
+                opts.forEach((opt, i) => {
+                    opt.querySelector('.restart-option-title').innerHTML =
+                        `<span class="restart-dot ${['dot-blue', 'dot-orange', 'dot-red'][i]}"></span> ${keys[i].title}`;
+                    opt.querySelector('.restart-option-desc').innerHTML = keys[i].desc;
+                });
+            }
+
             const skipBtn = document.getElementById('skip-loading-btn');
             if (skipBtn) skipBtn.innerText = t.skipBtn;
 
-            const loaderSubs = document.querySelectorAll('.loader-subtext');
-            if (loaderSubs.length >= 2) loaderSubs[loaderSubs.length - 1].innerText = t.loaderSub;
+            const loaderSub = document.querySelector('.loader-subtext');
+            if (loaderSub) loaderSub.innerText = t.loaderSub;
 
             const hudBtn = document.getElementById('btn-toggle-hud');
             if (hudBtn) {
@@ -2358,6 +2625,99 @@
                 overlay.style.display = 'none';
                 btn.classList.remove('active');
             }
+        }
+
+        function toggleRestartModal() {
+            const overlay = document.getElementById('restart-modal-overlay');
+            const isHidden = overlay.style.display === 'none' || overlay.style.display === '';
+            overlay.style.display = isHidden ? 'flex' : 'none';
+        }
+
+        function showAboutVersions() {
+            const babylonVersion = BABYLON.Engine.Version || 'Unknown';
+
+            let cannonVersion = 'Unknown';
+            if (typeof CANNON !== 'undefined' && CANNON.version) {
+                cannonVersion = CANNON.version;
+            }
+
+            const sb3dVersion = SB3D_VERSION;
+
+            alert(
+                `Version Info\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `Edition: ${SB3D_EDITION}\n` +
+                `SandBox3D: ${sb3dVersion}\n` +
+                `Babylon.js: v${babylonVersion}\n` +
+                `Cannon.js: v${cannonVersion}\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `Under the HEXON Laboratories family\n` +
+                `Lead by Master Shaman`
+            );
+        }
+
+        function sb3dRestartConfirm(type) {
+            const t = SB3D_LANGS[activeLang];
+            const labels = {
+                babylon: { title: t.restartBabylonConfirmTitle, body: t.restartBabylonConfirmBody },
+                all: { title: t.restartAllConfirmTitle, body: t.restartAllConfirmBody },
+                reset: { title: t.restartResetConfirmTitle, body: t.restartResetConfirmBody },
+            };
+            
+            const info = labels[type];
+            const confirmed = confirm(`${info.title}\n\n${info.body}`);
+            if (!confirmed) return;
+
+            toggleRestartModal();
+
+            if (type === 'babylon') {
+                sb3dRestartBabylon();
+            } else if (type === 'all') {
+                window.location.reload();
+            } else if (type === 'reset') {
+                localStorage.removeItem('sb3d_postfx');
+                localStorage.removeItem('sb3d_use_webgpu');
+                localStorage.removeItem('sb3d_lang');
+                window.location.reload();
+            }
+        }
+
+        function sb3dRestartBabylon() {
+            const sb3d = workshop.shaman.sandbox3d;
+
+            if (sb3d.engine) sb3d.engine.stopRenderLoop();
+
+            if (typeof removeFilmFX === 'function') removeFilmFX();
+            sb3dPostPipeline = null;
+
+            const ta = sb3d.TemporalAudio;
+            if (ta.enabled) ta.toggle();
+            if (ta.timer) { clearTimeout(ta.timer); ta.timer = null; }
+            if (ta.audioCtx) { ta.audioCtx.close(); ta.audioCtx = null; ta.gainNode = null; ta.sourceNodes = new Map(); }
+
+            if (isDayNightEnabled) toggleDayNight();
+            if (syncDeviceTimeInterval) { clearInterval(syncDeviceTimeInterval); syncDeviceTimeInterval = null; }
+
+            if (isFlashlightOn && typeof toggleFlashlight === 'function') toggleFlashlight();
+            if (flashlightRef) { flashlightRef.dispose(); flashlightRef = null; }
+
+            spawnedMeshes = [];
+            if (sb3d.scene) { sb3d.scene.dispose(); sb3d.scene = null; }
+            if (sb3d.engine) { sb3d.engine.dispose(); sb3d.engine = null; }
+
+            sceneRef = null;
+            viewTargetMesh = null;
+            customModelTemplate = null;
+            dayNightLightRef = null;
+            dayNightDirRef = null;
+            dayNightSkyRef = null;
+            isFilmFXEnabled = false;
+            isInspectorEnabled = false;
+            isBuildMode = false;
+            selectedShape = 'box';
+            isFrustumCullingEnabled = false;
+
+            sb3d.init();
         }
 
         function showBabylonInspector() {

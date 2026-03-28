@@ -669,7 +669,7 @@
         <div class="loader-content">
             <div class="loader-spinner"></div>
             <div class="loader-text">Sand Box 3D for Mobile</div>
-            <div class="loader-subtext-version">Version: v26.03.20</div>
+            <div class="loader-subtext-version">Version: v26.03.28</div>
             <div class="loader-subtext">Setting up your sandbox...</div>
             <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
@@ -740,6 +740,11 @@
                     <span class="shape-icon icon-x">X</span> None (Safe Mode)
                 </button>
             </div>
+            <div class="control-group">
+                <button id="btn-structure" onclick="selectShape('structure')">
+                    <span class="shape-icon icon-structure"></span> Structure
+                </button>
+            </div>
     
             <div class="section-label">Properties</div>
             <div class="slider-group">
@@ -759,6 +764,16 @@
                 <input type="range" id="mass-slider" min="0.1" max="100.0" step="0.1" value="1.5"
                     oninput="updateMass(this.value)">
             </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span id="lbl-glow">Glow Intensity</span>
+                    <span id="glow-display">1.0</span>
+                </div>
+                <input type="range" id="glow-slider" min="0.1" max="5.0" step="0.1" value="1.0"
+                    oninput="updateGlow(this.value)">
+            </div>
+            
             <div id="structure-settings" class="slider-group" style="display: none; border-left: 3px solid #9b59b6;">
                 <div class="slider-label"><span>Grid Size (L x H x W)</span></div>
                 <div style="display: flex; gap: 5px; margin-bottom: 5px;">
@@ -781,6 +796,10 @@
                     <option value="glass_sphere">Glass Sphere</option>
                     <option value="glass_cylinder">Glass Cylinder</option>
                     <option value="glass_triangle">Glass Triangle</option>
+                    <option value="glow_box">Glow Cube</option>
+                    <option value="glow_sphere">Glow Sphere</option>
+                    <option value="glow_cylinder">Glow Cylinder</option>
+                    <option value="glow_triangle">Glow Triangle</option>
                 </select>
             </div>
     
@@ -796,13 +815,6 @@
                         <span class="shape-icon icon-custom"></span> <span id="custom-name">Spawn Upload</span>
                     </button>
                 </div>
-            </div>
-
-            <div class="section-label">Modes</div>
-            <div class="control-group">
-                <button id="btn-structure" onclick="selectShape('structure')">
-                    <span class="shape-icon icon-structure"></span> Structure
-                </button>
             </div>
     
             <div class="section-label">Shapes</div>
@@ -834,6 +846,23 @@
                 </button>
                 <button id="btn-glass_tri" onclick="selectShape('glass_triangle')">
                     <span class="shape-icon icon-tri" style="opacity: 0.5;"></span> Glass Triangle
+                </button>
+            </div>
+
+            <div class="section-label" id="lbl-glow-shapes">Glow Shapes</div>
+            <div class="control-group">
+                <button id="btn-glow_box" onclick="selectShape('glow_box')">
+                    <span class="shape-icon icon-box" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> Glow Cube
+                </button>
+                <button id="btn-glow_sphere" onclick="selectShape('glow_sphere')">
+                    <span class="shape-icon icon-sphere" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> Glow Sphere
+                </button>
+                <button id="btn-glow_cyl" onclick="selectShape('glow_cylinder')">
+                    <span class="shape-icon icon-cyl" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> Glow Cylinder
+                </button>
+                <button id="btn-glow_tri" onclick="selectShape('glow_triangle')">
+                    <span class="shape-icon icon-tri" style="border-bottom-color: #fff; filter: drop-shadow(0 0 3px #fff);"></span>
+                    Glow Triangle
                 </button>
             </div>
 
@@ -891,7 +920,7 @@
                             <div class="section-label" style="font-size: 14px; margin-top: 0;">System</div>
                             
                             <div class="control-group" style="margin-bottom: 15px;">
-                                <span style="font-size: 12px; color: #ddd; margin-bottom: 5px;">Framerate Limits</span>
+                                <span id="lbl-framerate-limits" style="font-size: 12px; color: #ddd; margin-bottom: 5px;">Framerate Limits</span>
                                 <div style="display: flex; width: 100%; gap: 6px;">
                                     <button class="fps-btn" onclick="setFPS(24)">24</button>
                                     <button class="fps-btn" onclick="setFPS(30)">30</button>
@@ -955,13 +984,6 @@
                                 <div class="slider-label"><span id="lbl-camera-fov">Camera FOV</span><span id="val-fov">1.2</span></div>
                                 <input type="range" id="opt-fov" min="0.5" max="2.5" value="1.2" step="0.1" oninput="updateGameSettings()">
                             </div>
-
-                            <button id="btn-restart-options" onclick="toggleRestartModal()"
-                                style="border-left: 4px solid #e74c3c; margin-bottom: 10px;">
-                                <span class="shape-icon"
-                                    style="background: transparent; border: 2px solid #e74c3c; border-radius: 50%; width: 10px; height: 10px;"></span>
-                                Restart Options
-                            </button>
                         </div>
             
                         <div class="settings-category">
@@ -1010,6 +1032,13 @@
 
                         <div class="settings-category">
                             <div class="section-label" style="font-size: 14px; margin-top: 0;">Environment</div>
+
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-sun" onclick="toggleSun()" style="border-left: 4px solid #f1c40f; padding: 12px;">
+                                    <span class="shape-icon" style="background: #f1c40f; border-radius: 50%;"></span>
+                                    Sun is ON
+                                </button>
+                            </div>
                         
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-daynight" onclick="toggleDayNight()" style="border-left: 4px solid #f39c12; padding: 12px;">
@@ -1049,108 +1078,109 @@
                                 </button>
                             </div>
                         
-                            <div id="filmfx-panel"
-                                style="display: none; margin-top: 4px; padding: 10px; background: rgba(0,0,0,0.25); border-left: 3px solid #e74c3c; border-radius: 0 4px 4px 0;">
-                                <button id="btn-filmfx" onclick="toggleFilmFX()"
-                                    style="border-left: 4px solid #c0392b; padding: 10px; margin-bottom: 8px;">
-                                    <span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span>
-                                    Film Effects is OFF
+                            <div id="postfx-showmore-wrap" style="display: none; margin-top: 6px;">
+                                <button id="btn-show-more" onclick="togglePostFXModal()"
+                                    style="border-left: 4px solid #c0392b; background: #1a0a0a; padding: 10px; font-size: 12px; color: #e74c3c;">
+                                    <span class="shape-icon"
+                                        style="background: transparent; border: 2px solid #c0392b; border-radius: 2px; width: 10px; height: 10px;"></span>
+                                    Show more
                                 </button>
+                            </div>
+                        </div>
                         
-                                <div id="filmfx-sliders" style="display: none;">
+                        <div id="postfx-modal-overlay"
+                            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 1200; display: none; justify-content: center; align-items: center;">
+                            <div id="postfx-modal"
+                                style="position: relative; width: calc(100vw - 120px); max-width: 680px; max-height: calc(100vh - 120px); background: rgba(25,25,25,0.97); border-radius: 12px; border: 1px solid #e74c3c; box-shadow: 0 10px 40px rgba(231,76,60,0.3); display: flex; flex-direction: column; padding: 25px; color: #eee; overflow-y: auto;">
+                                
+                                <div class="settings-header" style="border-bottom-color: #e74c3c;">
+                                    <h2 style="color: #e74c3c;">Post Processing</h2>
+                                    <button class="settings-close-btn" onclick="togglePostFXModal()">Close</button>
+                                </div>
                         
-                                    <div id="lbl-fx-sharpness"
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Sharpness</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-sharpen-str">Strength</span><span id="val-sharpen">0.6</span>
+                                <div class="settings-category" style="border: none; padding: 0; background: transparent;">
+                        
+                                    <div class="control-group" style="margin-top: 10px;">
+                                        <button id="btn-filmfx" onclick="toggleFilmFX()"
+                                            style="border-left: 4px solid #c0392b; padding: 10px; margin-bottom: 8px;">
+                                            <span class="shape-icon" style="background: #c0392b; border-radius: 2px;"></span>
+                                            Film Effects is OFF
+                                        </button>
+                                    </div>
+                        
+                                    <div id="filmfx-sliders" style="display: none;">
+                        
+                                        <div id="lbl-fx-sharpness"
+                                            style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                            Sharpness</div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-sharpen-str">Strength</span><span id="val-sharpen">0.6</span></div>
+                                            <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6" oninput="updateFilmFXParams()">
                                         </div>
-                                        <input type="range" id="opt-sharpen" min="0.0" max="2.0" step="0.05" value="0.6"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
                         
-                                    <div id="lbl-fx-grain"
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Grain Effects</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-grain-int">Intensity</span><span id="val-grain">28</span></div>
-                                        <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-grain-spd">Animation Speed</span><span
-                                                id="val-grain-speed">1.0</span></div>
-                                        <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                        
-                                    <div id="lbl-fx-bloom"
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Bloom</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-bloom-thr">Threshold</span><span
-                                                id="val-bloom-threshold">0.8</span></div>
-                                        <input type="range" id="opt-bloom-threshold" min="0.0" max="1.0" step="0.05" value="0.8"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-bloom-wgt">Weight</span><span id="val-bloom-weight">0.35</span>
+                                        <div id="lbl-fx-grain"
+                                            style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                            Grain Effects</div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-grain-int">Intensity</span><span id="val-grain">28</span></div>
+                                            <input type="range" id="opt-grain" min="0" max="100" step="1" value="28" oninput="updateFilmFXParams()">
                                         </div>
-                                        <input type="range" id="opt-bloom-weight" min="0.0" max="1.0" step="0.05" value="0.35"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-bloom-ker">Kernel</span><span id="val-bloom-kernel">64</span>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-grain-spd">Animation Speed</span><span id="val-grain-speed">1.0</span></div>
+                                            <input type="range" id="opt-grain-speed" min="0.1" max="5.0" step="0.1" value="1.0" oninput="updateFilmFXParams()">
                                         </div>
-                                        <input type="range" id="opt-bloom-kernel" min="16" max="128" step="8" value="64"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
                         
-                                    <div id="lbl-fx-chroma"
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Chromatic Aberration</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-chroma-amt">Amount</span><span id="val-chroma-amount">30</span>
+                                        <div id="lbl-fx-bloom"
+                                            style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                            Bloom</div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-bloom-thr">Threshold</span><span id="val-bloom-threshold">0.8</span></div>
+                                            <input type="range" id="opt-bloom-threshold" min="0.0" max="1.0" step="0.05" value="0.8" oninput="updateFilmFXParams()">
                                         </div>
-                                        <input type="range" id="opt-chroma-amount" min="0" max="100" step="1" value="30"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-chroma-rad">Radial Intensity</span><span
-                                                id="val-chroma-radial">1.0</span></div>
-                                        <input type="range" id="opt-chroma-radial" min="0.0" max="3.0" step="0.1" value="1.0"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-bloom-wgt">Weight</span><span id="val-bloom-weight">0.35</span></div>
+                                            <input type="range" id="opt-bloom-weight" min="0.0" max="1.0" step="0.05" value="0.35" oninput="updateFilmFXParams()">
+                                        </div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-bloom-ker">Kernel</span><span id="val-bloom-kernel">64</span></div>
+                                            <input type="range" id="opt-bloom-kernel" min="16" max="128" step="8" value="64" oninput="updateFilmFXParams()">
+                                        </div>
                         
-                                    <div id="lbl-fx-vignette"
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Vignette</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-vignette-wgt">Weight</span><span
-                                                id="val-vignette-weight">2.5</span></div>
-                                        <input type="range" id="opt-vignette-weight" min="0.0" max="6.0" step="0.1" value="2.5"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-vignette-fov">FOV Spread</span><span
-                                                id="val-vignette-fov">0.5</span></div>
-                                        <input type="range" id="opt-vignette-fov" min="0.1" max="1.0" step="0.05" value="0.5"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
+                                        <div id="lbl-fx-chroma"
+                                            style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                            Chromatic Aberration</div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-chroma-amt">Amount</span><span id="val-chroma-amount">30</span></div>
+                                            <input type="range" id="opt-chroma-amount" min="0" max="100" step="1" value="30" oninput="updateFilmFXParams()">
+                                        </div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-chroma-rad">Radial Intensity</span><span id="val-chroma-radial">1.0</span></div>
+                                            <input type="range" id="opt-chroma-radial" min="0.0" max="3.0" step="0.1" value="1.0" oninput="updateFilmFXParams()">
+                                        </div>
                         
-                                    <div id="lbl-fx-imageproc"
-                                        style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
-                                        Image Processing</div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-ip-contrast">Contrast</span><span
-                                                id="val-ip-contrast">1.15</span></div>
-                                        <input type="range" id="opt-ip-contrast" min="0.5" max="3.0" step="0.05" value="1.15"
-                                            oninput="updateFilmFXParams()">
-                                    </div>
-                                    <div class="slider-group">
-                                        <div class="slider-label"><span id="lbl-ip-exposure">Exposure</span><span
-                                                id="val-ip-exposure">1.05</span></div>
-                                        <input type="range" id="opt-ip-exposure" min="0.2" max="3.0" step="0.05" value="1.05"
-                                            oninput="updateFilmFXParams()">
+                                        <div id="lbl-fx-vignette"
+                                            style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                            Vignette</div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-vignette-wgt">Weight</span><span id="val-vignette-weight">2.5</span></div>
+                                            <input type="range" id="opt-vignette-weight" min="0.0" max="6.0" step="0.1" value="2.5" oninput="updateFilmFXParams()">
+                                        </div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-vignette-fov">FOV Spread</span><span id="val-vignette-fov">0.5</span></div>
+                                            <input type="range" id="opt-vignette-fov" min="0.1" max="1.0" step="0.05" value="0.5" oninput="updateFilmFXParams()">
+                                        </div>
+                        
+                                        <div id="lbl-fx-imageproc"
+                                            style="font-size: 10px; font-weight: bold; color: #e74c3c; text-transform: uppercase; letter-spacing: 1px; margin: 8px 0 4px;">
+                                            Image Processing</div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-ip-contrast">Contrast</span><span id="val-ip-contrast">1.15</span></div>
+                                            <input type="range" id="opt-ip-contrast" min="0.5" max="3.0" step="0.05" value="1.15" oninput="updateFilmFXParams()">
+                                        </div>
+                                        <div class="slider-group">
+                                            <div class="slider-label"><span id="lbl-ip-exposure">Exposure</span><span id="val-ip-exposure">1.05</span></div>
+                                            <input type="range" id="opt-ip-exposure" min="0.2" max="3.0" step="0.05" value="1.05" oninput="updateFilmFXParams()">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1217,7 +1247,7 @@
                         </div>
 
                         <div class="settings-category" style="grid-column: 1 / -1;">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">About</div>
+                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Debugging</div>
                         
                             <div class="control-group" style="margin-top: 10px;">
                                 <button id="btn-about-versions" onclick="showAboutVersions()"
@@ -1225,6 +1255,28 @@
                                     <span class="shape-icon"
                                         style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span>
                                     Versions
+                                </button>
+                            </div>
+
+                            <button id="btn-restart-options" onclick="toggleRestartModal()"
+                                style="border-left: 4px solid #e74c3c; margin-bottom: 10px;">
+                                <span class="shape-icon"
+                                    style="background: transparent; border: 2px solid #e74c3c; border-radius: 50%; width: 10px; height: 10px;"></span>
+                                Restart Options
+                            </button>
+                        
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-session-recorder" onclick="toggleSessionRecorder()"
+                                    style="border-left: 4px solid #00bcd4; padding: 12px;">
+                                    <span class="shape-icon" style="background: #00bcd4; border-radius: 2px;"></span>
+                                    Session Recorder is OFF
+                                </button>
+                            </div>
+                            <div id="session-recorder-export-wrap" style="display: none; margin-top: 6px;">
+                                <button id="btn-export-session-log" onclick="exportSessionLog()"
+                                    style="border-left: 4px solid #00bcd4; background: #0a2e33; padding: 10px;">
+                                    <span class="shape-icon" style="background: #00bcd4; border-radius: 50%;"></span>
+                                    Export Session Log (.txt)
                                 </button>
                             </div>
                         </div>
@@ -1340,6 +1392,7 @@
         let lastFrameTime = performance.now();
         let customModelTemplate = null;
         let isHUDVisible = true;
+        let isInspectorEnabled = false;
         let isFrustumCullingEnabled = false;
         let isPhysicsSleepingEnabled = true;
         let performanceSafeguardActive = true;
@@ -1364,6 +1417,13 @@
         let isFlashbangVideoEnabled = true;
         let isScreenShakeEnabled = true;
         let isHapticsEnabled = true;
+        let currentGlow = 1.0;
+        let isSessionRecorderEnabled = false;
+        let sessionRecorderStartTime = null;
+        let sessionRecorderInterval = null;
+        let sessionRecorderSnapshots = [];
+        let isSunEnabled = localStorage.getItem('sb3d_sun') !== 'false';
+        let sunMeshRef = null;
         let filmFXParams = {
             sharpen: 0.6,
             grainIntensity: 28,
@@ -1404,6 +1464,12 @@
                 btnGlassSphere: "Glass Sphere",
                 btnGlassCyl: "Glass Cylinder",
                 btnGlassTri: "Glass Triangle",
+                labelGlowShapes: "Mirror Shapes",
+                labelGlowIntensity: "Reflectivity",
+                btnGlowCube: "Chrome Box",
+                btnGlowSphere: "Chrome Ball",
+                btnGlowCyl: "Chrome Tube",
+                btnGlowTri: "Chrome Dorito",
                 btnBomb: "Bomb",
                 btnCluster: "Cluster Bomb",
                 btnFlashbang: "Flashbang",
@@ -1487,6 +1553,8 @@
                 dynShakeOff: "Screen Shake is OFF",
                 dynHapticsOn: "Haptics is ON",
                 dynHapticsOff: "Haptics is OFF",
+                dynSunOn: "Sun is ON",
+                dynSunOff: "Sun is OFF",
                 toastPostFXEnable: "Enable Post Processing?\n\nThis adds Bloom, Chromatic Aberration, FXAA & Vignette.\nA session restart is required to apply.\n\nClick OK to restart and enable.",
                 toastPostFXDisable: "Disable Post Processing?\n\nA session restart is required to remove them and then go back to the default look.\n\nClick OK to restart and disable.",
                 toastWebGPU: "This change requires a session restart to switch Graphics APIs, Continue?",
@@ -1512,6 +1580,14 @@
                 restartAllConfirmBody: "This will reload the page and restart the full game session.\nYour saved settings (PostFX, WebGPU, language, etc.) will be kept.\n\nOK to proceed — CANCEL to abort.",
                 restartResetConfirmTitle: "Restart then Clear All?",
                 restartResetConfirmBody: "WARNING: This clears ALL persisted settings and reloads.\nPostFX, WebGPU preference, language — everything wiped.\n\nOK to wipe and restart — CANCEL to abort.",
+                settingDebugging: "Debugging",
+                settingFramerateLimits: "Framerate Limits",
+                settingPostFXTitle: "Post Processing",
+                btnShowMore: "Show more",
+                btnVersions: "Versions",
+                btnExportSession: "Export Session Log (.txt)",
+                dynSessionRecorderOn: "Session Recorder is ON",
+                dynSessionRecorderOff: "Session Recorder is OFF",
             },
             genz: {
                 pageTitle: "sandbox 3d mobile 💀",
@@ -1535,6 +1611,12 @@
                 btnGlassSphere: "Glass ball era",
                 btnGlassCyl: "Transparent tube",
                 btnGlassTri: "Glass pointy boi",
+                labelGlowShapes: "Mirror Era 🪞",
+                labelGlowIntensity: "Mirror Level ✨",
+                btnGlowCube: "Chrome Box",
+                btnGlowSphere: "Chrome Ball",
+                btnGlowCyl: "Chrome Tube",
+                btnGlowTri: "Chrome Dorito",
                 btnBomb: "Big rip 💣",
                 btnCluster: "Cluster jump scare 💥",
                 btnFlashbang: "MY EYES 🔦",
@@ -1618,6 +1700,8 @@
                 dynShakeOff: "screen shake said nah",
                 dynHapticsOn: "phone go bzzzt 📳",
                 dynHapticsOff: "no more buzz rn",
+                dynSunOn: "Sun slayin ☀️",
+                dynSunOff: "Sun ghosted us",
                 toastPostFXEnable: "bestie u tryna turn on Post FX? 👀\n\nBloom, chromatic aberration, FXAA & vignette bout to go crazy.\nGotta restart to apply tho.\n\nOK = restart and slay\nCANCEL = stay in boring mode",
                 toastPostFXDisable: "turning off Post FX? lowkey valid\n\nneeds a restart to go back to the default era.\n\nOK = restart and go plain\nCANCEL = nvm keep the drip",
                 toastWebGPU: "switching graphics APIs takes a restart bestie, u good with that?",
@@ -1643,6 +1727,14 @@
                 restartAllConfirmBody: "full page reload incoming bestie.\nsaved settings stay (PostFX, WebGPU, lang).\n\nOK = let's go\nCANCEL = nvm",
                 restartResetConfirmTitle: "restart AND wipe everything?? 💀",
                 restartResetConfirmBody: "bro this deletes ALL ur saved settings.\nPostFX, WebGPU, language — all gone fr.\n\nOK = yolo wipe it\nCANCEL = abort abort",
+                settingDebugging: "Dev nerd stuff 🤓",
+                settingFramerateLimits: "FPS cap (don't fry ur pc)",
+                settingPostFXTitle: "Post Processing 💀",
+                btnShowMore: "show more stuff",
+                btnVersions: "what version is this lol",
+                btnExportSession: "yoink session log 📋",
+                dynSessionRecorderOn: "Session Recorder is recording fr 🔴",
+                dynSessionRecorderOff: "Session Recorder said nah",
             },
             shakespeare: {
                 pageTitle: "Thee Noble Sandbox of Three Dimensions, Mobile Edition",
@@ -1666,6 +1758,12 @@
                 btnGlassSphere: "Orb of Transparent Sorcery",
                 btnGlassCyl: "Glass Cylinder, Wrought in Light",
                 btnGlassTri: "Glassy Triangle Most Peculiar",
+                labelGlowShapes: "Specular Forms",
+                labelGlowIntensity: "Intensity of Reflection",
+                btnGlowCube: "Cube of Reflection",
+                btnGlowSphere: "Orb of Reflection",
+                btnGlowCyl: "Pillar of Reflection",
+                btnGlowTri: "Prism of Reflection",
                 btnBomb: "A Bomb — Hark! 💣",
                 btnCluster: "Cluster of Calamitous Ruin 💥",
                 btnFlashbang: "Mine Eyes! A Blinding Flash! 🔦",
@@ -1749,6 +1847,8 @@
                 dynShakeOff: "The Trembling hath been Silenced",
                 dynHapticsOn: "The Device doth Vibrate with Vigour 📳",
                 dynHapticsOff: "The Vibrations are Stilled",
+                dynSunOn: "The Sun is ACTIVE ☀️",
+                dynSunOff: "The Sun is banished",
                 toastPostFXEnable: "Dost thou wish to enable Post FX? 👀\n\nBloom, chromatic aberration, FXAA & vignette shall be unleashed upon the realm.\nA restart of the session is required to apply these arts.\n\nOK = Restart and let them flourish\nCANCEL = Remain in the plain era",
                 toastPostFXDisable: "Dost thou wish to extinguish Post FX?\n\nA session restart is required to return to the default visage.\n\nOK = Restart and strip away the effects\nCANCEL = Nay, preserve the visual splendour",
                 toastWebGPU: "A switch of Graphics APIs doth require a restart of the session, noble one. Dost thou consent?",
@@ -1774,6 +1874,14 @@
                 restartAllConfirmBody: "The page shall reload and the session begin anew.\nThy saved settings (PostFX, WebGPU, language) shall endure.\n\nOK to proceed — CANCEL to retreat.",
                 restartResetConfirmTitle: "Restart and Purge All Settings?",
                 restartResetConfirmBody: "Hark! This shall wipe ALL persisted settings before restarting.\nPostFX, WebGPU, language — all shall be undone.\n\nOK to purge and restart — CANCEL to retreat.",
+                settingDebugging: "The Chamber of Debugging",
+                settingFramerateLimits: "The Limits of Framerate",
+                settingPostFXTitle: "Post Processing, Most Arcane",
+                btnShowMore: "Reveal More",
+                btnVersions: "The Versioning Scroll",
+                btnExportSession: "Export the Session Tome (.txt)",
+                dynSessionRecorderOn: "The Session Recorder doth run 🔴",
+                dynSessionRecorderOff: "The Session Recorder is at rest",
             },
         };
 
@@ -1920,6 +2028,7 @@
                     'MODES': t.labelModes, 'SHAPES': t.labelShapes,
                     'GLASS SHAPES': t.labelGlass, 'EXPLOSIVES': t.labelExplosives,
                     'ACTIONS': t.labelActions, 'CUSTOM': t.labelCustom,
+                    'GLOW SHAPES': t.labelGlowShapes,
                 };
                 if (map[raw]) el.innerText = map[raw];
             });
@@ -1954,6 +2063,13 @@
                 'btn-toggle-inspector': `<span class="shape-icon" style="background:transparent;border:2px solid #f1c40f;border-radius:2px;width:10px;height:10px;"></span> ${t.btnInspector}`,
                 'btn-custom': `<span class="shape-icon icon-custom"></span> <span id="custom-name">${t.spawnUpload}</span>`,
                 'btn-restart-options': `<span class="shape-icon" style="background:transparent;border:2px solid #e74c3c;border-radius:50%;width:10px;height:10px;"></span> ${t.restartBtnSettings}`,
+                'btn-glow_box': `<span class="shape-icon icon-box" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> ${t.btnGlowCube}`,
+                'btn-glow_sphere': `<span class="shape-icon icon-sphere" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> ${t.btnGlowSphere}`,
+                'btn-glow_cyl': `<span class="shape-icon icon-cyl" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> ${t.btnGlowCyl}`,
+                'btn-glow_tri': `<span class="shape-icon icon-tri" style="border-bottom-color: #fff; filter: drop-shadow(0 0 3px #fff);"></span> ${t.btnGlowTri}`,
+                'btn-show-more': `<span class="shape-icon" style="background: transparent; border: 2px solid #c0392b; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnShowMore}`,
+                'btn-about-versions': `<span class="shape-icon" style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnVersions}`,
+                'btn-export-session-log': `<span class="shape-icon" style="background: #00bcd4; border-radius: 50%;"></span> ${t.btnExportSession}`,
             };
             const sliderLbls = {
                 'lbl-ambience-vol': t.labelAmbienceVol,
@@ -1980,6 +2096,7 @@
                 'lbl-vignette-fov': t.labelVignetteFOV,
                 'lbl-ip-contrast': t.labelContrast,
                 'lbl-ip-exposure': t.labelExposure,
+                'lbl-glow': t.labelGlowIntensity,
             };
             for (const [id, html] of Object.entries(btnMap)) {
                 const el = document.getElementById(id); if (el) el.innerHTML = html;
@@ -1988,8 +2105,20 @@
                 const el = document.getElementById(id); if (el) el.innerText = text;
             }
 
+            const textElements = {
+                'lbl-framerate-limits': t.settingFramerateLimits,
+            };
+            for (const [id, text] of Object.entries(textElements)) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = text;
+            }
+
             document.querySelector('.settings-header h2').innerHTML = t.settingsTitle;
             document.querySelector('.settings-close-btn').innerText = t.settingsClose;
+            const postfxHeader = document.querySelector('#postfx-modal .settings-header h2');
+            if (postfxHeader) postfxHeader.innerText = t.settingPostFXTitle;
+            const postfxCloseBtn = document.querySelector('#postfx-modal .settings-header .settings-close-btn');
+            if (postfxCloseBtn) postfxCloseBtn.innerText = t.settingsClose;
 
             document.querySelectorAll('.settings-category .section-label').forEach(el => {
                 const raw = el.innerText.trim().toUpperCase();
@@ -1998,6 +2127,7 @@
                 if (['ENVIRONMENT', 'OUTDOOR VIBES 🌅', 'THE OUTDOOR DOMINION 🌅'].includes(raw)) el.innerText = t.settingEnvironment;
                 if (['OVERLAY', 'SCREEN DRIP 🖥️', 'ADORNMENTS OF THE SCREEN 🖥️'].includes(raw)) el.innerText = t.settingOverlay;
                 if (['RENDERING PIPELINE', 'VISUAL GLOW-UP PIPELINE ✨', 'THE VISUAL ALCHEMY PIPELINE ✨'].includes(raw)) el.innerText = t.settingRendering;
+                if (['DEBUGGING', 'DEV NERD STUFF 🤓', 'THE CHAMBER OF DEBUGGING'].includes(raw)) el.innerText = t.settingDebugging;
             });
 
             document.querySelectorAll('.slider-label span:first-child').forEach(el => {
@@ -2111,6 +2241,13 @@
                 hapticsBtn.innerHTML = isHapticsEnabled
                     ? `<span class="shape-icon" style="background:#2ecc71;border-radius:50%;box-shadow:0 0 5px #2ecc71;"></span> ${t.dynHapticsOn}`
                     : `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynHapticsOff}`;
+            }
+
+            const sunBtn = document.getElementById('btn-sun');
+            if (sunBtn) {
+                sunBtn.innerHTML = isSunEnabled
+                    ? `<span class="shape-icon" style="background:#f1c40f;border-radius:50%;box-shadow:0 0 6px #f1c40f;"></span> ${t.dynSunOn}`
+                    : `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynSunOff}`;
             }
 
             const flashVidBtn = document.getElementById('btn-flashvid');
@@ -2359,6 +2496,279 @@
                 : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynSafeguardOff}`;
         }
 
+        function toggleSessionRecorder() {
+            isSessionRecorderEnabled = !isSessionRecorderEnabled;
+            const btn = document.getElementById('btn-session-recorder');
+            const exportWrap = document.getElementById('session-recorder-export-wrap');
+
+            if (isSessionRecorderEnabled) {
+                sessionRecorderStartTime = Date.now();
+                sessionRecorderSnapshots = [];
+                btn.textContent = '';
+                btn.innerHTML = '<span class="shape-icon" style="background:#00bcd4;border-radius:2px;box-shadow:0 0 6px #00bcd4;"></span> Session Recorder is ON';
+                btn.style.borderLeftColor = '#00bcd4';
+                btn.style.background = '#0a2e33';
+                exportWrap.style.display = 'block';
+
+                sessionRecorderInterval = setInterval(() => {
+                    sessionRecorderSnapshots.push(captureSessionSnapshot());
+                }, 5000);
+
+                sessionRecorderSnapshots.push(captureSessionSnapshot());
+                console.log('[SessionRecorder] Started.');
+            } else {
+                clearInterval(sessionRecorderInterval);
+                sessionRecorderInterval = null;
+                btn.innerHTML = '<span class="shape-icon" style="background:#00bcd4;border-radius:2px;"></span> Session Recorder is OFF';
+                btn.style.background = '';
+                exportWrap.style.display = 'none';
+                sessionRecorderStartTime = null;
+                sessionRecorderSnapshots = [];
+                console.log('[SessionRecorder] Stopped and cleared.');
+            }
+        }
+
+        function captureSessionSnapshot() {
+            const now = new Date();
+            const elapsed = sessionRecorderStartTime ? Math.floor((Date.now() - sessionRecorderStartTime) / 1000) : 0;
+            const h = Math.floor(elapsed / 3600);
+            const m = Math.floor((elapsed % 3600) / 60);
+            const s = elapsed % 60;
+            const length = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+            return {
+                timestamp: now.toISOString(),
+                length,
+                objectCount: spawnedMeshes.length,
+                selectedShape,
+                freezeAction,
+                isBuildMode,
+                currentSize: currentSize.toFixed(2),
+                currentMass: currentMass.toFixed(2),
+                currentGlow: currentGlow.toFixed(2),
+                throwForce,
+                isHUDVisible,
+                isFrustumCullingEnabled,
+                isPhysicsSleepingEnabled,
+                performanceSafeguardActive,
+                isFilmFXEnabled,
+                isDayNightEnabled,
+                isSyncingDeviceTime,
+                isFlashlightEnabled,
+                isFlashlightOn,
+                isFlashbangVideoEnabled,
+                isScreenShakeEnabled,
+                isHapticsEnabled,
+                isInspectorEnabled,
+                activeLang,
+                explosionVolume,
+                isSunEnabled: isSunEnabled,
+                cpuCores: navigator.hardwareConcurrency ?? 'N/A',
+                ambientEnabled: workshop.shaman.sandbox3d.TemporalAudio?.enabled ?? false,
+                ambientVolume: workshop.shaman.sandbox3d.TemporalAudio?.volume ?? 0,
+                filmFXParams: { ...filmFXParams },
+                fps: (() => {
+                    const el = document.getElementById('fps-render');
+                    return el ? el.textContent : 'N/A';
+                })(),
+
+                cpuBenchMs: (() => {
+                    const ITERATIONS = 5_000_000;
+                    const t0 = performance.now();
+                    let x = 0;
+                    for (let i = 0; i < ITERATIONS; i++) x += i;
+                    return (performance.now() - t0).toFixed(2);
+                })(),
+                gpuBenchMs: (() => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 512; canvas.height = 512;
+                        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                        if (!gl) return 'N/A';
+                        const pixels = new Uint8Array(512 * 512 * 4);
+                        const t0 = performance.now();
+                        for (let i = 0; i < 10; i++) gl.readPixels(0, 0, 512, 512, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                        return (performance.now() - t0).toFixed(2);
+                    } catch { return 'N/A'; }
+                })(),
+            };
+        }
+
+        function buildSessionLogText(exportTime) {
+            const now = new Date(exportTime);
+            const elapsed = sessionRecorderStartTime ? Math.floor((Date.now() - sessionRecorderStartTime) / 1000) : 0;
+            const h = Math.floor(elapsed / 3600);
+            const m = Math.floor((elapsed % 3600) / 60);
+            const s = elapsed % 60;
+            const totalLength = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+            const ram = navigator.deviceMemory ? `${navigator.deviceMemory} GB (approximate)` : 'Not exposed by browser';
+            const ua = navigator.userAgent;
+
+            const latest = sessionRecorderSnapshots.length > 0
+                ? sessionRecorderSnapshots[sessionRecorderSnapshots.length - 1]
+                : captureSessionSnapshot();
+
+            const postfxEnabled = localStorage.getItem('sb3d_postfx') === 'true';
+            const webgpuEnabled = localStorage.getItem('sb3d_webgpu') === 'true';
+
+            const babylonVersion = BABYLON.Engine.Version || 'Unknown';
+            let cannonVersion = 'Unknown';
+            if (typeof CANNON !== 'undefined' && CANNON.version) {
+                cannonVersion = CANNON.version;
+            }
+
+            const lines = [
+                `==========================================================`,
+                `  ${SB3D_EDITION} — Session Log`,
+                `==========================================================`,
+                ``,
+                `  Recorded At            : ${now.toLocaleString()}`,
+                `  Exported At            : ${now.toLocaleString()} (same moment)`,
+                `  Session Start          : ${sessionRecorderStartTime ? new Date(sessionRecorderStartTime).toLocaleString() : 'N/A'}`,
+                `  Session Record Length  : ${totalLength}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  APP & DEVICE INFO`,
+                `----------------------------------------------------------`,
+                `  Edition      : ${SB3D_EDITION}`,
+                `  Version      : ${SB3D_VERSION}`,
+                `  Babylon.js   : v${babylonVersion}`,
+                `  Cannon.js    : v${cannonVersion}`,
+                `  User-Agent   : ${ua}`,
+                `  Device RAM   : ${ram}`,
+                `  CPU Cores    : ${navigator.hardwareConcurrency ?? 'Not exposed by browser'} logical core(s)`,
+                `  CPU Bench    : ${latest.cpuBenchMs ?? 'N/A'}ms (5M iteration loop)`,
+                `  GPU Bench    : ${latest.gpuBenchMs ?? 'N/A'}ms (10x 512px readPixels)`,
+                `  Screen       : ${window.screen.width}x${window.screen.height} @ ${window.devicePixelRatio}x DPR`,
+                `  Language     : ${navigator.language}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  SCENE STATE`,
+                `----------------------------------------------------------`,
+                `  Objects Spawned         : ${latest.objectCount}`,
+                `  Selected Shape          : ${latest.selectedShape}`,
+                `  Current Size            : ${latest.currentSize}`,
+                `  Current Mass            : ${latest.currentMass}`,
+                `  Current Reflectivity    : ${latest.currentGlow}`,
+                `  Throw Force             : ${latest.throwForce}`,
+                `  Build Mode              : ${latest.isBuildMode ? 'ON' : 'OFF'}`,
+                `  Freeze Mode             : ${latest.freezeAction}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  SYSTEM SETTINGS`,
+                `----------------------------------------------------------`,
+                `  Physics Sleeping    : ${latest.isPhysicsSleepingEnabled ? 'ENABLED' : 'DISABLED'}`,
+                `  Frustum Culling     : ${latest.isFrustumCullingEnabled ? 'ENABLED' : 'DISABLED'}`,
+                `  Crash Protection    : ${latest.performanceSafeguardActive ? 'ACTIVE' : 'INACTIVE'}`,
+                `  Screen Shake        : ${latest.isScreenShakeEnabled ? 'ON' : 'OFF'}`,
+                `  Haptics             : ${latest.isHapticsEnabled ? 'ON' : 'OFF'}`,
+                `  Post Processing     : ${postfxEnabled ? 'ACTIVE' : 'OFF'}`,
+                `  Film Effects        : ${latest.isFilmFXEnabled ? 'ON' : 'OFF'}`,
+                `  WebGPU              : ${webgpuEnabled ? 'ACTIVE' : 'WebGL2'}`,
+                `  Babylon Inspector   : ${latest.isInspectorEnabled ? 'VISIBLE' : 'HIDDEN'}`,
+                `  FPS HUD             : ${latest.isHUDVisible ? 'SHOWING' : 'HIDDEN'}`,
+                `  Active Language     : ${latest.activeLang}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  AUDIO`,
+                `----------------------------------------------------------`,
+                `  Ambient Audio       : ${latest.ambientEnabled ? 'ON' : 'OFF'}`,
+                `  Ambient Volume      : ${latest.ambientVolume}`,
+                `  Explosion Volume    : ${latest.explosionVolume}`,
+                `  Flashbang Video     : ${latest.isFlashbangVideoEnabled ? 'ON' : 'OFF'}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  ENVIRONMENT`,
+                `----------------------------------------------------------`,
+                `  Day/Night System    : ${latest.isDayNightEnabled ? 'ON' : 'OFF'}`,
+                `  Sun Visibility      : ${latest.isSunEnabled ? 'ON' : 'OFF'}`,
+                `  Sync Device Time    : ${latest.isSyncingDeviceTime ? 'ON' : 'OFF'}`,
+                `  Flashlight Feature  : ${latest.isFlashlightEnabled ? 'ENABLED' : 'DISABLED'}`,
+                `  Flashlight Active   : ${latest.isFlashlightOn ? 'ON' : 'OFF'}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  FILM FX PARAMETERS (last known)`,
+                `----------------------------------------------------------`,
+                `  Sharpen             : ${latest.filmFXParams.sharpen}`,
+                `  Grain Intensity     : ${latest.filmFXParams.grainIntensity}`,
+                `  Grain Anim Speed    : ${latest.filmFXParams.grainAnimSpeed}`,
+                `  Bloom Threshold     : ${latest.filmFXParams.bloomThreshold}`,
+                `  Bloom Weight        : ${latest.filmFXParams.bloomWeight}`,
+                `  Bloom Kernel        : ${latest.filmFXParams.bloomKernel}`,
+                `  Chroma Amount       : ${latest.filmFXParams.chromaAmount}`,
+                `  Chroma Radial       : ${latest.filmFXParams.chromaRadial}`,
+                `  Vignette Weight     : ${latest.filmFXParams.vignetteWeight}`,
+                `  Vignette FOV        : ${latest.filmFXParams.vignetteFov}`,
+                `  Contrast            : ${latest.filmFXParams.contrast}`,
+                `  Exposure            : ${latest.filmFXParams.exposure}`,
+                ``,
+                `----------------------------------------------------------`,
+                `  SNAPSHOT HISTORY (auto-captured every 5s // )`,
+                `----------------------------------------------------------`,
+            ];
+
+            sessionRecorderSnapshots.forEach((snap, i) => {
+                lines.push(`  [${String(i + 1).padStart(3, '0')}] ${snap.timestamp} | length=${snap.length} | objects=${snap.objectCount} | shape=${snap.selectedShape} | fps=${snap.fps} | cpu=${snap.cpuBenchMs}ms | gpu=${snap.gpuBenchMs}ms`);
+            });
+
+            let totalCpu = 0, validCpuCount = 0;
+            let totalGpu = 0, validGpuCount = 0;
+            let totalFps = 0, validFpsCount = 0;
+
+            sessionRecorderSnapshots.forEach(snap => {
+                if (snap.cpuBenchMs !== 'N/A') {
+                    totalCpu += parseFloat(snap.cpuBenchMs);
+                    validCpuCount++;
+                }
+                if (snap.gpuBenchMs !== 'N/A') {
+                    totalGpu += parseFloat(snap.gpuBenchMs);
+                    validGpuCount++;
+                }
+                if (snap.fps && snap.fps !== 'N/A') {
+                    const fpsValue = parseInt(snap.fps.replace('FPS: ', ''));
+                    if (!isNaN(fpsValue)) {
+                        totalFps += fpsValue;
+                        validFpsCount++;
+                    }
+                }
+            });
+
+            const avgCpu = validCpuCount > 0 ? (totalCpu / validCpuCount).toFixed(2) : 'N/A';
+            const avgGpu = validGpuCount > 0 ? (totalGpu / validGpuCount).toFixed(2) : 'N/A';
+            const avgFps = validFpsCount > 0 ? (totalFps / validFpsCount).toFixed(0) : 'N/A';
+
+            lines.push(``);
+            lines.push(`----------------------------------------------------------`);
+            lines.push(`  SESSION AVERAGES`);
+            lines.push(`----------------------------------------------------------`);
+            lines.push(`  Average FPS         : ${avgFps}`);
+            lines.push(`  Average CPU Bench   : ${avgCpu}ms`);
+            lines.push(`  Average GPU Bench   : ${avgGpu}ms`);
+            lines.push(``);
+            lines.push(`==========================================================`);
+            lines.push(`  ${SB3D_EDITION} by HEXON Laboratories`);
+            lines.push(`==========================================================`);
+
+            return lines.join('\n');
+        }
+
+        function exportSessionLog() {
+            const exportTime = Date.now();
+            const text = buildSessionLogText(exportTime);
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateTag = new Date(exportTime).toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.href = url;
+            a.download = `sb3dmobile_hexon_sessionlog${dateTag}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            console.log('[SessionRecorder] Log exported.');
+        }
+
         function togglePostFX() {
             const t = SB3D_LANGS[activeLang];
             const isCurrentlyOn = localStorage.getItem('sb3d_postfx') === 'true';
@@ -2507,25 +2917,30 @@
             if (!btn) return;
             const t = SB3D_LANGS[activeLang];
             const isOn = localStorage.getItem('sb3d_postfx') === 'true';
-            const infoBox = document.getElementById('postfx-info');
-            const filmPanel = document.getElementById('filmfx-panel');
+            const showMoreWrap = document.getElementById('postfx-showmore-wrap');
             const filmSliders = document.getElementById('filmfx-sliders');
 
             if (isOn) {
                 btn.innerHTML = `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;box-shadow:0 0 6px #e74c3c;"></span> ${t.dynPostFXOn}`;
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.add('active');
-                if (infoBox) infoBox.style.display = 'block';
-                if (filmPanel) filmPanel.style.display = 'block';
+                if (showMoreWrap) showMoreWrap.style.display = 'block';
                 if (filmSliders) filmSliders.style.display = 'block';
             } else {
                 btn.innerHTML = `<span class="shape-icon" style="background:#e74c3c;border-radius:2px;"></span> ${t.dynPostFXOff}`;
                 btn.style.borderLeftColor = '#e74c3c';
                 btn.classList.remove('active');
-                if (infoBox) infoBox.style.display = 'none';
-                if (filmPanel) filmPanel.style.display = 'none';
-                if (filmSliders) filmSliders.style.display = 'none';
+                if (showMoreWrap) showMoreWrap.style.display = 'none';
+                const overlay = document.getElementById('postfx-modal-overlay');
+                if (overlay) overlay.style.display = 'none';
             }
+        }
+
+        function togglePostFXModal() {
+            const overlay = document.getElementById('postfx-modal-overlay');
+            if (!overlay) return;
+            const isOpen = overlay.style.display === 'flex';
+            overlay.style.display = isOpen ? 'none' : 'flex';
         }
 
         function toggleDayNight() {
@@ -2546,10 +2961,77 @@
                 btn.style.borderLeftColor = '#f39c12';
                 btn.classList.remove('active');
                 panel.style.display = 'none';
-                if (dayNightLightRef) { dayNightLightRef.intensity = 1.2; dayNightLightRef.diffuse = new BABYLON.Color3(1, 1, 1); dayNightLightRef.groundColor = new BABYLON.Color3(0.1, 0.1, 0.15); }
-                if (dayNightDirRef) { dayNightDirRef.intensity = 0.8; dayNightDirRef.diffuse = new BABYLON.Color3(1, 1, 1); }
-                if (sceneRef) sceneRef.clearColor = new BABYLON.Color4(0.1, 0.1, 0.15, 1);
-                if (isSyncingDeviceTime) toggleSyncDeviceTime();
+
+                if (dayNightLightRef) {
+                    dayNightLightRef.intensity = 1.2;
+                    dayNightLightRef.diffuse = new BABYLON.Color3(1, 1, 1);
+                    dayNightLightRef.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+                }
+                if (dayNightDirRef) {
+                    dayNightDirRef.intensity = 1.2;
+                    dayNightDirRef.diffuse = new BABYLON.Color3(1, 1, 1);
+                    dayNightDirRef.direction = new BABYLON.Vector3(0, -1, 0);
+                }
+                if (sceneRef) {
+                    sceneRef.clearColor = new BABYLON.Color4(0.55, 0.7, 0.85, 1.0);
+                }
+                if (sunMeshRef && isSunEnabled) {
+                    const sunPos = dayNightDirRef.direction.clone().normalize().scale(-1000);
+                    sunMeshRef.position = sunPos;
+                    sunMeshRef.isVisible = true;
+                }
+                const slider = document.getElementById('opt-tod');
+                if (slider) {
+                    slider.value = 720;
+                    document.getElementById('val-tod').innerText = '12:00';
+                }
+                if (isSyncingDeviceTime) {
+                    toggleSyncDeviceTime();
+                }
+            }
+        }
+
+        function toggleSun(forceInit = false) {
+            if (!forceInit) {
+                isSunEnabled = !isSunEnabled;
+                localStorage.setItem('sb3d_sun', isSunEnabled.toString());
+            }
+
+            const btn = document.getElementById('btn-sun');
+            const t = SB3D_LANGS[activeLang];
+
+            if (btn) {
+                if (isSunEnabled) {
+                    btn.innerHTML = `<span class="shape-icon" style="background:#f1c40f;border-radius:50%;box-shadow:0 0 6px #f1c40f;"></span> ${t.dynSunOn}`;
+                    btn.style.borderLeftColor = '#f1c40f';
+                } else {
+                    btn.innerHTML = `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynSunOff}`;
+                    btn.style.borderLeftColor = '#555';
+                }
+            }
+
+            if (!sceneRef || !dayNightDirRef) return;
+
+            if (isSunEnabled) {
+                if (!sunMeshRef) {
+                    sunMeshRef = BABYLON.MeshBuilder.CreateSphere("sunMesh", { diameter: 80 }, sceneRef);
+                    const sunMat = new BABYLON.StandardMaterial("sunMat", sceneRef);
+                    sunMat.emissiveColor = new BABYLON.Color3(1, 0.9, 0.6);
+                    sunMeshRef.alwaysSelectAsActiveMesh = true;
+                    sunMeshRef.infiniteDistance = true;
+                    sunMeshRef.checkCollisions = false;
+                    sunMat.disableLighting = true;
+                    sunMeshRef.material = sunMat;
+                    sunMeshRef.isPickable = false;
+                }
+
+                sunMeshRef.isVisible = true;
+                const sunDir = dayNightDirRef.direction.clone().normalize();
+                sunMeshRef.position = sunDir.scale(-1000);
+            } else {
+                if (sunMeshRef) {
+                    sunMeshRef.isVisible = false;
+                }
             }
         }
 
@@ -2632,6 +3114,10 @@
                         dayNightDirRef.diffuse = new BABYLON.Color3(1.0, 0.98, 0.9);
                     }
                 }
+            }
+            if (sunMeshRef && isSunEnabled) {
+                sunMeshRef.position = dayNightDirRef.direction.normalizeToNew().scale(-1000);
+                sunMeshRef.isVisible = !isNight;
             }
         }
 
@@ -2749,9 +3235,12 @@
             } else if (type === 'all') {
                 window.location.reload();
             } else if (type === 'reset') {
-                localStorage.removeItem('sb3d_postfx');
-                localStorage.removeItem('sb3d_use_webgpu');
-                localStorage.removeItem('sb3d_lang');
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('sb3d_')) {
+                        localStorage.removeItem(key);
+                    }
+                }
                 window.location.reload();
             }
         }
@@ -2903,18 +3392,20 @@
 
 
         function updateGameSettings() {
-            const resScale = document.getElementById('opt-res').value;
             const viewDist = document.getElementById('opt-view').value;
             const fovVal = document.getElementById('opt-fov').value;
-            document.getElementById('val-res').innerText = resScale + "%";
             document.getElementById('val-view').innerText = viewDist + "m";
             document.getElementById('val-fov').innerText = fovVal;
 
             const sb3d = workshop.shaman.sandbox3d;
             if (sb3d.cameraFree) {
-                sb3d.engine.setHardwareScalingLevel(1 / (resScale / 100));
-                sb3d.cameraFree.maxZ = parseFloat(viewDist);
                 sb3d.cameraFree.fov = parseFloat(fovVal);
+
+                sb3d.cullingDistance = parseFloat(viewDist);
+
+                if (sunMeshRef) {
+                    sunMeshRef.setEnabled(isSunEnabled);
+                }
             }
         }
 
@@ -2994,6 +3485,8 @@
             if (shape === 'flashbang') btnId = 'btn-flashbang';
             if (shape === 'glass_cylinder') btnId = 'btn-glass_cyl';
             if (shape === 'glass_triangle') btnId = 'btn-glass_tri';
+            if (shape === 'glow_cylinder') btnId = 'btn-glow_cyl';
+            if (shape === 'glow_triangle') btnId = 'btn-glow_tri';
             
             const activeBtn = document.getElementById(btnId);
             if(activeBtn) activeBtn.classList.add('active');
@@ -3037,6 +3530,11 @@
             document.getElementById('mass-display').innerText = currentMass.toFixed(1);        
         }
 
+        function updateGlow(val) {
+            currentGlow = parseFloat(val);
+            document.getElementById('glow-display').innerText = currentGlow.toFixed(1);
+        }
+
         function toggleFreezeLogic() {
             const btn = document.getElementById('btn-freeze');
             const t = SB3D_LANGS[activeLang];
@@ -3070,6 +3568,12 @@
             viewTargetMesh = null;
             spawnedMeshes.forEach(mesh => { if(mesh && !mesh.isDisposed()) mesh.dispose(); });
             spawnedMeshes = [];
+            spawnedMeshes.forEach(mesh => {
+                if (mesh && !mesh.isDisposed()) {
+                    if (mesh._mirrorTex) { mesh._mirrorTex.dispose(); mesh._mirrorTex = null; }
+                    mesh.dispose();
+                }
+            });
         }
 
         function setupMobileButtons() {
@@ -3296,28 +3800,49 @@
                         this.cameraFree = new BABYLON.UniversalCamera("CameraFree", new BABYLON.Vector3(0, 20, -40), scene);
                         this.cameraFree.setTarget(BABYLON.Vector3.Zero());
                         this.cameraFree.fov = 1.2;
-                        
+                        this.cullingDistance = 500;
+
                         this.cameraFree.keysUp = [];
                         this.cameraFree.keysDown = [];
                         this.cameraFree.keysLeft = [];
                         this.cameraFree.keysRight = [];
-                        
+
                         const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
                         light.intensity = 1.2;
-                        const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
-                        dirLight.intensity = 0.8;
+                        light.diffuse = new BABYLON.Color3(1, 1, 1);
+                        light.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+                        const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(0, -1, 0), scene);
+                        dirLight.intensity = 1.2;
+                        dirLight.diffuse = new BABYLON.Color3(1, 1, 1);
                         dayNightLightRef = light;
                         dayNightDirRef = dirLight;
+                        scene.clearColor = new BABYLON.Color4(0.55, 0.7, 0.85, 1.0);
 
-                        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 500, height: 500}, scene);
+                        const groundThickness = 100;
+                        const groundYBottom = -groundThickness;
+                        const groundYTop = 0;
+
+                        const ground = BABYLON.MeshBuilder.CreateBox("ground", {
+                            width: 500,
+                            height: groundThickness,
+                            depth: 500
+                        }, scene);
+                        ground.position.y = groundYBottom + groundThickness / 2;
+
                         const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
                         groundMat.diffuseColor = new BABYLON.Color3(0.15, 0.15, 0.2);
                         groundMat.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
                         ground.material = groundMat;
-                        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.5, friction: 0.5 }, scene);
 
-                        const ramp = BABYLON.MeshBuilder.CreateBox("ramp", {width: 15, height: 1, depth: 30}, scene);
-                        ramp.position = new BABYLON.Vector3(30, 1, 0); 
+                        ground.physicsImpostor = new BABYLON.PhysicsImpostor(
+                            ground,
+                            BABYLON.PhysicsImpostor.BoxImpostor,
+                            { mass: 0, restitution: 0.5, friction: 0.5 },
+                            scene
+                        );
+
+                        const ramp = BABYLON.MeshBuilder.CreateBox("ramp", { width: 15, height: 1, depth: 30 }, scene);
+                        ramp.position = new BABYLON.Vector3(30, 1, 0);
                         ramp.rotation.z = Math.PI / 8;
                         const rampMat = new BABYLON.StandardMaterial("rampMat", scene);
                         rampMat.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.3);
@@ -3365,6 +3890,8 @@
                             }
                         }
 
+                        setTimeout(() => { toggleSun(true); }, 100);
+
                         return scene;
                     },
 
@@ -3379,6 +3906,8 @@
                                     if(mesh === viewTargetMesh) toggleViewMode();
                                     mesh.dispose();
                                     spawnedMeshes.splice(i, 1);
+                                    if (mesh._mirrorTex) { mesh._mirrorTex.dispose(); mesh._mirrorTex = null; }
+                                    mesh.dispose();
                                 }
                             }
                         }
@@ -3388,7 +3917,7 @@
                         if (!this.cameraFree) return;
 
                         const camPos = this.cameraFree.position;
-                        const viewLimit = this.cameraFree.maxZ;
+                        const viewLimit = this.cullingDistance || 500;
                         const viewLimitSq = viewLimit * viewLimit;
 
                         for (let i = 0; i < spawnedMeshes.length; i++) {
@@ -3517,7 +4046,7 @@
                         }
                     },
 
-                    createPillars: function(scene) {
+                    createPillars: function (scene) {
                         const mat = new BABYLON.StandardMaterial("pillarMat", scene);
                         mat.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.35);
 
@@ -3566,6 +4095,8 @@
                                         mesh.dispose();
                                         const index = spawnedMeshes.indexOf(mesh);
                                         if (index > -1) spawnedMeshes.splice(index, 1);
+                                        mesh.dispose();
+                                        if (mesh._mirrorTex) { mesh._mirrorTex.dispose(); mesh._mirrorTex = null; }
                                         return;
                                     }
 
@@ -3630,8 +4161,13 @@
                         let mesh;
                         let mat;
                         const isGlass = type.startsWith('glass_');
-                        const baseType = isGlass ? type.replace('glass_', '') : type;
+                        const isGlow = type.startsWith('glow_');
+                        let baseType = type;
+                        if (isGlass) baseType = type.replace('glass_', '');
+                        if (isGlow) baseType = type.replace('glow_', '');
+
                         const pickerVal = document.getElementById('color-picker').value;
+                        const baseColor = BABYLON.Color3.FromHexString(pickerVal);
 
                         if (isGlass) {
                             mat = new BABYLON.PBRMaterial("glassMat" + Date.now(), scene);
@@ -3640,10 +4176,22 @@
                             mat.alpha = 0.45;
                             mat.subSurface.isRefractionEnabled = true;
                             mat.subSurface.indexOfRefraction = 1.5;
-                            mat.albedoColor = BABYLON.Color3.FromHexString(pickerVal);
+                            mat.albedoColor = baseColor;
+                        } else if (isGlow) {
+                            const mirrorTex = new BABYLON.MirrorTexture("mirrorTex_" + Date.now(), 512, scene, true);
+                            mirrorTex.mirrorPlane = new BABYLON.Plane(0, -1, 0, 0);
+                            mirrorTex.renderList = scene.meshes;
+                            mirrorTex.level = Math.min(currentGlow / 5, 1.0);
+
+                            mat = new BABYLON.PBRMaterial("mirrorMat_" + Date.now(), scene);
+                            mat.metallic = 1.0;
+                            mat.roughness = 0.05;
+                            mat.albedoColor = baseColor;
+                            mat.reflectionTexture = mirrorTex;
+                            mat.reflectivityColor = new BABYLON.Color3(1, 1, 1);
                         } else {
                             mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
-                            mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
+                            mat.diffuseColor = baseColor;
                         }
 
                         const scale = currentSize;
@@ -3692,6 +4240,10 @@
 
                         if (mesh) {
                             if (baseType !== 'custom') mesh.material = mat;
+
+                            if (isGlow && mat.reflectionTexture) {
+                                mesh._mirrorTex = mat.reflectionTexture;
+                            }
 
                             let massVal = currentMass;
 
@@ -3757,8 +4309,13 @@
                         let mesh;
                         let mat;
                         const isGlass = type.startsWith('glass_');
-                        const baseType = isGlass ? type.replace('glass_', '') : type;
+                        const isGlow = type.startsWith('glow_');
+                        let baseType = type;
+                        if (isGlass) baseType = type.replace('glass_', '');
+                        if (isGlow) baseType = type.replace('glow_', '');
+
                         const pickerVal = document.getElementById('color-picker').value;
+                        const baseColor = BABYLON.Color3.FromHexString(pickerVal);
 
                         if (isGlass) {
                             mat = new BABYLON.PBRMaterial("structGlassMat" + Date.now() + Math.random(), scene);
@@ -3767,10 +4324,14 @@
                             mat.alpha = 0.45;
                             mat.subSurface.isRefractionEnabled = true;
                             mat.subSurface.indexOfRefraction = 1.5;
-                            mat.albedoColor = BABYLON.Color3.FromHexString(pickerVal);
+                            mat.albedoColor = baseColor;
+                        } else if (isGlow) {
+                            mat = new BABYLON.StandardMaterial("structGlowMat" + Date.now() + Math.random(), scene);
+                            mat.diffuseColor = new BABYLON.Color3(0, 0, 0);
+                            mat.emissiveColor = baseColor.scale(currentGlow);
                         } else {
                             mat = new BABYLON.StandardMaterial("structMat" + Date.now() + Math.random(), scene);
-                            mat.diffuseColor = BABYLON.Color3.FromHexString(pickerVal);
+                            mat.diffuseColor = baseColor;
                         }
 
                         if (baseType === 'box') mesh = BABYLON.MeshBuilder.CreateBox("s_box", { size: scale }, scene);
@@ -3791,7 +4352,6 @@
                                 restitution: 0.1,
                                 friction: 0.8
                             }, scene);
-
                             spawnedMeshes.push(mesh);
                         }
                     },

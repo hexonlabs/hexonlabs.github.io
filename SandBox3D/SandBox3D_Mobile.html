@@ -764,15 +764,6 @@
                 <input type="range" id="mass-slider" min="0.1" max="100.0" step="0.1" value="1.5"
                     oninput="updateMass(this.value)">
             </div>
-
-            <div class="slider-group">
-                <div class="slider-label">
-                    <span id="lbl-glow">Glow Intensity</span>
-                    <span id="glow-display">1.0</span>
-                </div>
-                <input type="range" id="glow-slider" min="0.1" max="5.0" step="0.1" value="1.0"
-                    oninput="updateGlow(this.value)">
-            </div>
             
             <div id="structure-settings" class="slider-group" style="display: none; border-left: 3px solid #9b59b6;">
                 <div class="slider-label"><span>Grid Size (L x H x W)</span></div>
@@ -796,10 +787,6 @@
                     <option value="glass_sphere">Glass Sphere</option>
                     <option value="glass_cylinder">Glass Cylinder</option>
                     <option value="glass_triangle">Glass Triangle</option>
-                    <option value="glow_box">Glow Cube</option>
-                    <option value="glow_sphere">Glow Sphere</option>
-                    <option value="glow_cylinder">Glow Cylinder</option>
-                    <option value="glow_triangle">Glow Triangle</option>
                 </select>
             </div>
     
@@ -846,23 +833,6 @@
                 </button>
                 <button id="btn-glass_tri" onclick="selectShape('glass_triangle')">
                     <span class="shape-icon icon-tri" style="opacity: 0.5;"></span> Glass Triangle
-                </button>
-            </div>
-
-            <div class="section-label" id="lbl-glow-shapes">Glow Shapes</div>
-            <div class="control-group">
-                <button id="btn-glow_box" onclick="selectShape('glow_box')">
-                    <span class="shape-icon icon-box" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> Glow Cube
-                </button>
-                <button id="btn-glow_sphere" onclick="selectShape('glow_sphere')">
-                    <span class="shape-icon icon-sphere" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> Glow Sphere
-                </button>
-                <button id="btn-glow_cyl" onclick="selectShape('glow_cylinder')">
-                    <span class="shape-icon icon-cyl" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> Glow Cylinder
-                </button>
-                <button id="btn-glow_tri" onclick="selectShape('glow_triangle')">
-                    <span class="shape-icon icon-tri" style="border-bottom-color: #fff; filter: drop-shadow(0 0 3px #fff);"></span>
-                    Glow Triangle
                 </button>
             </div>
 
@@ -1417,7 +1387,6 @@
         let isFlashbangVideoEnabled = true;
         let isScreenShakeEnabled = true;
         let isHapticsEnabled = true;
-        let currentGlow = 1.0;
         let isSessionRecorderEnabled = false;
         let sessionRecorderStartTime = null;
         let sessionRecorderInterval = null;
@@ -1464,12 +1433,6 @@
                 btnGlassSphere: "Glass Sphere",
                 btnGlassCyl: "Glass Cylinder",
                 btnGlassTri: "Glass Triangle",
-                labelGlowShapes: "Mirror Shapes",
-                labelGlowIntensity: "Reflectivity",
-                btnGlowCube: "Chrome Box",
-                btnGlowSphere: "Chrome Ball",
-                btnGlowCyl: "Chrome Tube",
-                btnGlowTri: "Chrome Dorito",
                 btnBomb: "Bomb",
                 btnCluster: "Cluster Bomb",
                 btnFlashbang: "Flashbang",
@@ -1611,12 +1574,6 @@
                 btnGlassSphere: "Glass ball era",
                 btnGlassCyl: "Transparent tube",
                 btnGlassTri: "Glass pointy boi",
-                labelGlowShapes: "Mirror Era 🪞",
-                labelGlowIntensity: "Mirror Level ✨",
-                btnGlowCube: "Chrome Box",
-                btnGlowSphere: "Chrome Ball",
-                btnGlowCyl: "Chrome Tube",
-                btnGlowTri: "Chrome Dorito",
                 btnBomb: "Big rip 💣",
                 btnCluster: "Cluster jump scare 💥",
                 btnFlashbang: "MY EYES 🔦",
@@ -1758,12 +1715,6 @@
                 btnGlassSphere: "Orb of Transparent Sorcery",
                 btnGlassCyl: "Glass Cylinder, Wrought in Light",
                 btnGlassTri: "Glassy Triangle Most Peculiar",
-                labelGlowShapes: "Specular Forms",
-                labelGlowIntensity: "Intensity of Reflection",
-                btnGlowCube: "Cube of Reflection",
-                btnGlowSphere: "Orb of Reflection",
-                btnGlowCyl: "Pillar of Reflection",
-                btnGlowTri: "Prism of Reflection",
                 btnBomb: "A Bomb — Hark! 💣",
                 btnCluster: "Cluster of Calamitous Ruin 💥",
                 btnFlashbang: "Mine Eyes! A Blinding Flash! 🔦",
@@ -2028,7 +1979,6 @@
                     'MODES': t.labelModes, 'SHAPES': t.labelShapes,
                     'GLASS SHAPES': t.labelGlass, 'EXPLOSIVES': t.labelExplosives,
                     'ACTIONS': t.labelActions, 'CUSTOM': t.labelCustom,
-                    'GLOW SHAPES': t.labelGlowShapes,
                 };
                 if (map[raw]) el.innerText = map[raw];
             });
@@ -2063,10 +2013,6 @@
                 'btn-toggle-inspector': `<span class="shape-icon" style="background:transparent;border:2px solid #f1c40f;border-radius:2px;width:10px;height:10px;"></span> ${t.btnInspector}`,
                 'btn-custom': `<span class="shape-icon icon-custom"></span> <span id="custom-name">${t.spawnUpload}</span>`,
                 'btn-restart-options': `<span class="shape-icon" style="background:transparent;border:2px solid #e74c3c;border-radius:50%;width:10px;height:10px;"></span> ${t.restartBtnSettings}`,
-                'btn-glow_box': `<span class="shape-icon icon-box" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> ${t.btnGlowCube}`,
-                'btn-glow_sphere': `<span class="shape-icon icon-sphere" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> ${t.btnGlowSphere}`,
-                'btn-glow_cyl': `<span class="shape-icon icon-cyl" style="background: #fff; box-shadow: 0 0 5px #fff;"></span> ${t.btnGlowCyl}`,
-                'btn-glow_tri': `<span class="shape-icon icon-tri" style="border-bottom-color: #fff; filter: drop-shadow(0 0 3px #fff);"></span> ${t.btnGlowTri}`,
                 'btn-show-more': `<span class="shape-icon" style="background: transparent; border: 2px solid #c0392b; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnShowMore}`,
                 'btn-about-versions': `<span class="shape-icon" style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnVersions}`,
                 'btn-export-session-log': `<span class="shape-icon" style="background: #00bcd4; border-radius: 50%;"></span> ${t.btnExportSession}`,
@@ -2096,7 +2042,6 @@
                 'lbl-vignette-fov': t.labelVignetteFOV,
                 'lbl-ip-contrast': t.labelContrast,
                 'lbl-ip-exposure': t.labelExposure,
-                'lbl-glow': t.labelGlowIntensity,
             };
             for (const [id, html] of Object.entries(btnMap)) {
                 const el = document.getElementById(id); if (el) el.innerHTML = html;
@@ -2545,7 +2490,6 @@
                 isBuildMode,
                 currentSize: currentSize.toFixed(2),
                 currentMass: currentMass.toFixed(2),
-                currentGlow: currentGlow.toFixed(2),
                 throwForce,
                 isHUDVisible,
                 isFrustumCullingEnabled,
@@ -2650,7 +2594,6 @@
                 `  Selected Shape          : ${latest.selectedShape}`,
                 `  Current Size            : ${latest.currentSize}`,
                 `  Current Mass            : ${latest.currentMass}`,
-                `  Current Reflectivity    : ${latest.currentGlow}`,
                 `  Throw Force             : ${latest.throwForce}`,
                 `  Build Mode              : ${latest.isBuildMode ? 'ON' : 'OFF'}`,
                 `  Freeze Mode             : ${latest.freezeAction}`,
@@ -3485,8 +3428,6 @@
             if (shape === 'flashbang') btnId = 'btn-flashbang';
             if (shape === 'glass_cylinder') btnId = 'btn-glass_cyl';
             if (shape === 'glass_triangle') btnId = 'btn-glass_tri';
-            if (shape === 'glow_cylinder') btnId = 'btn-glow_cyl';
-            if (shape === 'glow_triangle') btnId = 'btn-glow_tri';
             
             const activeBtn = document.getElementById(btnId);
             if(activeBtn) activeBtn.classList.add('active');
@@ -3530,11 +3471,6 @@
             document.getElementById('mass-display').innerText = currentMass.toFixed(1);        
         }
 
-        function updateGlow(val) {
-            currentGlow = parseFloat(val);
-            document.getElementById('glow-display').innerText = currentGlow.toFixed(1);
-        }
-
         function toggleFreezeLogic() {
             const btn = document.getElementById('btn-freeze');
             const t = SB3D_LANGS[activeLang];
@@ -3568,12 +3504,6 @@
             viewTargetMesh = null;
             spawnedMeshes.forEach(mesh => { if(mesh && !mesh.isDisposed()) mesh.dispose(); });
             spawnedMeshes = [];
-            spawnedMeshes.forEach(mesh => {
-                if (mesh && !mesh.isDisposed()) {
-                    if (mesh._mirrorTex) { mesh._mirrorTex.dispose(); mesh._mirrorTex = null; }
-                    mesh.dispose();
-                }
-            });
         }
 
         function setupMobileButtons() {
@@ -3906,8 +3836,6 @@
                                     if(mesh === viewTargetMesh) toggleViewMode();
                                     mesh.dispose();
                                     spawnedMeshes.splice(i, 1);
-                                    if (mesh._mirrorTex) { mesh._mirrorTex.dispose(); mesh._mirrorTex = null; }
-                                    mesh.dispose();
                                 }
                             }
                         }
@@ -4095,8 +4023,6 @@
                                         mesh.dispose();
                                         const index = spawnedMeshes.indexOf(mesh);
                                         if (index > -1) spawnedMeshes.splice(index, 1);
-                                        mesh.dispose();
-                                        if (mesh._mirrorTex) { mesh._mirrorTex.dispose(); mesh._mirrorTex = null; }
                                         return;
                                     }
 
@@ -4161,10 +4087,8 @@
                         let mesh;
                         let mat;
                         const isGlass = type.startsWith('glass_');
-                        const isGlow = type.startsWith('glow_');
                         let baseType = type;
                         if (isGlass) baseType = type.replace('glass_', '');
-                        if (isGlow) baseType = type.replace('glow_', '');
 
                         const pickerVal = document.getElementById('color-picker').value;
                         const baseColor = BABYLON.Color3.FromHexString(pickerVal);
@@ -4177,18 +4101,6 @@
                             mat.subSurface.isRefractionEnabled = true;
                             mat.subSurface.indexOfRefraction = 1.5;
                             mat.albedoColor = baseColor;
-                        } else if (isGlow) {
-                            const mirrorTex = new BABYLON.MirrorTexture("mirrorTex_" + Date.now(), 512, scene, true);
-                            mirrorTex.mirrorPlane = new BABYLON.Plane(0, -1, 0, 0);
-                            mirrorTex.renderList = scene.meshes;
-                            mirrorTex.level = Math.min(currentGlow / 5, 1.0);
-
-                            mat = new BABYLON.PBRMaterial("mirrorMat_" + Date.now(), scene);
-                            mat.metallic = 1.0;
-                            mat.roughness = 0.05;
-                            mat.albedoColor = baseColor;
-                            mat.reflectionTexture = mirrorTex;
-                            mat.reflectivityColor = new BABYLON.Color3(1, 1, 1);
                         } else {
                             mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
                             mat.diffuseColor = baseColor;
@@ -4240,10 +4152,6 @@
 
                         if (mesh) {
                             if (baseType !== 'custom') mesh.material = mat;
-
-                            if (isGlow && mat.reflectionTexture) {
-                                mesh._mirrorTex = mat.reflectionTexture;
-                            }
 
                             let massVal = currentMass;
 
@@ -4309,10 +4217,8 @@
                         let mesh;
                         let mat;
                         const isGlass = type.startsWith('glass_');
-                        const isGlow = type.startsWith('glow_');
                         let baseType = type;
                         if (isGlass) baseType = type.replace('glass_', '');
-                        if (isGlow) baseType = type.replace('glow_', '');
 
                         const pickerVal = document.getElementById('color-picker').value;
                         const baseColor = BABYLON.Color3.FromHexString(pickerVal);
@@ -4325,10 +4231,6 @@
                             mat.subSurface.isRefractionEnabled = true;
                             mat.subSurface.indexOfRefraction = 1.5;
                             mat.albedoColor = baseColor;
-                        } else if (isGlow) {
-                            mat = new BABYLON.StandardMaterial("structGlowMat" + Date.now() + Math.random(), scene);
-                            mat.diffuseColor = new BABYLON.Color3(0, 0, 0);
-                            mat.emissiveColor = baseColor.scale(currentGlow);
                         } else {
                             mat = new BABYLON.StandardMaterial("structMat" + Date.now() + Math.random(), scene);
                             mat.diffuseColor = baseColor;

@@ -659,6 +659,32 @@
         }
         #restart-modal-close:hover { background: #2a2a2a; color: #ccc; border-color: #666; }
 
+        .tear-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 255, 0.15) 2px,
+                rgba(0, 255, 255, 0.15) 6px,
+                transparent 6px,
+                transparent 12px
+            );
+            animation: tear-sweep 0.2s linear infinite, flicker 0.1s infinite;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes tear-sweep {
+            0%   { background-position: 0 0; }
+            100% { background-position: 100px 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -669,7 +695,7 @@
         <div class="loader-content">
             <div class="loader-spinner"></div>
             <div class="loader-text">Sand Box 3D for Mobile</div>
-            <div class="loader-subtext-version">Version: v26.03.28</div>
+            <div class="loader-subtext-version">Version: v26.04.01</div>
             <div class="loader-subtext">Setting up your sandbox...</div>
             <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
@@ -1393,6 +1419,8 @@
         let sessionRecorderSnapshots = [];
         let isSunEnabled = localStorage.getItem('sb3d_sun') !== 'false';
         let sunMeshRef = null;
+        let lastNightState = false;
+        let midnightGlitchTriggered = false;
         let filmFXParams = {
             sharpen: 0.6,
             grainIntensity: 28,
@@ -2743,6 +2771,36 @@
             }
         }
 
+        function triggerMidnightGlitch() {
+            if (document.getElementById('midnight-glitch-overlay')) return;
+
+            const overlay = document.createElement('div');
+            overlay.id = 'midnight-glitch-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = 0;
+            overlay.style.left = 0;
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.zIndex = 9998;
+            overlay.style.pointerEvents = 'none';
+            overlay.style.backgroundColor = 'transparent';
+            overlay.classList.add('glitch-mode');
+
+            const tear = document.createElement('div');
+            tear.className = 'tear-effect';
+            overlay.appendChild(tear);
+
+            const bar = document.createElement('div');
+            bar.className = 'glitch-bar';
+            overlay.appendChild(bar);
+
+            document.body.appendChild(overlay);
+
+            setTimeout(() => {
+                overlay.remove();
+            }, 500);
+        }
+
         function toggleFilmFX() {
             isFilmFXEnabled = !isFilmFXEnabled;
             const btn = document.getElementById('btn-filmfx');
@@ -2919,7 +2977,7 @@
                     sceneRef.clearColor = new BABYLON.Color4(0.55, 0.7, 0.85, 1.0);
                 }
                 if (sunMeshRef && isSunEnabled) {
-                    const sunPos = dayNightDirRef.direction.clone().normalize().scale(-1000);
+                    const sunPos = dayNightDirRef.direction.clone().normalize().scale(-2000);
                     sunMeshRef.position = sunPos;
                     sunMeshRef.isVisible = true;
                 }
@@ -2970,7 +3028,7 @@
 
                 sunMeshRef.isVisible = true;
                 const sunDir = dayNightDirRef.direction.clone().normalize();
-                sunMeshRef.position = sunDir.scale(-1000);
+                sunMeshRef.position = sunDir.scale(-2000);
             } else {
                 if (sunMeshRef) {
                     sunMeshRef.isVisible = false;
@@ -3000,6 +3058,14 @@
             const isDawn = t > 0.2 && t < 0.35;
             const isDusk = t > 0.65 && t < 0.8;
             const isNight = !isDay;
+            if (isNight && !lastNightState && !midnightGlitchTriggered) {
+                if (Math.random() < 0.3) {
+                    triggerMidnightGlitch();
+                }
+                midnightGlitchTriggered = true;
+            } else if (!isNight) {
+                midnightGlitchTriggered = false;
+            }
 
             let skyR, skyG, skyB;
             if (isNight) {
@@ -3059,7 +3125,7 @@
                 }
             }
             if (sunMeshRef && isSunEnabled) {
-                sunMeshRef.position = dayNightDirRef.direction.normalizeToNew().scale(-1000);
+                sunMeshRef.position = dayNightDirRef.direction.normalizeToNew().scale(-2000);
                 sunMeshRef.isVisible = !isNight;
             }
         }
@@ -3748,7 +3814,7 @@
                         dayNightDirRef = dirLight;
                         scene.clearColor = new BABYLON.Color4(0.55, 0.7, 0.85, 1.0);
 
-                        const groundThickness = 100;
+                        const groundThickness = 10000;
                         const groundYBottom = -groundThickness;
                         const groundYTop = 0;
 
@@ -3771,8 +3837,20 @@
                             scene
                         );
 
-                        const ramp = BABYLON.MeshBuilder.CreateBox("ramp", { width: 15, height: 1, depth: 30 }, scene);
-                        ramp.position = new BABYLON.Vector3(30, 1, 0);
+                        const voidPlatform = BABYLON.MeshBuilder.CreateDisc("voidPlatform", { radius: 2000, tessellation: 64 }, scene);
+                        voidPlatform.position = new BABYLON.Vector3(0, -7000, 0);
+                        voidPlatform.rotation.x = Math.PI / 2;
+                        const voidMat = new BABYLON.StandardMaterial("voidMat", scene);
+                        voidMat.diffuseColor = new BABYLON.Color3(0, 0, 0);
+                        voidMat.specularColor = new BABYLON.Color3(0, 0, 0);
+                        voidMat.emissiveColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+                        voidPlatform.material = voidMat;
+                        voidPlatform.isPickable = false;
+                        voidPlatform.alwaysSelectAsActiveMesh = false;
+                        voidPlatform.checkCollisions = false;
+
+                        const ramp = BABYLON.MeshBuilder.CreateBox("ramp", { width: 100, height: 1, depth: 30 }, scene);
+                        ramp.position = new BABYLON.Vector3(150, 18, 0);
                         ramp.rotation.z = Math.PI / 8;
                         const rampMat = new BABYLON.StandardMaterial("rampMat", scene);
                         rampMat.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.3);
@@ -3780,6 +3858,8 @@
                         ramp.physicsImpostor = new BABYLON.PhysicsImpostor(ramp, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.4 }, scene);
 
                         this.createPillars(scene);
+                        this.createBackgroundDecorations(scene);
+                        this.createBackgroundPillars(scene);
                         this.setupInteraction(scene);
 
                         // ==========================================
@@ -3820,6 +3900,7 @@
                             }
                         }
 
+                        this.WaterSimulation.init(scene);
                         setTimeout(() => { toggleSun(true); }, 100);
 
                         return scene;
@@ -3995,6 +4076,125 @@
                                 restitution: 0.1,
                                 friction: 0.5
                             }, scene);
+                        }
+                    },
+
+                    createBackgroundDecorations: function (scene) {
+                        const colors = [
+                            new BABYLON.Color3(0.2, 0.3, 0.5),
+                            new BABYLON.Color3(0.5, 0.2, 0.3),
+                            new BABYLON.Color3(0.3, 0.5, 0.2),
+                            new BABYLON.Color3(0.6, 0.4, 0.1),
+                            new BABYLON.Color3(0.4, 0.2, 0.6),
+                            new BABYLON.Color3(0.1, 0.6, 0.6),
+                            new BABYLON.Color3(0.7, 0.3, 0.3)
+                        ];
+
+                        const shapes = ['box', 'sphere', 'cylinder', 'torus'];
+                        const count = 80;
+
+                        for (let i = 0; i < count; i++) {
+                            const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+
+                            const angle = Math.random() * Math.PI * 2;
+                            const radius = 350 + Math.random() * 450;
+                            const x = Math.cos(angle) * radius;
+                            const z = Math.sin(angle) * radius;
+                            const y = -30 + Math.random() * 180;
+
+                            let scaleX = 1 + Math.random() * 4;
+                            let scaleY = 1 + Math.random() * 6;
+                            let scaleZ = 1 + Math.random() * 4;
+                            if (shapeType === 'sphere') scaleX = scaleY = scaleZ = 1 + Math.random() * 3;
+                            if (shapeType === 'torus') scaleX = scaleY = scaleZ = 1 + Math.random() * 2;
+
+                            let mesh;
+                            switch (shapeType) {
+                                case 'box':
+                                    mesh = BABYLON.MeshBuilder.CreateBox(`bg_${i}`, { width: 1, height: 1, depth: 1 }, scene);
+                                    break;
+                                case 'sphere':
+                                    mesh = BABYLON.MeshBuilder.CreateSphere(`bg_${i}`, { diameter: 1 }, scene);
+                                    break;
+                                case 'cylinder':
+                                    mesh = BABYLON.MeshBuilder.CreateCylinder(`bg_${i}`, { height: 1, diameter: 0.8 }, scene);
+                                    break;
+                                case 'torus':
+                                    mesh = BABYLON.MeshBuilder.CreateTorus(`bg_${i}`, { diameter: 1, thickness: 0.2 }, scene);
+                                    break;
+                            }
+
+                            mesh.scaling = new BABYLON.Vector3(scaleX, scaleY, scaleZ);
+                            mesh.position = new BABYLON.Vector3(x, y, z);
+
+                            const color = colors[Math.floor(Math.random() * colors.length)];
+                            const mat = new BABYLON.StandardMaterial(`bgMat_${i}`, scene);
+                            mat.diffuseColor = color;
+                            mat.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+                            mat.emissiveColor = color.scale(0.3);
+                            mesh.material = mat;
+
+                            mesh.isPickable = false;
+                            mesh.alwaysSelectAsActiveMesh = false;
+
+                            if (Math.random() > 0.7) {
+                                const rotSpeed = (Math.random() - 0.5) * 0.01;
+                                scene.registerBeforeRender(() => {
+                                    if (!mesh || mesh.isDisposed()) return;
+                                    mesh.rotate(BABYLON.Axis.Y, rotSpeed, BABYLON.Space.WORLD);
+                                    if (shapeType === 'torus') {
+                                        mesh.rotate(BABYLON.Axis.X, rotSpeed * 0.5, BABYLON.Space.LOCAL);
+                                    }
+                                });
+                            }
+                        }
+
+                        const platformCount = 20;
+                        for (let i = 0; i < platformCount; i++) {
+                            const angle = Math.random() * Math.PI * 2;
+                            const radius = 400 + Math.random() * 300;
+                            const x = Math.cos(angle) * radius;
+                            const z = Math.sin(angle) * radius;
+                            const y = 20 + Math.random() * 100;
+
+                            const platform = BABYLON.MeshBuilder.CreateDisc(`platform_${i}`, { radius: 3 + Math.random() * 5, tessellation: 16 }, scene);
+                            platform.position = new BABYLON.Vector3(x, y, z);
+                            platform.rotation.x = Math.PI / 2; // horizontal disc
+                            const platMat = new BABYLON.StandardMaterial(`platMat_${i}`, scene);
+                            platMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.4);
+                            platMat.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.3);
+                            platMat.alpha = 0.6;
+                            platform.material = platMat;
+                            platform.isPickable = false;
+                            platform.alwaysSelectAsActiveMesh = false;
+                        }
+                    },
+
+                    createBackgroundPillars: function (scene) {
+                        const pillarCount = 80;
+                        const bgPillarMat = new BABYLON.StandardMaterial("bgPillarMat", scene);
+                        bgPillarMat.diffuseColor = new BABYLON.Color3(0.12, 0.12, 0.15);
+                        bgPillarMat.specularColor = new BABYLON.Color3(0.02, 0.02, 0.02);
+
+                        for (let i = 0; i < pillarCount; i++) {
+                            const topHeight = 100 + Math.random() * 500;
+                            const height = 10000 + topHeight;
+                            const size = 15 + Math.random() * 30;
+
+                            const pillar = BABYLON.MeshBuilder.CreateBox("bgPillar_" + i, { width: size, height: height, depth: size }, scene);
+
+                            const angle = Math.random() * Math.PI * 2;
+                            const radius = 500 + Math.random() * 1000;
+
+                            const posX = Math.cos(angle) * radius;
+                            const posZ = Math.sin(angle) * radius;
+
+                            pillar.position = new BABYLON.Vector3(posX, -10000 + (height / 2), posZ);
+                            pillar.material = bgPillarMat;
+
+                            pillar.isPickable = false;
+                            pillar.alwaysSelectAsActiveMesh = false;
+                            pillar.checkCollisions = false;
                         }
                     },
 
@@ -4388,6 +4588,109 @@
                             frag.physicsImpostor.applyImpulse(exDir.scale(12), frag.getAbsolutePosition());
                             spawnedMeshes.push(frag);
                         }
+                    },
+
+                    WaterSimulation: {
+                        poolBounds: null,
+                        waterLevel: 0,
+                        fluidDensity: 1.2,
+                        dragFactor: 0.15,
+
+                        init: function (scene) {
+                            const poolSize = 80;
+                            const poolDepth = 20;
+                            const wallThickness = 4;
+                            const poolX = 150;
+                            const poolZ = -150;
+                            const groundY = 1;
+
+                            const wallMat = new BABYLON.StandardMaterial("poolWallMat", scene);
+                            wallMat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.55);
+
+                            const createWall = (name, w, h, d, px, pz) => {
+                                const wall = BABYLON.MeshBuilder.CreateBox(name, { width: w, height: h, depth: d }, scene);
+                                wall.position = new BABYLON.Vector3(px, groundY + h / 2 - 2, pz);
+                                wall.material = wallMat;
+                                wall.physicsImpostor = new BABYLON.PhysicsImpostor(wall, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.5 }, scene);
+                                return wall;
+                            };
+
+                            createWall("wallN", poolSize + wallThickness * 2, poolDepth + 4, wallThickness, poolX, poolZ + poolSize / 2 + wallThickness / 2);
+                            createWall("wallS", poolSize + wallThickness * 2, poolDepth + 4, wallThickness, poolX, poolZ - poolSize / 2 - wallThickness / 2);
+                            createWall("wallE", wallThickness, poolDepth + 4, poolSize, poolX + poolSize / 2 + wallThickness / 2, poolZ);
+                            createWall("wallW", wallThickness, poolDepth + 4, poolSize, poolX - poolSize / 2 - wallThickness / 2, poolZ);
+
+                            const floor = BABYLON.MeshBuilder.CreateBox("poolFloor", { width: poolSize, height: wallThickness, depth: poolSize }, scene);
+                            floor.position = new BABYLON.Vector3(poolX, groundY - 2, poolZ);
+                            floor.material = wallMat;
+                            floor.physicsImpostor = new BABYLON.PhysicsImpostor(floor, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.2, friction: 0.5 }, scene);
+
+                            const water = BABYLON.MeshBuilder.CreateBox("waterVolume", { width: poolSize, height: poolDepth, depth: poolSize }, scene);
+                            water.position = new BABYLON.Vector3(poolX, groundY + poolDepth / 2 - 2, poolZ);
+
+                            const waterMat = new BABYLON.PBRMaterial("waterMat", scene);
+                            waterMat.albedoColor = new BABYLON.Color3(0.1, 0.6, 0.9);
+                            waterMat.alpha = 0.5;
+                            waterMat.roughness = 0.05;
+                            waterMat.metallic = 0.1;
+                            water.material = waterMat;
+
+                            water.isPickable = false;
+                            water.checkCollisions = false;
+
+                            this.waterLevel = water.position.y + poolDepth / 2;
+                            this.poolBounds = {
+                                minX: poolX - poolSize / 2,
+                                maxX: poolX + poolSize / 2,
+                                minZ: poolZ - poolSize / 2,
+                                maxZ: poolZ + poolSize / 2,
+                                bottomY: floor.position.y + wallThickness / 2
+                            };
+
+                            scene.onBeforeRenderObservable.add(() => this.applyBuoyancy());
+                        },
+
+                        applyBuoyancy: function () {
+                            if (!spawnedMeshes) return;
+
+                            const b = this.poolBounds;
+
+                            for (let i = 0; i < spawnedMeshes.length; i++) {
+                                const mesh = spawnedMeshes[i];
+                                if (!mesh || mesh.isDisposed() || !mesh.physicsImpostor) continue;
+                                if (mesh.physicsImpostor.mass === 0) continue;
+
+                                const pos = mesh.position;
+
+                                if (pos.x > b.minX && pos.x < b.maxX && pos.z > b.minZ && pos.z < b.maxZ && pos.y < this.waterLevel && pos.y > b.bottomY) {
+                                    const depth = this.waterLevel - pos.y;
+                                    const volume = mesh.scaling.x * mesh.scaling.y * mesh.scaling.z;
+                                    const mass = mesh.physicsImpostor.mass;
+                                    const density = mass / volume;
+
+                                    const buoyancy = (this.fluidDensity / density) * 9.81 * mass;
+
+                                    const upwardForce = buoyancy * Math.min(depth * 0.8, 2.0);
+
+                                    const vel = mesh.physicsImpostor.getLinearVelocity();
+                                    const dragY = -vel.y * this.dragFactor * volume;
+
+                                    const totalForceY = upwardForce + dragY;
+
+                                    mesh.physicsImpostor.applyForce(
+                                        new BABYLON.Vector3(0, totalForceY, 0),
+                                        mesh.getAbsolutePosition()
+                                    );
+
+                                    const dragX = -vel.x * (this.dragFactor * 0.4);
+                                    const dragZ = -vel.z * (this.dragFactor * 0.4);
+                                    mesh.physicsImpostor.applyForce(
+                                        new BABYLON.Vector3(dragX, 0, dragZ),
+                                        mesh.getAbsolutePosition()
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -4520,9 +4823,13 @@
 
                 console.log(`[Ambience] Time Check | Hour: ${hour} | Mode: ${mode.toUpperCase()}`);
 
+                if (Math.random() < 0.3) {
+                    triggerMidnightGlitch();
+                }
+
                 if (mode === 'midnight') {
                     if (Math.random() < 0.10) {
-                        console.log("[Ambience] ⚠️ MIDNIGHT EVENT TRIGGERED ⚠️");
+                        console.log("[Ambience] MIDNIGHT EVENT TRIGGERED");
                         this.triggerJumpscare();
                         return;
                     }

@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sand Box 3D for PC</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/babylonjs@8.56.0/babylon.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babylonjs@9.0.0/babylon.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@8.56.0/babylonjs.loaders.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/babylonjs-inspector@8.56.0/babylon.inspector.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@9.0.0/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babylonjs-inspector@9.0.0/babylon.inspector.bundle.js"></script>
 
     <style>
         html, body {
@@ -2560,6 +2560,7 @@
                 isBuildMode,
                 currentSize: currentSize.toFixed(2),
                 currentMass: currentMass.toFixed(2),
+                currentReflectivity: currentReflectivity.toFixed(2),
                 throwForce,
                 isHUDVisible,
                 isFrustumCullingEnabled,
@@ -2666,6 +2667,7 @@
                 `  Selected Shape          : ${latest.selectedShape}`,
                 `  Current Size            : ${latest.currentSize}`,
                 `  Current Mass            : ${latest.currentMass}`,
+                `  Current Reflectivity    : ${latest.currentReflectivity}`,
                 `  Throw Force             : ${latest.throwForce}`,
                 `  Build Mode              : ${latest.isBuildMode ? 'ON' : 'OFF'}`,
                 `  Freeze Mode             : ${latest.freezeAction}`,
@@ -3007,6 +3009,7 @@
                 panel.style.display = 'block';
                 const slider = document.getElementById('opt-tod');
                 if (slider) setTimeOfDay(slider.value);
+                resetNightPulseSystem();
             } else {
                 btn.innerHTML = `<span class="shape-icon" style="background:#f39c12;border-radius:50%;"></span> ${t.dynTimeOff}`;
                 btn.style.borderLeftColor = '#f39c12';
@@ -3178,6 +3181,7 @@
                 sunMeshRef.position = dayNightDirRef.direction.normalizeToNew().scale(-2000);
                 sunMeshRef.isVisible = !isNight;
             }
+            resetNightPulseSystem();
         }
 
         function cleanupNightPulse() {
@@ -3188,6 +3192,16 @@
                 sceneRef.onBeforeRenderObservable.remove(pulseAnimObserver);
                 pulseAnimObserver = null;
             }
+        }
+
+        function resetNightPulseSystem() {
+            if (!sceneRef) return;
+            if (nightPulseInterval) {
+                clearInterval(nightPulseInterval);
+                nightPulseInterval = null;
+            }
+            cleanupNightPulse();
+            startNightPulseSystem(sceneRef);
         }
 
         function triggerPulseAnimation(scene) {
@@ -3237,10 +3251,9 @@
                 const sunY = Math.sin(sunAngle);
 
                 const isNight = sunY <= 0;
-                const isEveningDusk = t > 0.65 && t < 0.8;
                 const isDawn = t > 0.2 && t < 0.35;
 
-                if (!isNight || isEveningDusk || isDawn) {
+                if (!isNight || isDawn) {
                     cleanupNightPulse();
                     return;
                 }

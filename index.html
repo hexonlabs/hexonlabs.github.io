@@ -264,17 +264,6 @@
                 </div>
                 <i class="material-icons-round" style="color: #666;">chevron_right</i>
             </div>
-            
-            <div class="category-card" onclick="openModal('modal-ecosystem'); createRipple(event)">
-                <div class="category-icon">
-                    <i class="material-icons-round">layers</i>
-                </div>
-                <div class="category-info">
-                    <div class="category-title">TGBrowser Ecosystem</div>
-                    <div class="category-desc">Browser, Extensions & Lab</div>
-                </div>
-                <i class="material-icons-round" style="color: #666;">chevron_right</i>
-            </div>
 
             <div class="category-card" onclick="openModal('modal-other'); createRipple(event)">
                 <div class="category-icon">
@@ -293,45 +282,6 @@
             <p>2025-2026 HEXON Laboratories</p>
         </footer>
 
-    </div>
-
-    <div id="modal-ecosystem" class="modal-overlay" onclick="handleOverlayClick(event)">
-        <div class="modal-box">
-            <div class="modal-header">
-                <i class="material-icons-round" style="font-size: 28px; color: var(--md-sys-color-primary);">layers</i>
-                <h2 class="modal-title">TGBrowser</h2>
-            </div>
-            
-            <div class="list-group">
-                <a href="https://hexonlabs.github.io/TGBrowser/tgbrowser_page" class="list-item" onclick="createRipple(event)">
-                    <i class="material-icons-round item-icon">public</i>
-                    <div class="item-content">
-                        <div class="item-title">TGBrowser</div>
-                        <div class="item-subtitle">Core Application</div>
-                    </div>
-                    <i class="material-icons-round item-arrow">chevron_right</i>
-                </a>
-
-                <a href="https://hexonlabs.github.io/tgplugs" class="list-item" onclick="createRipple(event)">
-                    <i class="material-icons-round item-icon">extension</i>
-                    <div class="item-content">
-                        <div class="item-title">TGPlugs</div>
-                        <div class="item-subtitle">Extensions Store</div>
-                    </div>
-                    <i class="material-icons-round item-arrow">chevron_right</i>
-                </a>
-
-                <a href="https://hexonlabs.github.io/TGBrowser/tgb_tgplugtest" class="list-item" onclick="createRipple(event)">
-                    <i class="material-icons-round item-icon">science</i>
-                    <div class="item-content">
-                        <div class="item-title">TGPlug Lab</div>
-                        <div class="item-subtitle">Dev Testing Environment</div>
-                    </div>
-                    <i class="material-icons-round item-arrow">chevron_right</i>
-                </a>
-            </div>
-            <button class="modal-close-btn" onclick="closeAllModals()">Close</button>
-        </div>
     </div>
 
     <div id="modal-3d" class="modal-overlay" onclick="handleOverlayClick(event)">
@@ -386,6 +336,33 @@
                     <div class="item-content">
                         <div class="item-title">Parkour Obby</div>
                         <div class="item-subtitle">Smart TV Game</div>
+                    </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
+
+                <a href="https://hexonlabs.github.io/TGBrowser/tgbrowser_page" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">public</i>
+                    <div class="item-content">
+                        <div class="item-title">TGBrowser (Archived)</div>
+                        <div class="item-subtitle">Core Application</div>
+                    </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
+                
+                <a href="https://hexonlabs.github.io/tgplugs" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">extension</i>
+                    <div class="item-content">
+                        <div class="item-title">TGPlugs (Archived)</div>
+                        <div class="item-subtitle">Extensions Store</div>
+                    </div>
+                    <i class="material-icons-round item-arrow">chevron_right</i>
+                </a>
+                
+                <a href="https://hexonlabs.github.io/TGBrowser/tgb_tgplugtest" class="list-item" onclick="createRipple(event)">
+                    <i class="material-icons-round item-icon">science</i>
+                    <div class="item-content">
+                        <div class="item-title">TGPlug Lab (Archived)</div>
+                        <div class="item-subtitle">Dev Testing Environment</div>
                     </div>
                     <i class="material-icons-round item-arrow">chevron_right</i>
                 </a>

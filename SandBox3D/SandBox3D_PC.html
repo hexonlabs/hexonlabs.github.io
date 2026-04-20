@@ -809,6 +809,14 @@
                     oninput="updateMass(this.value)">
             </div>
 
+            <div id="reflectivity-settings" class="slider-group" style="display: none; border-left: 3px solid #bdc3c7;">
+                <div class="slider-label">
+                    <span id="lbl-reflectivity">Reflectivity</span>
+                    <span id="reflect-display">1.0</span>
+                </div>
+                <input type="range" id="reflect-slider" min="0.0" max="1.0" step="0.05" value="1.0" oninput="updateReflectivity(this.value)">
+            </div>
+
             <div id="structure-settings" class="slider-group" style="display: none; border-left: 3px solid #9b59b6;">
                 <div class="slider-label"><span>Grid Size (L x H x W)</span></div>
                 <div style="display: flex; gap: 5px; margin-bottom: 5px;">
@@ -831,6 +839,10 @@
                     <option value="glass_sphere">Glass Sphere</option>
                     <option value="glass_cylinder">Glass Cylinder</option>
                     <option value="glass_triangle">Glass Triangle</option>
+                    <option value="mirror_box">Mirror Cube</option>
+                    <option value="mirror_sphere">Mirror Sphere</option>
+                    <option value="mirror_cylinder">Mirror Cylinder</option>
+                    <option value="mirror_triangle">Mirror Triangle</option>
                 </select>
             </div>
     
@@ -880,6 +892,25 @@
                 </button>
             </div>
     
+            <div class="section-label" id="lbl-mirror-shapes">Mirror Shapes</div>
+            <div class="control-group">
+                <button id="btn-mirror_box" onclick="selectShape('mirror_box')">
+                    <span class="shape-icon icon-box" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror Cube
+                </button>
+                <button id="btn-mirror_sphere" onclick="selectShape('mirror_sphere')">
+                    <span class="shape-icon icon-sphere" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror
+                    Sphere
+                </button>
+                <button id="btn-mirror_cyl" onclick="selectShape('mirror_cylinder')">
+                    <span class="shape-icon icon-cyl" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror
+                    Cylinder
+                </button>
+                <button id="btn-mirror_tri" onclick="selectShape('mirror_triangle')">
+                    <span class="shape-icon icon-tri"
+                        style="border-bottom-color: #ccc; filter: drop-shadow(0 -2px 1px #eee);"></span> Mirror Triangle
+                </button>
+            </div>
+
             <div class="section-label">Explosives</div>
             <div class="control-group">
                 <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
@@ -1407,6 +1438,10 @@
         let sunMeshRef = null;
         let lastNightState = false;
         let midnightGlitchTriggered = false;
+        let currentReflectivity = 1.0;
+        let nightPulseLight = null;
+        let nightPulseInterval = null;
+        let pulseAnimObserver = null;
         let filmFXParams = {
             sharpen: 0.6,
             grainIntensity: 28,
@@ -1563,6 +1598,12 @@
                 btnExportSession: "Export Session Log (.txt)",
                 dynSessionRecorderOn: "Session Recorder is ON",
                 dynSessionRecorderOff: "Session Recorder is OFF",
+                labelMirrorShapes: "Mirror Shapes",
+                labelReflectivity: "Reflectivity",
+                btnMirrorCube: "Mirror Cube",
+                btnMirrorSphere: "Mirror Sphere",
+                btnMirrorCyl: "Mirror Cylinder",
+                btnMirrorTri: "Mirror Triangle",
             },
             genz: {
                 pageTitle: "sandbox 3d pc 💀",
@@ -1701,6 +1742,12 @@
                 btnExportSession: "yoink session log 📋",
                 dynSessionRecorderOn: "Session Recorder is recording fr 🔴",
                 dynSessionRecorderOff: "Session Recorder said nah",
+                labelMirrorShapes: "Chrome Era ✨",
+                labelReflectivity: "Shiny level",
+                btnMirrorCube: "Reflect-o Cube",
+                btnMirrorSphere: "Shiny Ball fr",
+                btnMirrorCyl: "Chrome Tube",
+                btnMirrorTri: "Edgy Mirror",
             },
             shakespeare: {
                 pageTitle: "Thee Noble Sandbox of Three Dimensions, PC Edition",
@@ -1839,6 +1886,12 @@
                 btnExportSession: "Export the Session Tome (.txt)",
                 dynSessionRecorderOn: "The Session Recorder doth run 🔴",
                 dynSessionRecorderOff: "The Session Recorder is at rest",
+                labelMirrorShapes: "Mirrors of Truth",
+                labelReflectivity: "Gleam & Lustre",
+                btnMirrorCube: "Cube of Reflection",
+                btnMirrorSphere: "Orb of the Looking Glass",
+                btnMirrorCyl: "Cylinder of Silver",
+                btnMirrorTri: "Prism of the Void",
             },
         };
 
@@ -2022,6 +2075,7 @@
                     'MODES': t.labelModes, 'SHAPES': t.labelShapes,
                     'GLASS SHAPES': t.labelGlass, 'EXPLOSIVES': t.labelExplosives,
                     'ACTIONS': t.labelActions, 'CUSTOM': t.labelCustom,
+                    'MIRROR SHAPES': t.labelMirrorShapes,
                 };
                 if (map[raw]) el.innerText = map[raw];
             });
@@ -2059,6 +2113,10 @@
                 'btn-show-more': `<span class="shape-icon" style="background: transparent; border: 2px solid #c0392b; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnShowMore}`,
                 'btn-about-versions': `<span class="shape-icon" style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnVersions}`,
                 'btn-export-session-log': `<span class="shape-icon" style="background: #00bcd4; border-radius: 50%;"></span> ${t.btnExportSession}`,
+                'btn-mirror_box': `<span class="shape-icon icon-box" style="background: linear-gradient(135deg, #eee, #aaa);"></span> ${t.btnMirrorCube}`,
+                'btn-mirror_sphere': `<span class="shape-icon icon-sphere" style="background: linear-gradient(135deg, #eee, #aaa);"></span> ${t.btnMirrorSphere}`,
+                'btn-mirror_cyl': `<span class="shape-icon icon-cyl" style="background: linear-gradient(135deg, #eee, #aaa);"></span> ${t.btnMirrorCyl}`,
+                'btn-mirror_tri': `<span class="shape-icon icon-tri" style="border-bottom-color: #ccc; filter: drop-shadow(0 -2px 1px #eee);"></span> ${t.btnMirrorTri}`,
             };
             const sliderLbls = {
                 'lbl-ambience-vol': t.labelAmbienceVol,
@@ -2084,6 +2142,7 @@
                 'lbl-vignette-fov': t.labelVignetteFOV,
                 'lbl-ip-contrast': t.labelContrast,
                 'lbl-ip-exposure': t.labelExposure,
+                'lbl-reflectivity': t.labelReflectivity,
             };
             for (const [id, html] of Object.entries(btnMap)) {
                 const el = document.getElementById(id); if (el) el.innerHTML = html;
@@ -3121,6 +3180,84 @@
             }
         }
 
+        function cleanupNightPulse() {
+            if (nightPulseLight) {
+                nightPulseLight.intensity = 0;
+            }
+            if (pulseAnimObserver && sceneRef) {
+                sceneRef.onBeforeRenderObservable.remove(pulseAnimObserver);
+                pulseAnimObserver = null;
+            }
+        }
+
+        function triggerPulseAnimation(scene) {
+            if (!nightPulseLight) return;
+
+            if (pulseAnimObserver) {
+                scene.onBeforeRenderObservable.remove(pulseAnimObserver);
+                pulseAnimObserver = null;
+            }
+
+            let pulseStep = 0;
+            const maxIntensity = 2.0;
+            const speed = 0.04;
+
+            nightPulseLight.intensity = 0;
+
+            pulseAnimObserver = scene.onBeforeRenderObservable.add(() => {
+                pulseStep += speed;
+
+                const currentIntensity = Math.sin(pulseStep) * maxIntensity;
+
+                if (pulseStep >= Math.PI) {
+                    nightPulseLight.intensity = 0;
+                    scene.onBeforeRenderObservable.remove(pulseAnimObserver);
+                    pulseAnimObserver = null;
+                } else {
+                    nightPulseLight.intensity = Math.max(0, currentIntensity);
+                }
+            });
+        }
+
+        function startNightPulseSystem(scene) {
+            if (nightPulseInterval) clearInterval(nightPulseInterval);
+
+            if (!nightPulseLight) {
+                nightPulseLight = new BABYLON.DirectionalLight("nightPulseLight", new BABYLON.Vector3(0, -1, 0), scene);
+                nightPulseLight.intensity = 0;
+            }
+
+            nightPulseInterval = setInterval(() => {
+                if (!isDayNightEnabled || !scene) return;
+
+                const sliderVal = parseInt(document.getElementById('opt-tod').value);
+                const t = sliderVal / 1440;
+
+                const sunAngle = (t - 0.25) * Math.PI * 2;
+                const sunY = Math.sin(sunAngle);
+
+                const isNight = sunY <= 0;
+                const isEveningDusk = t > 0.65 && t < 0.8;
+                const isDawn = t > 0.2 && t < 0.35;
+
+                if (!isNight || isEveningDusk || isDawn) {
+                    cleanupNightPulse();
+                    return;
+                }
+
+                const isMidnight = t < 0.1 || t > 0.9;
+
+                if (isMidnight) {
+                    nightPulseLight.diffuse = new BABYLON.Color3(0.8, 0.1, 0.1);
+                } else {
+                    nightPulseLight.diffuse = new BABYLON.Color3(0.7, 0.8, 1.0);
+                }
+
+                triggerPulseAnimation(scene);
+
+            }, 5000);
+        }
+
         function toggleSyncDeviceTime() {
             isSyncingDeviceTime = !isSyncingDeviceTime;
             const btn = document.getElementById('btn-sync-time');
@@ -3260,6 +3397,10 @@
 
             if (isDayNightEnabled) toggleDayNight();
             if (syncDeviceTimeInterval) { clearInterval(syncDeviceTimeInterval); syncDeviceTimeInterval = null; }
+            if (nightPulseInterval) {
+                clearInterval(nightPulseInterval);
+                nightPulseInterval = null;
+            }
 
             if (isFlashlightOn && typeof toggleFlashlight === 'function') toggleFlashlight();
             if (flashlightRef) { flashlightRef.dispose(); flashlightRef = null; }
@@ -3269,6 +3410,8 @@
             if (sb3d.engine) { sb3d.engine.dispose(); sb3d.engine = null; }
 
             sceneRef = null;
+            cleanupNightPulse();
+            nightPulseLight = null;
             viewTargetMesh = null;
             customModelTemplate = null;
             dayNightLightRef = null;
@@ -3438,6 +3581,7 @@
             selectedShape = shape;
             const throwSettings = document.getElementById('throw-settings');
             const structSettings = document.getElementById('structure-settings');
+            const reflectSettings = document.getElementById('reflectivity-settings');
             
             document.querySelectorAll('button').forEach(b => {
                 if(!b.classList.contains('btn-minimize') && b.id !== 'btn-enter-game' && b.id !== 'btn-build' && b.id !== 'btn-upload') {
@@ -3462,6 +3606,12 @@
                 structSettings.style.display = 'none';
             }
 
+            if (shape.startsWith('mirror_')) {
+                reflectSettings.style.display = 'block';
+            } else {
+                reflectSettings.style.display = 'none';
+            }
+
             if (shape === 'view') {
                 workshop.shaman.sandbox3d.resetCameraTarget();
             }
@@ -3476,6 +3626,8 @@
             if (shape === 'flashbang') btnId = 'btn-flashbang';
             if (shape === 'glass_cylinder') btnId = 'btn-glass_cyl';
             if (shape === 'glass_triangle') btnId = 'btn-glass_tri';
+            if (shape === 'mirror_cylinder') btnId = 'btn-mirror_cyl';
+            if (shape === 'mirror_triangle') btnId = 'btn-mirror_tri';
             
             const activeBtn = document.getElementById(btnId);
             if(activeBtn) activeBtn.classList.add('active');
@@ -3543,6 +3695,11 @@
             document.getElementById('mass-display').innerText = currentMass.toFixed(1);
         }
 
+        function updateReflectivity(val) {
+            currentReflectivity = parseFloat(val);
+            document.getElementById('reflect-display').innerText = currentReflectivity.toFixed(2);
+        }
+
         function toggleFreezeLogic() {
             const btn = document.getElementById('btn-freeze');
             const t = SB3D_LANGS[activeLang];
@@ -3591,6 +3748,30 @@
                     cameraFree: null,
                     cullingFrameCount: 0,
                     cullingRate: 10,
+
+                    MirrorSystem: {
+                        probe: null,
+                        init: function (scene) {
+                            this.probe = new BABYLON.ReflectionProbe("sb3dGlobalMirrorProbe", 512, scene);
+                            this.probe.refreshRate = BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYTWOFRAMES;
+                            this.probe.position = new BABYLON.Vector3(0, 25, 0);
+                        },
+                        addToRenderList: function (mesh) {
+                            if (this.probe && mesh && mesh.name && !mesh.name.startsWith("mirror_")) {
+                                if (!this.probe.renderList.includes(mesh)) {
+                                    this.probe.renderList.push(mesh);
+                                }
+                            }
+                        },
+                        removeFromRenderList: function (mesh) {
+                            if (this.probe && mesh) {
+                                const idx = this.probe.renderList.indexOf(mesh);
+                                if (idx > -1) {
+                                    this.probe.renderList.splice(idx, 1);
+                                }
+                            }
+                        }
+                    },
 
                     init: async function () {
                         const useWebGPU = localStorage.getItem('sb3d_use_webgpu') === 'true';
@@ -3797,6 +3978,10 @@
                         this.createBackgroundDecorations(scene);
                         this.createBackgroundPillars(scene);
                         this.setupInteraction(scene);
+                        startNightPulseSystem(scene);
+                        this.MirrorSystem.init(scene);
+                        this.MirrorSystem.addToRenderList(ground);
+                        this.MirrorSystem.addToRenderList(ramp);
 
                         // ==========================================
                         // POST-PROCESSING PIPELINE (if enabled)
@@ -4317,8 +4502,10 @@
                         let mesh;
                         let mat;
                         const isGlass = type.startsWith('glass_');
+                        const isMirror = type.startsWith('mirror_');
                         let baseType = type;
                         if (isGlass) baseType = type.replace('glass_', '');
+                        if (isMirror) baseType = type.replace('mirror_', '');
 
                         const pickerVal = document.getElementById('color-picker').value;
                         const baseColor = BABYLON.Color3.FromHexString(pickerVal);
@@ -4331,6 +4518,14 @@
                             mat.subSurface.isRefractionEnabled = true;
                             mat.subSurface.indexOfRefraction = 1.5;
                             mat.albedoColor = baseColor;
+                        } else if (isMirror) {
+                            mat = new BABYLON.PBRMaterial("mirrorMat" + Date.now(), scene);
+                            mat.metallic = 1.0;
+                            mat.roughness = 1.0 - currentReflectivity;
+                            mat.albedoColor = baseColor;
+                            if (workshop.shaman.sandbox3d.MirrorSystem.probe) {
+                                mat.reflectionTexture = workshop.shaman.sandbox3d.MirrorSystem.probe.cubeTexture;
+                            }
                         } else {
                             mat = new BABYLON.StandardMaterial("objMat" + Date.now(), scene);
                             mat.diffuseColor = baseColor;
@@ -4351,11 +4546,11 @@
                             mesh.position = pickInfo.pickedPoint.add(normal.scale(customOffset));
                         }
                         else if (baseType === 'box') {
-                            mesh = BABYLON.MeshBuilder.CreateBox(isGlass ? "glass_box" : "box", { size: scale }, scene);
+                            mesh = BABYLON.MeshBuilder.CreateBox(isGlass ? "glass_box" : (isMirror ? "mirror_box" : "box"), { size: scale }, scene);
                             mesh.position.copyFrom(spawnPos);
                         }
                         else if (baseType === 'sphere') {
-                            mesh = BABYLON.MeshBuilder.CreateSphere(isGlass ? "glass_sphere" : "sphere", { diameter: scale }, scene);
+                            mesh = BABYLON.MeshBuilder.CreateSphere(isGlass ? "glass_sphere" : (isMirror ? "mirror_sphere" : "sphere"), { diameter: scale }, scene);
                             mesh.position.copyFrom(spawnPos);
                         }
                         else if (baseType === 'cylinder') {
@@ -4408,6 +4603,9 @@
                                 if (mesh.material && mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
                             }
                             spawnedMeshes.push(mesh);
+                            if (!isMirror && !isGlass) {
+                                workshop.shaman.sandbox3d.MirrorSystem.addToRenderList(mesh);
+                            }
                         }
                     },
 
@@ -4446,8 +4644,10 @@
                         let mesh;
                         let mat;
                         const isGlass = type.startsWith('glass_');
+                        const isMirror = type.startsWith('mirror_');
                         let baseType = type;
                         if (isGlass) baseType = type.replace('glass_', '');
+                        if (isMirror) baseType = type.replace('mirror_', '');
 
                         const pickerVal = document.getElementById('color-picker').value;
                         const baseColor = BABYLON.Color3.FromHexString(pickerVal);
@@ -4460,15 +4660,23 @@
                             mat.subSurface.isRefractionEnabled = true;
                             mat.subSurface.indexOfRefraction = 1.5;
                             mat.albedoColor = baseColor;
+                        } else if (isMirror) {
+                            mat = new BABYLON.PBRMaterial("structMirrorMat" + Date.now() + Math.random(), scene);
+                            mat.metallic = 1.0;
+                            mat.roughness = 1.0 - currentReflectivity;
+                            mat.albedoColor = baseColor;
+                            if (workshop.shaman.sandbox3d.MirrorSystem.probe) {
+                                mat.reflectionTexture = workshop.shaman.sandbox3d.MirrorSystem.probe.cubeTexture;
+                            }
                         } else {
                             mat = new BABYLON.StandardMaterial("structMat" + Date.now() + Math.random(), scene);
                             mat.diffuseColor = baseColor;
                         }
 
-                        if (baseType === 'box') mesh = BABYLON.MeshBuilder.CreateBox("s_box", { size: scale }, scene);
-                        else if (baseType === 'sphere') mesh = BABYLON.MeshBuilder.CreateSphere("s_sphere", { diameter: scale }, scene);
-                        else if (baseType === 'cylinder') mesh = BABYLON.MeshBuilder.CreateCylinder("s_cyl", { height: scale, diameter: scale / 2 }, scene);
-                        else if (baseType === 'triangle') mesh = BABYLON.MeshBuilder.CreateCylinder("s_tri", { height: scale, diameter: scale, tessellation: 3 }, scene);
+                        if (baseType === 'box') mesh = BABYLON.MeshBuilder.CreateBox(isGlass ? "s_glass_box" : (isMirror ? "s_mirror_box" : "s_box"), { size: scale }, scene);
+                        else if (baseType === 'sphere') mesh = BABYLON.MeshBuilder.CreateSphere(isGlass ? "s_glass_sphere" : (isMirror ? "s_mirror_sphere" : "s_sphere"), { diameter: scale }, scene);
+                        else if (baseType === 'cylinder') mesh = BABYLON.MeshBuilder.CreateCylinder(isGlass ? "s_glass_cyl" : (isMirror ? "s_mirror_cyl" : "s_cyl"), { height: scale, diameter: scale / 2 }, scene);
+                        else if (baseType === 'triangle') mesh = BABYLON.MeshBuilder.CreateCylinder(isGlass ? "s_glass_tri" : (isMirror ? "s_mirror_tri" : "s_tri"), { height: scale, diameter: scale, tessellation: 3 }, scene);
 
                         if (mesh) {
                             mesh.position = position;
@@ -4485,7 +4693,11 @@
                             }, scene);
 
                             spawnedMeshes.push(mesh);
-                        }   
+
+                            if (!isMirror && !isGlass) {
+                                workshop.shaman.sandbox3d.MirrorSystem.addToRenderList(mesh);
+                            }
+                        }
                     },
 
                     armBomb: function (bombMesh, scene, isFragment, isFlash = false) {

@@ -3907,6 +3907,18 @@
                 btn.innerText = '-';
             }
             syncPanelPositions();
+            syncFPSHudWithPanels();
+        }
+
+        function syncFPSHudWithPanels() {
+            const objPanel = document.getElementById('objects-panel');
+            const propPanel = document.getElementById('properties-panel');
+            const hud = document.getElementById('hud-container');
+            if (!hud) return;
+            const bothOpen = !objPanel.classList.contains('minimized') && !propPanel.classList.contains('minimized');
+            hud.style.transition = 'opacity 0.3s ease';
+            hud.style.opacity = bothOpen ? '0' : '1';
+            hud.style.pointerEvents = bothOpen ? 'none' : '';
         }
 
         function togglePropsUI() {
@@ -3921,6 +3933,7 @@
                 btn.innerText = '-';
             }
             syncPanelPositions();
+            syncFPSHudWithPanels();
         }
 
         function syncPanelPositions() {

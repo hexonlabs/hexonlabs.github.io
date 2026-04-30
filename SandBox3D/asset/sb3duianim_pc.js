@@ -264,6 +264,17 @@
                 window[originalFn] = function () {
                     const isMinimizing = !panel.classList.contains('minimized');
 
+                    function syncFPSAfterToggle() {
+                        const objPanel = document.getElementById('objects-panel');
+                        const propPanel = document.getElementById('properties-panel');
+                        const hud = document.getElementById('hud-container');
+                        if (!hud) return;
+                        const bothOpen = !objPanel.classList.contains('minimized') && !propPanel.classList.contains('minimized');
+                        hud.style.transition = 'opacity 0.3s ease';
+                        hud.style.opacity = bothOpen ? '0' : '1';
+                        hud.style.pointerEvents = bothOpen ? 'none' : '';
+                    }
+
                     if (isMinimizing) {
                         panel.classList.add('sb3d-closing');
                         panel.addEventListener('animationend', () => {
@@ -271,6 +282,7 @@
                             panel.classList.add('minimized');
                             btn.innerText = btn.dataset.minimizedText || minimizedText;
                             if (typeof syncPanelPositions === 'function') syncPanelPositions();
+                            syncFPSAfterToggle();
                         }, { once: true });
                     } else {
                         panel.classList.remove('minimized');
@@ -279,6 +291,7 @@
                         panel.classList.add('sb3d-opening');
                         panel.addEventListener('animationend', () => {
                             panel.classList.remove('sb3d-opening');
+                            syncFPSAfterToggle();
                         }, { once: true });
                     }
                 };

@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@9.0.0/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/babylonjs-inspector@9.0.0/babylon.inspector.bundle.js"></script>
-    <script src="https://hexonlabs.github.io/SandBox3D/asset/sb3duianim_mobile.js"></script>
+    <script src="./asset/sb3duianim_mobile.js"></script>
     <script src="https://hexonlabs.github.io/SandBox3D/asset/sb3dmatyou.js"></script>
 
     <style>
@@ -3954,6 +3954,18 @@
                 leftBtn.innerText = 'T';
             }
             syncPanelPositions();
+            syncFPSHudWithPanels();
+        }
+
+        function syncFPSHudWithPanels() {
+            const objPanel = document.getElementById('objects-panel');
+            const propPanel = document.getElementById('properties-panel');
+            const hud = document.getElementById('hud-container');
+            if (!hud) return;
+            const bothOpen = !objPanel.classList.contains('minimized') && !propPanel.classList.contains('minimized');
+            hud.style.transition = 'opacity 0.3s ease';
+            hud.style.opacity = bothOpen ? '0' : '1';
+            hud.style.pointerEvents = bothOpen ? 'none' : '';
         }
 
         function togglePropsUI() {
@@ -3972,6 +3984,7 @@
                 leftBtn.innerText = 'T';
             }
             syncPanelPositions();
+            syncFPSHudWithPanels();
         }
 
         function syncPanelPositions() {
@@ -5325,6 +5338,7 @@
                             }
                         }
                         triggerScreenShake(scaleMultiplier * (massMultiplier / 5));
+                        triggerHaptic(scaleMultiplier); 
 
                         const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", { diameter: 1 * scaleMultiplier }, scene);
                         explosion.position = center;

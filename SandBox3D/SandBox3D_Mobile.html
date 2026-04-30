@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@9.0.0/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/babylonjs-inspector@9.0.0/babylon.inspector.bundle.js"></script>
+    <script src="https://hexonlabs.github.io/SandBox3D/asset/sb3duianim_mobile.js"></script>
+    <script src="https://hexonlabs.github.io/SandBox3D/asset/sb3dmatyou.js"></script>
 
     <style>
         html, body {
@@ -46,8 +48,13 @@
             transition: none;
         }
 
+        .ui-panel-base::-webkit-scrollbar { width: 6px; }
+        .ui-panel-base::-webkit-scrollbar-track { background: #222; }
+        .ui-panel-base::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
         #left-panel { top: 10px; left: 10px; }
-        #right-panel { top: 10px; right: 10px; }
+        #properties-panel { top: 10px; right: 10px; }
+        #objects-panel { top: 10px; right: calc(10px + 40px + 6px); }
 
         .ui-panel-base.minimized {
             width: 40px; 
@@ -211,7 +218,7 @@
             position: relative;
             width: calc(100vw - 120px);
             height: calc(100vh - 120px);
-            max-width: 1200px;
+            max-width: 680px;
             background: rgba(25, 25, 25, 0.95);
             border-radius: 12px;
             border: 1px solid #4aa3df;
@@ -254,9 +261,7 @@
         }
 
         .settings-content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            display: block;
             overflow-y: auto;
             padding-right: 10px;
         }
@@ -264,6 +269,9 @@
         .settings-content-grid::-webkit-scrollbar { width: 8px; }
         .settings-content-grid::-webkit-scrollbar-track { background: #222; border-radius: 4px; }
         .settings-content-grid::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        #postfx-modal::-webkit-scrollbar { width: 8px; }
+        #postfx-modal::-webkit-scrollbar-track { background: #222; border-radius: 4px; }
+        #postfx-modal::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
         .settings-category {
             background: rgba(0, 0, 0, 0.2);
@@ -371,6 +379,8 @@
         }
         .icon-bomb { border-radius: 50%; background: #e74c3c; border: 1px solid #000; }
         .icon-frag { border-radius: 50%; background: #d35400; border: 2px dashed #000; }
+        .icon-fire { border-radius: 50%; background: #e67e22; border: 2px solid #c0392b; }
+        .icon-icebomb { border-radius: 50%; background: #00bcd4; border: 2px solid #fff; }
         
         .icon-custom { background: #f39c12; border-radius: 3px; border: 1px solid #fff; }
         .icon-upload { background: transparent; width: 12px; height: 12px; border-bottom: 2px solid #ccc; position: relative; }
@@ -685,6 +695,29 @@
             100% { background-position: 100px 0; }
         }
 
+        @media (max-width: 600px) {
+            #game-settings-modal {
+                width: calc(100vw - 20px);
+                height: calc(100vh - 20px);
+                max-width: none;
+                padding: 15px;
+            }
+
+            #game-settings-modal .settings-header h2 {
+                font-size: 18px;
+            }
+
+            #postfx-modal {
+                width: calc(100vw - 20px);
+                max-width: none;
+                max-height: calc(100vh - 20px);
+                padding: 15px;
+            }
+            #postfx-modal .settings-header h2 {
+                font-size: 18px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -695,7 +728,7 @@
         <div class="loader-content">
             <div class="loader-spinner"></div>
             <div class="loader-text">Sand Box 3D for Mobile</div>
-            <div class="loader-subtext-version">Version: v26.04.20</div>
+            <div class="loader-subtext-version">Version: v26.04.30</div>
             <div class="loader-subtext">Setting up your sandbox...</div>
             <button id="skip-loading-btn" onclick="skipLoading()">Skip Setup</button>
         </div>
@@ -752,10 +785,10 @@
         <div id="fps-phys" class="meter-box">CPU: ???</div>
     </div>
 
-    <div id="right-panel" class="ui-panel-base minimized">
+    <div id="objects-panel" class="ui-panel-base minimized">
         <div class="panel-header">
             <h2>Objects</h2>
-            <button class="btn-minimize" id="btn-min-right" onclick="toggleRightUI()">O</button>
+            <button class="btn-minimize" id="btn-min-objects" onclick="toggleObjectsUI()">O</button>
         </div>
     
         <div class="panel-content">
@@ -767,12 +800,114 @@
                 </button>
             </div>
             <div class="control-group">
+                <button id="btn-gravgun" onclick="selectShape('gravgun')" style="border-left: 4px solid #00bcd4;">
+                    <span class="shape-icon icon-hand" style="border-color: #00bcd4;"></span> Gravity Tool
+                </button>
+            </div>
+            <div class="control-group">
                 <button id="btn-structure" onclick="selectShape('structure')">
                     <span class="shape-icon icon-structure"></span> Structure
                 </button>
             </div>
     
-            <div class="section-label">Properties</div>
+            <div class="section-label">Object Picker</div>
+            <div style="margin-bottom: 10px;">
+                <select id="shape-category-select" onchange="switchShapeCategory(this.value)" style="width:100%; background:#252525; color:#eee; border:1px solid #444; border-radius:4px; padding:6px 8px; font-size:12px; cursor:pointer;">
+                    <option value="shapes">Shapes</option>
+                    <option value="glass">Glass Shapes</option>
+                    <option value="mirror">Mirror Shapes</option>
+                    <option value="explosives">Explosives</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            
+            <div id="shape-cat-shapes" class="control-group">
+                <button id="btn-box" class="active" onclick="selectShape('box')">
+                    <span class="shape-icon icon-box"></span> Cube
+                </button>
+                <button id="btn-sphere" onclick="selectShape('sphere')">
+                    <span class="shape-icon icon-sphere"></span> Sphere
+                </button>
+                <button id="btn-cyl" onclick="selectShape('cylinder')">
+                    <span class="shape-icon icon-cyl"></span> Cylinder
+                </button>
+                <button id="btn-tri" onclick="selectShape('triangle')">
+                    <span class="shape-icon icon-tri"></span> Triangle
+                </button>
+            </div>
+            
+            <div id="shape-cat-glass" class="control-group" style="display:none;">
+                <button id="btn-glass_box" onclick="selectShape('glass_box')">
+                    <span class="shape-icon icon-box" style="opacity: 0.5;"></span> Glass Cube
+                </button>
+                <button id="btn-glass_sphere" onclick="selectShape('glass_sphere')">
+                    <span class="shape-icon icon-sphere" style="opacity: 0.5;"></span> Glass Sphere
+                </button>
+                <button id="btn-glass_cyl" onclick="selectShape('glass_cylinder')">
+                    <span class="shape-icon icon-cyl" style="opacity: 0.5;"></span> Glass Cylinder
+                </button>
+                <button id="btn-glass_tri" onclick="selectShape('glass_triangle')">
+                    <span class="shape-icon icon-tri" style="opacity: 0.5;"></span> Glass Triangle
+                </button>
+            </div>
+            
+            <div id="shape-cat-mirror" class="control-group" style="display:none;">
+                <button id="btn-mirror_box" onclick="selectShape('mirror_box')">
+                    <span class="shape-icon icon-box" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror Cube
+                </button>
+                <button id="btn-mirror_sphere" onclick="selectShape('mirror_sphere')">
+                    <span class="shape-icon icon-sphere" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror Sphere
+                </button>
+                <button id="btn-mirror_cyl" onclick="selectShape('mirror_cylinder')">
+                    <span class="shape-icon icon-cyl" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror Cylinder
+                </button>
+                <button id="btn-mirror_tri" onclick="selectShape('mirror_triangle')">
+                    <span class="shape-icon icon-tri" style="border-bottom-color: #ccc; filter: drop-shadow(0 -2px 1px #eee);"></span> Mirror Triangle
+                </button>
+            </div>
+    
+            <div id="shape-cat-explosives" class="control-group" style="display:none;">
+                <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
+                    <span class="shape-icon icon-bomb"></span> Bomb
+                </button>
+                <button id="btn-frag" class="btn-explosive" onclick="selectShape('frag_bomb')">
+                    <span class="shape-icon icon-frag"></span> Cluster Bomb
+                </button>
+                <button id="btn-flashbang" onclick="selectShape('flashbang')">
+                    <span class="shape-icon icon-flash"></span> Flashbang
+                </button>
+                <button id="btn-firebomb" class="btn-explosive" onclick="selectShape('fire_bomb')">
+                    <span class="shape-icon icon-fire"></span> Fire Bomb
+                </button>
+                <button id="btn-icebomb" class="btn-explosive" onclick="selectShape('ice_bomb')">
+                    <span class="shape-icon icon-icebomb"></span> Ice Bomb
+                </button>
+            </div>
+    
+            <div id="shape-cat-custom" class="control-group" style="display:none; flex-direction: column; gap: 6px;">
+                <div id="custom-empty-label" style="font-size:11px; color:#666; text-align:center; padding: 8px 0;">No 3D Models Loaded</div>
+                <button id="btn-custom_0" onclick="selectShape('custom_0')" style="display:none; border-left: 4px solid #f39c12;">
+                    <span class="shape-icon icon-custom"></span> <span id="custom-name-0">Model 1</span>
+                </button>
+                <button id="btn-custom_1" onclick="selectShape('custom_1')" style="display:none; border-left: 4px solid #f39c12;">
+                    <span class="shape-icon icon-custom"></span> <span id="custom-name-1">Model 2</span>
+                </button>
+                <button id="btn-custom_2" onclick="selectShape('custom_2')" style="display:none; border-left: 4px solid #f39c12;">
+                    <span class="shape-icon icon-custom"></span> <span id="custom-name-2">Model 3</span>
+                </button>
+            </div>
+    
+        </div>
+    </div>
+    
+    <div id="properties-panel" class="ui-panel-base minimized">
+        <div class="panel-header">
+            <h2 id="properties-panel-title">Properties</h2>
+            <button class="btn-minimize" id="btn-min-props" onclick="togglePropsUI()">P</button>
+        </div>
+    
+        <div class="panel-content">
+    
             <div class="slider-group">
                 <div class="slider-label">
                     <span>Size</span>
@@ -790,7 +925,7 @@
                 <input type="range" id="mass-slider" min="0.1" max="100.0" step="0.1" value="1.5"
                     oninput="updateMass(this.value)">
             </div>
-
+    
             <div id="reflectivity-settings" class="slider-group" style="display: none; border-left: 3px solid #bdc3c7;">
                 <div class="slider-label">
                     <span id="lbl-reflectivity">Reflectivity</span>
@@ -798,7 +933,38 @@
                 </div>
                 <input type="range" id="reflect-slider" min="0.0" max="1.0" step="0.05" value="1.0" oninput="updateReflectivity(this.value)">
             </div>
+    
+            <div id="gravgun-rotation-settings" class="slider-group" style="display: none; border-left: 3px solid #00bcd4;">
+                <div class="slider-label" style="color: #00bcd4; font-weight: bold; margin-bottom: 8px;">
+                    <span id="gravgun-rotations-heading">Gravity Tool Properties</span>
+                </div>
             
+                <div class="slider-label">
+                    <span id="gravgun-pitch-label">Pitch (X)</span>
+                    <span id="grav-rot-x-display">0°</span>
+                </div>
+                <input type="range" id="gravgun-rot-x" min="-180" max="180" step="1" value="0" oninput="updateGravgunRotation('x', this.value)">
+            
+                <div class="slider-label">
+                    <span id="gravgun-yaw-label">Yaw (Y)</span>
+                    <span id="grav-rot-y-display">0°</span>
+                </div>
+                <input type="range" id="gravgun-rot-y" min="-180" max="180" step="1" value="0" oninput="updateGravgunRotation('y', this.value)">
+            
+                <div class="slider-label">
+                    <span id="gravgun-roll-label">Roll (Z)</span>
+                    <span id="grav-rot-z-display">0°</span>
+                </div>
+                <input type="range" id="gravgun-rot-z" min="-180" max="180" step="1" value="0" oninput="updateGravgunRotation('z', this.value)">
+    
+                <div class="slider-label" style="margin-top: 8px;">
+                    <span id="gravgun-dist-label">Distance</span>
+                    <span id="grav-dist-display">7.0</span>
+                </div>
+                <input type="range" id="gravgun-dist" min="2.0" max="20.0" step="0.5" value="7.0"
+                    oninput="updateGravgunDistance(this.value)">
+            </div>
+    
             <div id="structure-settings" class="slider-group" style="display: none; border-left: 3px solid #9b59b6;">
                 <div class="slider-label"><span>Grid Size (L x H x W)</span></div>
                 <div style="display: flex; gap: 5px; margin-bottom: 5px;">
@@ -833,79 +999,6 @@
                 <input type="color" id="color-picker" value="#3498db">
             </div>
     
-            <div id="custom-model-container" style="display: none;">
-                <div class="section-label">Custom</div>
-                <div class="control-group">
-                    <button id="btn-custom" onclick="selectShape('custom')">
-                        <span class="shape-icon icon-custom"></span> <span id="custom-name">Spawn Upload</span>
-                    </button>
-                </div>
-            </div>
-    
-            <div class="section-label">Shapes</div>
-            <div class="control-group">
-                <button id="btn-box" class="active" onclick="selectShape('box')">
-                    <span class="shape-icon icon-box"></span> Cube
-                </button>
-                <button id="btn-sphere" onclick="selectShape('sphere')">
-                    <span class="shape-icon icon-sphere"></span> Sphere
-                </button>
-                <button id="btn-cyl" onclick="selectShape('cylinder')">
-                    <span class="shape-icon icon-cyl"></span> Cylinder
-                </button>
-                <button id="btn-tri" onclick="selectShape('triangle')">
-                    <span class="shape-icon icon-tri"></span> Triangle
-                </button>
-            </div>
-    
-            <div class="section-label">Glass Shapes</div>
-            <div class="control-group">
-                <button id="btn-glass_box" onclick="selectShape('glass_box')">
-                    <span class="shape-icon icon-box" style="opacity: 0.5;"></span> Glass Cube
-                </button>
-                <button id="btn-glass_sphere" onclick="selectShape('glass_sphere')">
-                    <span class="shape-icon icon-sphere" style="opacity: 0.5;"></span> Glass Sphere
-                </button>
-                <button id="btn-glass_cyl" onclick="selectShape('glass_cylinder')">
-                    <span class="shape-icon icon-cyl" style="opacity: 0.5;"></span> Glass Cylinder
-                </button>
-                <button id="btn-glass_tri" onclick="selectShape('glass_triangle')">
-                    <span class="shape-icon icon-tri" style="opacity: 0.5;"></span> Glass Triangle
-                </button>
-            </div>
-
-            <div class="section-label" id="lbl-mirror-shapes">Mirror Shapes</div>
-            <div class="control-group">
-                <button id="btn-mirror_box" onclick="selectShape('mirror_box')">
-                    <span class="shape-icon icon-box" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror Cube
-                </button>
-                <button id="btn-mirror_sphere" onclick="selectShape('mirror_sphere')">
-                    <span class="shape-icon icon-sphere" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror
-                    Sphere
-                </button>
-                <button id="btn-mirror_cyl" onclick="selectShape('mirror_cylinder')">
-                    <span class="shape-icon icon-cyl" style="background: linear-gradient(135deg, #eee, #aaa);"></span> Mirror
-                    Cylinder
-                </button>
-                <button id="btn-mirror_tri" onclick="selectShape('mirror_triangle')">
-                    <span class="shape-icon icon-tri"
-                        style="border-bottom-color: #ccc; filter: drop-shadow(0 -2px 1px #eee);"></span> Mirror Triangle
-                </button>
-            </div>
-
-            <div class="section-label">Explosives</div>
-            <div class="control-group">
-                <button id="btn-bomb" class="btn-explosive" onclick="selectShape('bomb')">
-                    <span class="shape-icon icon-bomb"></span> Bomb
-                </button>
-                <button id="btn-frag" class="btn-explosive" onclick="selectShape('frag_bomb')">
-                    <span class="shape-icon icon-frag"></span> Cluster Bomb
-                </button>
-                <button id="btn-flashbang" onclick="selectShape('flashbang')">
-                    <span class="shape-icon icon-flash"></span> Flashbang
-                </button>
-            </div>
-    
         </div>
     </div>
 
@@ -938,14 +1031,24 @@
                 <div id="game-settings-modal">
                     <div class="settings-header">
                         <h2>Settings</h2>
-                        <button class="settings-close-btn" onclick="toggleGraphicsUI()">Close Settings</button>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <select id="settings-category-select" onchange="switchSettingsCategory(this.value)"
+                                style="background:#252525; color:#eee; border:1px solid #444; border-radius:6px; padding:7px 10px; font-size:13px; cursor:pointer;">
+                                <option value="system">System</option>
+                                <option value="audio">Audio & Language</option>
+                                <option value="environment">Environment</option>
+                                <option value="rendering">Rendering Pipeline</option>
+                                <option value="overlay">Overlay</option>
+                                <option value="debugging">Debugging</option>
+                                <option value="theming">Theming</option>
+                            </select>
+                            <button class="settings-close-btn" onclick="toggleGraphicsUI()">Close Settings</button>
+                        </div>
                     </div>
                     
                     <div class="settings-content-grid">
                         
-                        <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">System</div>
-                            
+                        <div id="settings-cat-system" class="settings-category">                            
                             <div class="control-group" style="margin-bottom: 15px;">
                                 <span id="lbl-framerate-limits" style="font-size: 12px; color: #ddd; margin-bottom: 5px;">Framerate Limits</span>
                                 <div style="display: flex; width: 100%; gap: 6px;">
@@ -1013,9 +1116,7 @@
                             </div>
                         </div>
             
-                        <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Audio & Language</div>
-
+                        <div id="settings-cat-audio" class="settings-category">
                             <div style="margin-bottom: 10px;">
                                 <select id="lang-select" onchange="onLangChange(this.value)"
                                     style="width:100%; background:#252525; color:#eee; border:1px solid #555; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">
@@ -1057,9 +1158,27 @@
                             </div>
                         </div>
 
-                        <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Environment</div>
+                        <div id="settings-cat-environment" class="settings-category">
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-spawn-particles" onclick="toggleSpawnParticles()" style="border-left: 4px solid #a855f7; padding: 12px;">
+                                    <span class="shape-icon" style="background:#a855f7;border-radius:50%;box-shadow:0 0 5px #a855f7;"></span> Spawn FX is ON
+                                </button>
+                            </div>
 
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-bg-pillars" onclick="toggleBgPillars()" style="border-left: 4px solid #78909c; padding: 12px;">
+                                    <span class="shape-icon" style="background: #78909c; border-radius: 2px;"></span>
+                                    BG Pillars are ON
+                                </button>
+                            </div>
+                            
+                            <div class="control-group" style="margin-top: 15px;">
+                                <button id="btn-bg-decors" onclick="toggleBgDecors()" style="border-left: 4px solid #80cbc4; padding: 12px;">
+                                    <span class="shape-icon" style="background: #80cbc4; border-radius: 50%;"></span>
+                                    BG Decors are ON
+                                </button>
+                            </div>
+                            
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-sun" onclick="toggleSun()" style="border-left: 4px solid #f1c40f; padding: 12px;">
                                     <span class="shape-icon" style="background: #f1c40f; border-radius: 50%;"></span>
@@ -1095,9 +1214,7 @@
                             </div>
                         </div>
 
-                        <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Rendering Pipeline</div>
-                        
+                        <div id="settings-cat-rendering" class="settings-category">                        
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-postfx" onclick="togglePostFX()" style="border-left: 4px solid #e74c3c; padding: 12px;">
                                     <span class="shape-icon" style="background: #e74c3c; border-radius: 2px;"></span>
@@ -1213,9 +1330,7 @@
                             </div>
                         </div>
 
-                        <div class="settings-category">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Overlay</div>
-            
+                        <div id="settings-cat-overlay" class="settings-category">            
                             <div class="control-group" style="margin-top: 15px;">
                                 <button id="btn-toggle-hud" onclick="toggleHUDVisibility()" style="border-left: 4px solid #2ecc71; padding: 10px;">
                                     <span class="shape-icon" style="background: #2ecc71; border-radius: 2px;"></span>
@@ -1273,9 +1388,7 @@
                             </div>
                         </div>
 
-                        <div class="settings-category" style="grid-column: 1 / -1;">
-                            <div class="section-label" style="font-size: 14px; margin-top: 0;">Debugging</div>
-                        
+                        <div id="settings-cat-debugging" class="settings-category" style="grid-column: 1 / -1;">                        
                             <div class="control-group" style="margin-top: 10px;">
                                 <button id="btn-about-versions" onclick="showAboutVersions()"
                                     style="border-left: 4px solid #4aa3df; padding: 12px;">
@@ -1307,6 +1420,8 @@
                                 </button>
                             </div>
                         </div>
+
+                        <div id="settings-cat-theming" class="settings-category" style="display:none;"></div>
                     </div>
                 </div>
             </div>
@@ -1417,7 +1532,6 @@
         let throwForce = 50;
         let targetFPS = 60;
         let lastFrameTime = performance.now();
-        let customModelTemplate = null;
         let isHUDVisible = true;
         let isInspectorEnabled = false;
         let isFrustumCullingEnabled = false;
@@ -1456,6 +1570,12 @@
         let nightPulseLight = null;
         let nightPulseInterval = null;
         let pulseAnimObserver = null;
+        let heldMesh = null;
+        let holdDistance = 7.0;
+        let gravgunEulerState = { x: 0, y: 0, z: 0 };
+        let isSpawnParticlesEnabled = localStorage.getItem('sb3d_spawn_particles') !== 'false';
+        let isBgPillarsEnabled = localStorage.getItem('sb3d_bgPillars') !== '0';
+        let isBgDecorsEnabled = localStorage.getItem('sb3d_bgDecors') !== '0';
         let filmFXParams = {
             sharpen: 0.6,
             grainIntensity: 28,
@@ -1482,6 +1602,7 @@
                 labelProperties: "Properties",
                 labelModes: "Modes",
                 labelShapes: "Shapes",
+                labelShapeSection: "Object Picker",
                 labelGlass: "Glass Shapes",
                 labelExplosives: "Explosives",
                 labelActions: "Actions",
@@ -1607,6 +1728,7 @@
                 restartResetConfirmTitle: "Restart then Clear All?",
                 restartResetConfirmBody: "WARNING: This clears ALL persisted settings and reloads.\nPostFX, WebGPU preference, language — everything wiped.\n\nOK to wipe and restart — CANCEL to abort.",
                 settingDebugging: "Debugging",
+                settingTheming: "Theming",
                 settingFramerateLimits: "Framerate Limits",
                 settingPostFXTitle: "Post Processing",
                 btnShowMore: "Show more",
@@ -1620,6 +1742,20 @@
                 btnMirrorSphere: "Mirror Sphere",
                 btnMirrorCyl: "Mirror Cylinder",
                 btnMirrorTri: "Mirror Triangle",
+                btnGravgun: "Gravity Tool",
+                gravgunRotationsHeading: "Gravity Tool Properties",
+                gravgunPitchLabel: "Pitch (X)",
+                gravgunYawLabel: "Yaw (Y)",
+                gravgunRollLabel: "Roll (Z)",
+                gravgunDistLabel: "Distance",
+                dynSpawnFXOn: "Spawn FX is ON",
+                dynSpawnFXOff: "Spawn FX is OFF",
+                btnFireBomb: "Fire Bomb",
+                btnIceBomb: "Ice Bomb",
+                dynBgPillarsOn: "BG Pillars are ON",
+                dynBgPillarsOff: "BG Pillars are OFF",
+                dynBgDecorsOn: "BG Decors are ON",
+                dynBgDecorsOff: "BG Decors are OFF",
             },
             genz: {
                 pageTitle: "sandbox 3d mobile 💀",
@@ -1629,6 +1765,7 @@
                 labelProperties: "Tweaking",
                 labelModes: "Modes fr",
                 labelShapes: "Drip Shapes",
+                labelShapeSection: "Pick ur shape lol",
                 labelGlass: "Glass Era",
                 labelExplosives: "KABOOM collection",
                 labelActions: "Yapping Actions",
@@ -1754,7 +1891,8 @@
                 restartResetConfirmTitle: "restart AND wipe everything?? 💀",
                 restartResetConfirmBody: "bro this deletes ALL ur saved settings.\nPostFX, WebGPU, language — all gone fr.\n\nOK = yolo wipe it\nCANCEL = abort abort",
                 settingDebugging: "Dev nerd stuff 🤓",
-                settingFramerateLimits: "FPS cap (don't frt ur slab)",
+                settingTheming: "Customization fr 🎨",
+                settingFramerateLimits: "FPS cap (don't fry ur slab)",
                 settingPostFXTitle: "Post Processing 💀",
                 btnShowMore: "show more stuff",
                 btnVersions: "what version is this lol",
@@ -1767,6 +1905,20 @@
                 btnMirrorSphere: "Shiny Ball fr",
                 btnMirrorCyl: "Chrome Tube",
                 btnMirrorTri: "Edgy Mirror",
+                btnGravgun: "yoink tool 🧲",
+                gravgunRotationsHeading: "gravity tool settings 💀",
+                gravgunPitchLabel: "tilt front/back (X)",
+                gravgunYawLabel: "turn side to side (Y)",
+                gravgunRollLabel: "spinny roll (Z)",
+                gravgunDistLabel: "how far tho",
+                dynSpawnFXOn: "spawn goes pew pew ✨",
+                dynSpawnFXOff: "spawn fx said nah",
+                btnFireBomb: "Spicy rock 🔥",
+                btnIceBomb: "Chill pill 🧊",
+                dynBgPillarsOn: "pillars are standing fr fr 🏛️",
+                dynBgPillarsOff: "pillars said bye bestie",
+                dynBgDecorsOn: "background is decorated no cap ✨",
+                dynBgDecorsOff: "decors went ghost mode",
             },
             shakespeare: {
                 pageTitle: "Thee Noble Sandbox of Three Dimensions, Mobile Edition",
@@ -1776,6 +1928,7 @@
                 labelProperties: "Attributes Most Fine",
                 labelModes: "Modes of Being",
                 labelShapes: "Shapes of Creation",
+                labelShapeSection: "The Hand of Choosing",
                 labelGlass: "Translucent Sorceries",
                 labelExplosives: "Instruments of Destruction",
                 labelActions: "Deeds & Machinations",
@@ -1901,6 +2054,7 @@
                 restartResetConfirmTitle: "Restart and Purge All Settings?",
                 restartResetConfirmBody: "Hark! This shall wipe ALL persisted settings before restarting.\nPostFX, WebGPU, language — all shall be undone.\n\nOK to purge and restart — CANCEL to retreat.",
                 settingDebugging: "The Chamber of Debugging",
+                settingTheming: "The Aesthetic Chamber 🎨",
                 settingFramerateLimits: "The Limits of Framerate",
                 settingPostFXTitle: "Post Processing, Most Arcane",
                 btnShowMore: "Reveal More",
@@ -1914,8 +2068,45 @@
                 btnMirrorSphere: "Orb of the Looking Glass",
                 btnMirrorCyl: "Cylinder of Silver",
                 btnMirrorTri: "Prism of the Void",
+                btnGravgun: "The Gravity Tool",
+                gravgunRotationsHeading: "The Gravity Tool’s Attributes",
+                gravgunPitchLabel: "Pitch (X) — The Nod",
+                gravgunYawLabel: "Yaw (Y) — The Turn",
+                gravgunRollLabel: "Roll (Z) — The Tilt",
+                gravgunDistLabel: "Distance of Hold",
+                dynSpawnFXOn: "Spawn Effects doth shimmer forth ✨",
+                dynSpawnFXOff: "Spawn Effects hath gone dark",
+                btnFireBomb: "Orb of Dragon's Breath 🔥",
+                btnIceBomb: "Vessel of Winter's Grasp 🧊",
+                dynBgPillarsOn: "The Pillars doth stand tall 🏛️",
+                dynBgPillarsOff: "The Pillars hath crumbled to shadow",
+                dynBgDecorsOn: "Background Adornments shimmer forth ✨",
+                dynBgDecorsOff: "The Decorations hath vanished",
             },
         };
+
+        const customModelTemplates = [null, null, null];
+
+        function getNextCustomSlot() {
+            const idx = customModelTemplates.findIndex(s => s === null);
+            return idx === -1 ? 2 : idx;
+        }
+
+        function refreshCustomButtons() {
+            let anyLoaded = false;
+            customModelTemplates.forEach((tmpl, i) => {
+                const btn = document.getElementById('btn-custom_' + i);
+                if (!btn) return;
+                if (tmpl) {
+                    btn.style.display = 'flex';
+                    anyLoaded = true;
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+            const emptyLabel = document.getElementById('custom-empty-label');
+            if (emptyLabel) emptyLabel.style.display = anyLoaded ? 'none' : 'block';
+        }
 
         (function () {
             const ls = document.getElementById('loading-screen');
@@ -2022,6 +2213,57 @@
                 : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynShakeOff}`;
         }
 
+        function spawnParticleBurst(position, scene) {
+            if (!isSpawnParticlesEnabled || !scene) return;
+
+            const ps = new BABYLON.ParticleSystem("spawnBurst_" + Date.now(), 40, scene);
+            ps.particleTexture = new BABYLON.Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+            ps.emitter = position.clone();
+            ps.minEmitBox = new BABYLON.Vector3(-0.1, 0, -0.1);
+            ps.maxEmitBox = new BABYLON.Vector3(0.1, 0, 0.1);
+            ps.color1 = new BABYLON.Color4(1, 0.9, 0.4, 1.0);
+            ps.color2 = new BABYLON.Color4(0.8, 0.3, 1.0, 1.0);
+            ps.colorDead = new BABYLON.Color4(0, 0, 0, 0);
+            ps.minSize = 0.08;
+            ps.maxSize = 0.25;
+            ps.minLifeTime = 0.25;
+            ps.maxLifeTime = 0.55;
+            ps.emitRate = 300;
+            ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+            ps.gravity = new BABYLON.Vector3(0, -3, 0);
+            ps.direction1 = new BABYLON.Vector3(-1, 3, -1);
+            ps.direction2 = new BABYLON.Vector3(1, 5, 1);
+            ps.minAngularSpeed = 0;
+            ps.maxAngularSpeed = Math.PI;
+            ps.minEmitPower = 1;
+            ps.maxEmitPower = 3;
+            ps.updateSpeed = 0.02;
+            ps.targetStopDuration = 0.12;
+            ps.disposeOnStop = true;
+            ps.start();
+        }
+
+        function toggleSpawnParticles() {
+            isSpawnParticlesEnabled = !isSpawnParticlesEnabled;
+            localStorage.setItem('sb3d_spawn_particles', isSpawnParticlesEnabled ? 'true' : 'false');
+            updateSpawnParticlesButton();
+        }
+
+        function updateSpawnParticlesButton() {
+            const btn = document.getElementById('btn-spawn-particles');
+            if (!btn) return;
+            const t = SB3D_LANGS[activeLang];
+            if (isSpawnParticlesEnabled) {
+                btn.innerHTML = `<span class="shape-icon" style="background:#a855f7;border-radius:50%;box-shadow:0 0 5px #a855f7;"></span> ${t.dynSpawnFXOn}`;
+                btn.style.borderLeftColor = '#a855f7';
+                btn.classList.add('active');
+            } else {
+                btn.innerHTML = `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynSpawnFXOff}`;
+                btn.style.borderLeftColor = '#555';
+                btn.classList.remove('active');
+            }
+        }
+
         function triggerHaptic(intensity = 1.0) {
             if (!isHapticsEnabled || !navigator.vibrate) return;
             const dur = Math.round(80 + intensity * 120);
@@ -2047,7 +2289,8 @@
 
             document.title = t.pageTitle;
             document.querySelector('#left-panel .panel-header h2').innerHTML = t.panelTools;
-            document.querySelector('#right-panel .panel-header h2').innerHTML = t.panelObjects;
+            document.querySelector('#objects-panel .panel-header h2').innerHTML = t.panelObjects;
+            document.querySelector('#properties-panel .panel-header h2').innerHTML = t.labelProperties;
             const loaderText = document.querySelector('.loader-text');
             if (loaderText) loaderText.innerText = t.pageTitle;
             const glitchGhost = document.querySelector('.glitch-ghost');
@@ -2057,10 +2300,8 @@
                 const raw = el.innerText.trim().toUpperCase();
                 const map = {
                     'SELECTION': t.labelSelection, 'PROPERTIES': t.labelProperties,
-                    'MODES': t.labelModes, 'SHAPES': t.labelShapes,
-                    'GLASS SHAPES': t.labelGlass, 'EXPLOSIVES': t.labelExplosives,
-                    'ACTIONS': t.labelActions, 'CUSTOM': t.labelCustom,
-                    'MIRROR SHAPES': t.labelMirrorShapes,
+                    'MODES': t.labelModes, 'EXPLOSIVES': t.labelExplosives,
+                    'ACTIONS': t.labelActions, 'OBJECT PICKER': t.labelShapeSection,
                 };
                 if (map[raw]) el.innerText = map[raw];
             });
@@ -2093,7 +2334,6 @@
                 'btn-graphics-toggle': `<span class="shape-icon" style="background:transparent;border:2px solid #4aa3df;border-radius:2px;width:10px;height:10px;"></span> ${t.btnSettings}`,
                 'btn-clear': t.btnClear,
                 'btn-toggle-inspector': `<span class="shape-icon" style="background:transparent;border:2px solid #f1c40f;border-radius:2px;width:10px;height:10px;"></span> ${t.btnInspector}`,
-                'btn-custom': `<span class="shape-icon icon-custom"></span> <span id="custom-name">${t.spawnUpload}</span>`,
                 'btn-restart-options': `<span class="shape-icon" style="background:transparent;border:2px solid #e74c3c;border-radius:50%;width:10px;height:10px;"></span> ${t.restartBtnSettings}`,
                 'btn-show-more': `<span class="shape-icon" style="background: transparent; border: 2px solid #c0392b; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnShowMore}`,
                 'btn-about-versions': `<span class="shape-icon" style="background: transparent; border: 2px solid #4aa3df; border-radius: 2px; width: 10px; height: 10px;"></span> ${t.btnVersions}`,
@@ -2102,6 +2342,10 @@
                 'btn-mirror_sphere': `<span class="shape-icon icon-sphere" style="background: linear-gradient(135deg, #eee, #aaa);"></span> ${t.btnMirrorSphere}`,
                 'btn-mirror_cyl': `<span class="shape-icon icon-cyl" style="background: linear-gradient(135deg, #eee, #aaa);"></span> ${t.btnMirrorCyl}`,
                 'btn-mirror_tri': `<span class="shape-icon icon-tri" style="border-bottom-color: #ccc; filter: drop-shadow(0 -2px 1px #eee);"></span> ${t.btnMirrorTri}`,
+                'btn-gravgun': `<span class="shape-icon icon-hand" style="border-color: #00bcd4;"></span> ${t.btnGravgun}`,
+                'btn-spawn-particles': `<span class="shape-icon" style="background:${isSpawnParticlesEnabled ? '#a855f7' : '#555'};border-radius:50%;${isSpawnParticlesEnabled ? 'box-shadow:0 0 5px #a855f7;' : ''}"></span> ${t[isSpawnParticlesEnabled ? 'dynSpawnFXOn' : 'dynSpawnFXOff']}`,
+                'btn-firebomb': `<span class="shape-icon icon-fire"></span> ${t.btnFireBomb}`,
+                'btn-icebomb': `<span class="shape-icon icon-icebomb"></span> ${t.btnIceBomb}`,
             };
             const sliderLbls = {
                 'lbl-ambience-vol': t.labelAmbienceVol,
@@ -2130,6 +2374,22 @@
                 'lbl-ip-exposure': t.labelExposure,
                 'lbl-reflectivity': t.labelReflectivity,
             };
+
+            const gravHeading = document.getElementById('gravgun-rotations-heading');
+            if (gravHeading) gravHeading.innerText = t.gravgunRotationsHeading;
+
+            const pitchLabel = document.getElementById('gravgun-pitch-label');
+            if (pitchLabel) pitchLabel.innerText = t.gravgunPitchLabel;
+
+            const yawLabel = document.getElementById('gravgun-yaw-label');
+            if (yawLabel) yawLabel.innerText = t.gravgunYawLabel;
+
+            const distLabel = document.getElementById('gravgun-dist-label');
+            if (distLabel) distLabel.innerText = t.gravgunDistLabel;
+
+            const rollLabel = document.getElementById('gravgun-roll-label');
+            if (rollLabel) rollLabel.innerText = t.gravgunRollLabel;
+
             for (const [id, html] of Object.entries(btnMap)) {
                 const el = document.getElementById(id); if (el) el.innerHTML = html;
             }
@@ -2152,15 +2412,16 @@
             const postfxCloseBtn = document.querySelector('#postfx-modal .settings-header .settings-close-btn');
             if (postfxCloseBtn) postfxCloseBtn.innerText = t.settingsClose;
 
-            document.querySelectorAll('.settings-category .section-label').forEach(el => {
-                const raw = el.innerText.trim().toUpperCase();
-                if (['SYSTEM', 'SYSTEM STUFF', 'MATTERS OF THE SYSTEM'].includes(raw)) el.innerText = t.settingSystem;
-                if (['AUDIO & LANGUAGE', 'EAR DAMAGE AND TALKY-TALK', 'AUDITORY ARTS & TONGUES'].includes(raw)) el.innerText = t.settingAudio;
-                if (['ENVIRONMENT', 'OUTDOOR VIBES 🌅', 'THE OUTDOOR DOMINION 🌅'].includes(raw)) el.innerText = t.settingEnvironment;
-                if (['OVERLAY', 'SCREEN DRIP 🖥️', 'ADORNMENTS OF THE SCREEN 🖥️'].includes(raw)) el.innerText = t.settingOverlay;
-                if (['RENDERING PIPELINE', 'VISUAL GLOW-UP PIPELINE ✨', 'THE VISUAL ALCHEMY PIPELINE ✨'].includes(raw)) el.innerText = t.settingRendering;
-                if (['DEBUGGING', 'DEV NERD STUFF 🤓', 'THE CHAMBER OF DEBUGGING'].includes(raw)) el.innerText = t.settingDebugging;
-            });
+            const settingsCatSelect = document.getElementById('settings-category-select');
+            if (settingsCatSelect) {
+                const settingsCatLabels = [
+                    t.settingSystem, t.settingAudio, t.settingEnvironment,
+                    t.settingRendering, t.settingOverlay, t.settingDebugging, t.settingTheming
+                ];
+                settingsCatSelect.querySelectorAll('option').forEach((opt, i) => {
+                    if (settingsCatLabels[i]) opt.textContent = settingsCatLabels[i];
+                });
+            }
 
             document.querySelectorAll('.slider-label span:first-child').forEach(el => {
                 const raw = el.innerText.trim();
@@ -2187,6 +2448,14 @@
                     opt.querySelector('.restart-option-title').innerHTML =
                         `<span class="restart-dot ${['dot-blue', 'dot-orange', 'dot-red'][i]}"></span> ${keys[i].title}`;
                     opt.querySelector('.restart-option-desc').innerHTML = keys[i].desc;
+                });
+            }
+
+            const shapeCatSelect = document.getElementById('shape-category-select');
+            if (shapeCatSelect) {
+                const catLabels = [t.labelShapes, t.labelGlass, t.labelMirrorShapes, t.labelExplosives, t.labelCustom];
+                shapeCatSelect.querySelectorAll('option').forEach((opt, i) => {
+                    if (catLabels[i]) opt.textContent = catLabels[i];
                 });
             }
 
@@ -2296,6 +2565,21 @@
                     ? `<span class="shape-icon" style="background:#00bcd4;border-radius:2px;box-shadow:0 0 6px #00bcd4;"></span> ${t.dynSessionRecorderOn}`
                     : `<span class="shape-icon" style="background:#00bcd4;border-radius:2px;"></span> ${t.dynSessionRecorderOff}`;
             }
+
+            const bgPillarsBtn = document.getElementById('btn-bg-pillars');
+            if (bgPillarsBtn) {
+                bgPillarsBtn.innerHTML = isBgPillarsEnabled
+                    ? `<span class="shape-icon" style="background:#78909c;border-radius:2px;"></span> ${t.dynBgPillarsOn}`
+                    : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynBgPillarsOff}`;
+            }
+
+            const bgDecorsBtn = document.getElementById('btn-bg-decors');
+            if (bgDecorsBtn) {
+                bgDecorsBtn.innerHTML = isBgDecorsEnabled
+                    ? `<span class="shape-icon" style="background:#80cbc4;border-radius:50%;"></span> ${t.dynBgDecorsOn}`
+                    : `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynBgDecorsOff}`;
+            }
+
             const explVolLbl = document.getElementById('lbl-explosion-vol');
             if (explVolLbl) explVolLbl.innerText = t.dynExplosionVol;
         }
@@ -2324,11 +2608,12 @@
                 const ext = file.name.split('.').pop().toLowerCase();
                 
                 if(sceneRef) {
-                    document.getElementById('custom-name').innerText = file.name.length > 15 ? file.name.substring(0,12) + "..." : file.name;
+                    const slotIdx = getNextCustomSlot();
+                    const displayName = file.name.length > 15 ? file.name.substring(0, 12) + "..." : file.name;
 
-                    BABYLON.SceneLoader.ImportMesh("", "", blobUrl, sceneRef, 
+                    BABYLON.SceneLoader.ImportMesh("", "", blobUrl, sceneRef,
                         function (meshes, particleSystems, skeletons) {
-                            if(meshes.length === 0) return;
+                            if (meshes.length === 0) return;
 
                             let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
                             let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
@@ -2355,20 +2640,20 @@
 
                             hitBox.setEnabled(false);
                             
-                            if (customModelTemplate && customModelTemplate.mesh) {
-                                customModelTemplate.mesh.dispose();
+                            if (customModelTemplates[slotIdx] && customModelTemplates[slotIdx].mesh) {
+                                customModelTemplates[slotIdx].mesh.dispose();
                             }
-
-                            customModelTemplate = {
+                            customModelTemplates[slotIdx] = {
                                 mesh: hitBox,
                                 dimensions: { width, height, depth }
                             };
-
-                            document.getElementById('custom-model-container').style.display = 'block';
-                            selectShape('custom');
+                            const nameEl = document.getElementById('custom-name-' + slotIdx);
+                            if (nameEl) nameEl.innerText = displayName;
+                            refreshCustomButtons();
+                            selectShape('custom_' + slotIdx);
                             
-                            const right = document.getElementById('right-panel');
-                            if(right.classList.contains('minimized')) toggleRightUI();
+                            const objs = document.getElementById('objects-panel');
+                            if (objs.classList.contains('minimized')) toggleObjectsUI();
 
                             input.value = "";
                         }, 
@@ -2419,9 +2704,11 @@
 
         function toggleLeftUI() {
             const left = document.getElementById('left-panel');
-            const right = document.getElementById('right-panel');
+            const objectsPanel = document.getElementById('objects-panel');
+            const propsPanel = document.getElementById('properties-panel');
             const leftBtn = document.getElementById('btn-min-left');
-            const rightBtn = document.getElementById('btn-min-right');
+            const objectsBtn = document.getElementById('btn-min-objects');
+            const propsBtn = document.getElementById('btn-min-props');
             const isMinimizing = !left.classList.contains('minimized');
             
             if (isMinimizing) {
@@ -2430,9 +2717,12 @@
             } else {
                 left.classList.remove('minimized');
                 leftBtn.innerText = "-";
-                right.classList.add('minimized');
-                rightBtn.innerText = "O";
+                objectsPanel.classList.add('minimized');
+                objectsBtn.innerText = "O";
+                propsPanel.classList.add('minimized');
+                propsBtn.innerText = "P";
             }
+            syncPanelPositions();
         }
 
         function toggleHUDVisibility() {
@@ -2605,6 +2895,8 @@
                 activeLang,
                 explosionVolume,
                 isSunEnabled: isSunEnabled,
+                uiAnimationsEnabled: localStorage.getItem('sb3d_ui_anim') === 'true',
+                hexonmd3Enabled: localStorage.getItem('sb3d_hexon_md3') === 'true',
                 cpuCores: navigator.hardwareConcurrency ?? 'N/A',
                 ambientEnabled: workshop.shaman.sandbox3d.TemporalAudio?.enabled ?? false,
                 ambientVolume: workshop.shaman.sandbox3d.TemporalAudio?.volume ?? 0,
@@ -2714,6 +3006,8 @@
                 `  Babylon Inspector   : ${latest.isInspectorEnabled ? 'VISIBLE' : 'HIDDEN'}`,
                 `  FPS HUD             : ${latest.isHUDVisible ? 'SHOWING' : 'HIDDEN'}`,
                 `  Active Language     : ${latest.activeLang}`,
+                `  UI Animations       : ${latest.uiAnimationsEnabled ? 'ENABLED' : 'DISABLED'}`,
+                `  HEXON MD3           : ${latest.hexonmd3Enabled ? 'ENABLED' : 'DISABLED'}`,
                 ``,
                 `----------------------------------------------------------`,
                 `  AUDIO`,
@@ -2749,7 +3043,7 @@
                 `  Exposure            : ${latest.filmFXParams.exposure}`,
                 ``,
                 `----------------------------------------------------------`,
-                `  SNAPSHOT HISTORY (auto-captured every 5s // )`,
+                `  SNAPSHOT HISTORY (auto-captured every 5s)`,
                 `----------------------------------------------------------`,
             ];
 
@@ -3360,6 +3654,8 @@
             if (isHidden) {
                 overlay.style.display = 'flex';
                 btn.classList.add('active');
+                const catSelect = document.getElementById('settings-category-select');
+                if (catSelect) switchSettingsCategory(catSelect.value);
             } else {
                 overlay.style.display = 'none';
                 btn.classList.remove('active');
@@ -3414,12 +3710,15 @@
             } else if (type === 'all') {
                 window.location.reload();
             } else if (type === 'reset') {
+                const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     if (key && key.startsWith('sb3d_')) {
-                        localStorage.removeItem(key);
+                        keysToRemove.push(key);
                     }
                 }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+
                 window.location.reload();
             }
         }
@@ -3430,7 +3729,11 @@
             if (sb3d.engine) sb3d.engine.stopRenderLoop();
 
             if (typeof removeFilmFX === 'function') removeFilmFX();
-            sb3dPostPipeline = null;
+
+            if (sb3dPostPipeline) {
+                try { sb3dPostPipeline.dispose(); } catch (e) { }
+                sb3dPostPipeline = null;
+            }
 
             const ta = sb3d.TemporalAudio;
             if (ta.enabled) ta.toggle();
@@ -3439,13 +3742,20 @@
 
             if (isDayNightEnabled) toggleDayNight();
             if (syncDeviceTimeInterval) { clearInterval(syncDeviceTimeInterval); syncDeviceTimeInterval = null; }
-            if (nightPulseInterval) {
-                clearInterval(nightPulseInterval);
-                nightPulseInterval = null;
-            }
+            if (nightPulseInterval) { clearInterval(nightPulseInterval); nightPulseInterval = null; }
 
             if (isFlashlightOn && typeof toggleFlashlight === 'function') toggleFlashlight();
             if (flashlightRef) { flashlightRef.dispose(); flashlightRef = null; }
+
+            if (sb3d.MirrorSystem && sb3d.MirrorSystem.probe) {
+                try { sb3d.MirrorSystem.probe.dispose(); } catch (e) { }
+                sb3d.MirrorSystem.probe = null;
+            }
+
+            if (sb3d._resizeHandler) {
+                window.removeEventListener("resize", sb3d._resizeHandler);
+                sb3d._resizeHandler = null;
+            }
 
             spawnedMeshes = [];
             if (sb3d.scene) { sb3d.scene.dispose(); sb3d.scene = null; }
@@ -3455,7 +3765,10 @@
             cleanupNightPulse();
             nightPulseLight = null;
             viewTargetMesh = null;
-            customModelTemplate = null;
+            heldMesh = null;
+            sunMeshRef = null;
+            customModelTemplates.fill(null);
+            refreshCustomButtons();
             dayNightLightRef = null;
             dayNightDirRef = null;
             dayNightSkyRef = null;
@@ -3469,17 +3782,20 @@
         }
 
         function showBabylonInspector() {
-            if (sceneRef) {
-                if (sceneRef.debugLayer.isVisible()) {
-                    sceneRef.debugLayer.hide();
-                } else {
-                    sceneRef.debugLayer.show({
-                        embedMode: true,
-                        handleResize: true,
-                        overlay: true,
-                        enableAutoUpdating: false
-                    });
-                }
+            if (!sceneRef) return;
+
+            if (isInspectorEnabled) {
+                sceneRef.debugLayer.hide();
+                isInspectorEnabled = false;
+            } else {
+                isInspectorEnabled = true;
+                sceneRef.debugLayer.show({
+                    embedMode: true,
+                    handleResize: true,
+                    overlay: true,
+                }).catch(() => {
+                    isInspectorEnabled = false;
+                });
             }
         }
 
@@ -3547,6 +3863,32 @@
             }
         }
 
+        function toggleBgPillars() {
+            const scene = workshop.shaman.sandbox3d.scene;
+            if (!scene) return;
+            isBgPillarsEnabled = !isBgPillarsEnabled;
+            scene.meshes.filter(m => m.name.startsWith("bgPillar_")).forEach(m => m.setEnabled(isBgPillarsEnabled));
+            localStorage.setItem('sb3d_bgPillars', isBgPillarsEnabled ? '1' : '0');
+            const t = SB3D_LANGS[activeLang];
+            const btn = document.getElementById('btn-bg-pillars');
+            if (btn) btn.innerHTML = isBgPillarsEnabled
+                ? `<span class="shape-icon" style="background:#78909c;border-radius:2px;"></span> ${t.dynBgPillarsOn}`
+                : `<span class="shape-icon" style="background:#555;border-radius:2px;"></span> ${t.dynBgPillarsOff}`;
+        }
+
+        function toggleBgDecors() {
+            const scene = workshop.shaman.sandbox3d.scene;
+            if (!scene) return;
+            isBgDecorsEnabled = !isBgDecorsEnabled;
+            scene.meshes.filter(m => m.name.startsWith("bg_") || m.name.startsWith("platform_")).forEach(m => m.setEnabled(isBgDecorsEnabled));
+            localStorage.setItem('sb3d_bgDecors', isBgDecorsEnabled ? '1' : '0');
+            const t = SB3D_LANGS[activeLang];
+            const btn = document.getElementById('btn-bg-decors');
+            if (btn) btn.innerHTML = isBgDecorsEnabled
+                ? `<span class="shape-icon" style="background:#80cbc4;border-radius:50%;"></span> ${t.dynBgDecorsOn}`
+                : `<span class="shape-icon" style="background:#555;border-radius:50%;"></span> ${t.dynBgDecorsOff}`;
+        }
+
         function updateAmbientVolume(val) {
             const vol = parseFloat(val);
             document.getElementById('ambient-vol-display').innerText = vol.toFixed(1);
@@ -3596,22 +3938,60 @@
             }
         }
 
-        function toggleRightUI() {
+        function toggleObjectsUI() {
+            const panel = document.getElementById('objects-panel');
+            const btn = document.getElementById('btn-min-objects');
             const left = document.getElementById('left-panel');
-            const right = document.getElementById('right-panel');
             const leftBtn = document.getElementById('btn-min-left');
-            const rightBtn = document.getElementById('btn-min-right');
-            const isMinimizing = !right.classList.contains('minimized');
-
+            const isMinimizing = !panel.classList.contains('minimized');
             if (isMinimizing) {
-                right.classList.add('minimized');
-                rightBtn.innerText = "O";
+                panel.classList.add('minimized');
+                btn.innerText = 'O';
             } else {
-                right.classList.remove('minimized');
-                rightBtn.innerText = "-";
+                panel.classList.remove('minimized');
+                btn.innerText = '-';
                 left.classList.add('minimized');
-                leftBtn.innerText = "T";
+                leftBtn.innerText = 'T';
             }
+            syncPanelPositions();
+        }
+
+        function togglePropsUI() {
+            const panel = document.getElementById('properties-panel');
+            const btn = document.getElementById('btn-min-props');
+            const left = document.getElementById('left-panel');
+            const leftBtn = document.getElementById('btn-min-left');
+            const isMinimizing = !panel.classList.contains('minimized');
+            if (isMinimizing) {
+                panel.classList.add('minimized');
+                btn.innerText = 'P';
+            } else {
+                panel.classList.remove('minimized');
+                btn.innerText = '-';
+                left.classList.add('minimized');
+                leftBtn.innerText = 'T';
+            }
+            syncPanelPositions();
+        }
+
+        function syncPanelPositions() {
+            const propsPanel = document.getElementById('properties-panel');
+            const objectsPanel = document.getElementById('objects-panel');
+            const propsWidth = propsPanel.offsetWidth;
+            objectsPanel.style.right = (10 + propsWidth + 6) + 'px';
+        }
+
+        function switchShapeCategory(cat) {
+            ['shapes', 'glass', 'mirror', 'explosives', 'custom'].forEach(c => {
+                document.getElementById('shape-cat-' + c).style.display = c === cat ? 'flex' : 'none';
+            });
+        }
+
+        function switchSettingsCategory(cat) {
+            ['system', 'audio', 'environment', 'rendering', 'overlay', 'debugging', 'theming'].forEach(c => {
+                const el = document.getElementById('settings-cat-' + c);
+                if (el) el.style.display = c === cat ? 'block' : 'none';
+            });
         }
 
         function toggleBuildMode() {
@@ -3677,10 +4057,13 @@
             if (shape === 'triangle') btnId = 'btn-tri';
             if (shape === 'frag_bomb') btnId = 'btn-frag';
             if (shape === 'flashbang') btnId = 'btn-flashbang';
+            if (shape === 'fire_bomb') btnId = 'btn-firebomb';
+            if (shape === 'ice_bomb') btnId = 'btn-icebomb';
             if (shape === 'glass_cylinder') btnId = 'btn-glass_cyl';
             if (shape === 'glass_triangle') btnId = 'btn-glass_tri';
             if (shape === 'mirror_cylinder') btnId = 'btn-mirror_cyl';
             if (shape === 'mirror_triangle') btnId = 'btn-mirror_tri';
+            if (shape === 'gravgun') btnId = 'btn-gravgun';
             
             const activeBtn = document.getElementById(btnId);
             if(activeBtn) activeBtn.classList.add('active');
@@ -3729,6 +4112,82 @@
             document.getElementById('reflect-display').innerText = currentReflectivity.toFixed(2);
         }
 
+        function updateGravgunRotation(axis, val) {
+            if (!heldMesh) return;
+
+            const rad = BABYLON.Tools.ToRadians(parseFloat(val));
+
+            if (!heldMesh._gravRotInit) {
+                let euler = heldMesh.rotation;
+                if (heldMesh.rotationQuaternion) {
+                    euler = heldMesh.rotationQuaternion.toEulerAngles();
+                }
+
+                gravgunEulerState.x = euler.x;
+                gravgunEulerState.y = euler.y;
+                gravgunEulerState.z = euler.z;
+
+                heldMesh._gravRotInit = true;
+            }
+
+            if (axis === 'x') {
+                gravgunEulerState.x = rad;
+                document.getElementById('grav-rot-x-display').innerText = val + '°';
+            } else if (axis === 'y') {
+                gravgunEulerState.y = rad;
+                document.getElementById('grav-rot-y-display').innerText = val + '°';
+            } else if (axis === 'z') {
+                gravgunEulerState.z = rad;
+                document.getElementById('grav-rot-z-display').innerText = val + '°';
+            }
+
+            heldMesh.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(
+                gravgunEulerState.x,
+                gravgunEulerState.y,
+                gravgunEulerState.z
+            );
+
+            if (heldMesh.physicsImpostor) {
+                heldMesh.physicsImpostor.forceUpdate();
+            }
+        }
+
+        function updateGravgunRotationUI() {
+            const panel = document.getElementById('gravgun-rotation-settings');
+            if (!panel) return;
+
+            const shouldShow = (selectedShape === 'gravgun' && heldMesh && !heldMesh.isDisposed());
+            panel.style.display = shouldShow ? 'block' : 'none';
+
+            if (shouldShow) {
+                let euler = heldMesh.rotation;
+                if (heldMesh.rotationQuaternion) {
+                    euler = heldMesh.rotationQuaternion.toEulerAngles();
+                }
+
+                gravgunEulerState.x = euler.x;
+                gravgunEulerState.y = euler.y;
+                gravgunEulerState.z = euler.z;
+
+                const degX = BABYLON.Tools.ToDegrees(euler.x).toFixed(0);
+                const degY = BABYLON.Tools.ToDegrees(euler.y).toFixed(0);
+                const degZ = BABYLON.Tools.ToDegrees(euler.z).toFixed(0);
+
+                document.getElementById('gravgun-rot-x').value = degX;
+                document.getElementById('gravgun-rot-y').value = degY;
+                document.getElementById('gravgun-rot-z').value = degZ;
+
+                document.getElementById('grav-rot-x-display').innerText = degX + '°';
+                document.getElementById('grav-rot-y-display').innerText = degY + '°';
+                document.getElementById('grav-rot-z-display').innerText = degZ + '°';
+            }
+        }
+
+        function updateGravgunDistance(val) {
+            holdDistance = parseFloat(val);
+            document.getElementById('grav-dist-display').innerText = holdDistance.toFixed(1);
+        }
+
         function toggleFreezeLogic() {
             const btn = document.getElementById('btn-freeze');
             const t = SB3D_LANGS[activeLang];
@@ -3758,9 +4217,10 @@
 
         function clearObjects() {
             if (!sceneRef) return;
-            if(selectedShape === 'view') toggleViewMode();
+            if (selectedShape === 'view') toggleViewMode();
             viewTargetMesh = null;
-            spawnedMeshes.forEach(mesh => { if(mesh && !mesh.isDisposed()) mesh.dispose(); });
+
+            spawnedMeshes.forEach(mesh => { if (mesh && !mesh.isDisposed()) mesh.dispose(); });
             spawnedMeshes = [];
         }
 
@@ -3889,7 +4349,12 @@
                                     if (loader) {
                                         loader.style.opacity = '0';
                                         loader.style.pointerEvents = 'none';
-                                        setTimeout(() => loader.remove(), 800);
+                                        setTimeout(() => {
+                                            loader.remove();
+                                            setTimeout(() => {
+                                                if (window.sb3dIntroReveal) window.sb3dIntroReveal();
+                                            }, 1000);
+                                        }, 800);
                                     }
                                 };
 
@@ -4058,11 +4523,23 @@
                         this.createPillars(scene);
                         this.createBackgroundDecorations(scene);
                         this.createBackgroundPillars(scene);
+                        this.createStairs(scene);
                         this.setupInteraction(scene);
                         startNightPulseSystem(scene);
                         this.MirrorSystem.init(scene);
                         this.MirrorSystem.addToRenderList(ground);
                         this.MirrorSystem.addToRenderList(ramp);
+
+                        if (localStorage.getItem('sb3d_bgPillars') === '0') {
+                            scene.meshes.filter(m => m.name.startsWith("bgPillar_")).forEach(m => m.setEnabled(false));
+                            const btn = document.getElementById('btn-bg-pillars');
+                            if (btn) btn.innerHTML = `<span class="shape-icon" style="background:#555; border-radius:2px;"></span> BG Pillars are OFF`;
+                        }
+                        if (localStorage.getItem('sb3d_bgDecors') === '0') {
+                            scene.meshes.filter(m => m.name.startsWith("bg_") || m.name.startsWith("platform_")).forEach(m => m.setEnabled(false));
+                            const btn = document.getElementById('btn-bg-decors');
+                            if (btn) btn.innerHTML = `<span class="shape-icon" style="background:#555; border-radius:50%;"></span> BG Decors are OFF`;
+                        }
 
                         // ==========================================
                         // POST-PROCESSING PIPELINE (if enabled)
@@ -4361,7 +4838,7 @@
 
                             const platform = BABYLON.MeshBuilder.CreateDisc(`platform_${i}`, { radius: 3 + Math.random() * 5, tessellation: 16 }, scene);
                             platform.position = new BABYLON.Vector3(x, y, z);
-                            platform.rotation.x = Math.PI / 2; // horizontal disc
+                            platform.rotation.x = Math.PI / 2;
                             const platMat = new BABYLON.StandardMaterial(`platMat_${i}`, scene);
                             platMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.4);
                             platMat.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.3);
@@ -4400,11 +4877,114 @@
                         }
                     },
 
+                    createStairs: function (scene) {
+                        const stepCount = 12;
+                        const stepWidth = 60;
+                        const stepHeight = 3;
+                        const stepDepth = 5;
+                        const originX = 150;
+                        const originZ = 150;
+
+                        const stairMat = new BABYLON.StandardMaterial("stairMat", scene);
+                        stairMat.diffuseColor = new BABYLON.Color3(0.22, 0.22, 0.28);
+                        stairMat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+
+                        for (let i = 0; i < stepCount; i++) {
+                            const step = BABYLON.MeshBuilder.CreateBox("stair_step_" + i, {
+                                width: stepWidth,
+                                height: stepHeight,
+                                depth: stepDepth
+                            }, scene);
+
+                            step.position = new BABYLON.Vector3(
+                                originX,
+                                (stepHeight * 0.5) + (i * stepHeight),
+                                originZ + (i * stepDepth)
+                            );
+
+                            step.material = stairMat;
+
+                            step.physicsImpostor = new BABYLON.PhysicsImpostor(
+                                step,
+                                BABYLON.PhysicsImpostor.BoxImpostor,
+                                { mass: 0, restitution: 0.1, friction: 0.8 },
+                                scene
+                            );
+
+                            step.isPickable = true;
+                            this.MirrorSystem.addToRenderList(step);
+                        }
+                    },
+
                     setupInteraction: function(scene) {
+                        scene.onBeforeRenderObservable.add(() => {
+                            if (selectedShape === 'gravgun' && heldMesh && !heldMesh.isDisposed()) {
+                                const cam = this.cameraFree;
+                                const targetPos = cam.position.add(cam.getDirection(BABYLON.Vector3.Forward()).scale(holdDistance));
+
+                                heldMesh.position = BABYLON.Vector3.Lerp(heldMesh.position, targetPos, 0.15);
+
+                                if (heldMesh.physicsImpostor) {
+                                    heldMesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
+                                    heldMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero());
+                                }
+                            } else if (heldMesh) {
+                                if (heldMesh.physicsImpostor && heldMesh.metadata && heldMesh.metadata.gravGunMass !== undefined) {
+                                    const releaseMesh = heldMesh;
+                                    releaseMesh.physicsImpostor.setMass(releaseMesh.metadata.gravGunMass);
+
+                                    setTimeout(() => {
+                                        if (releaseMesh && releaseMesh.physicsImpostor) {
+                                            releaseMesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
+                                            releaseMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero());
+                                            releaseMesh.physicsImpostor.wakeUp();
+                                        }
+                                    }, 10);
+                                }
+                                heldMesh = null;
+                                if (typeof updateGravgunRotationUI === 'function') updateGravgunRotationUI();
+                            }
+                        });
+
                         scene.onPointerObservable.add((pointerInfo) => {
                             if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
                                 if(pointerInfo.event.button !== 0 && pointerInfo.event.type !== 'touchstart') return; 
                                 if(selectedShape === 'none') return; 
+
+                                if (selectedShape === 'gravgun') {
+                                    if (heldMesh) {
+                                        if (heldMesh.physicsImpostor && heldMesh.metadata && heldMesh.metadata.gravGunMass !== undefined) {
+                                            const releaseMesh = heldMesh;
+                                            releaseMesh.physicsImpostor.setMass(releaseMesh.metadata.gravGunMass);
+
+                                            setTimeout(() => {
+                                                if (releaseMesh && releaseMesh.physicsImpostor) {
+                                                    releaseMesh.physicsImpostor.setLinearVelocity(BABYLON.Vector3.Zero());
+                                                    releaseMesh.physicsImpostor.setAngularVelocity(BABYLON.Vector3.Zero());
+                                                    releaseMesh.physicsImpostor.wakeUp();
+                                                }
+                                            }, 10);
+                                        }
+                                        heldMesh = null;
+                                        if (typeof updateGravgunRotationUI === 'function') updateGravgunRotationUI();
+                                    } else {
+                                        const pickInfo = pointerInfo.pickInfo;
+                                        if (pickInfo && pickInfo.hit && pickInfo.pickedMesh) {
+                                            let mesh = pickInfo.pickedMesh;
+                                            if (mesh.parent && (mesh.parent.name.includes("customHitbox") || mesh.parent.name.includes("customInstance"))) {
+                                                mesh = mesh.parent;
+                                            }
+                                            if (!mesh.physicsImpostor || mesh.physicsImpostor.mass === 0 || mesh.name === "ground" || mesh.name === "ramp") return;
+
+                                            heldMesh = mesh;
+                                            if (!heldMesh.metadata) heldMesh.metadata = {};
+                                            heldMesh.metadata.gravGunMass = heldMesh.physicsImpostor.mass;
+                                            heldMesh.physicsImpostor.setMass(0);
+                                            if (typeof updateGravgunRotationUI === 'function') updateGravgunRotationUI();
+                                        }
+                                    }
+                                    return;
+                                }
 
                                 const pickInfo = pointerInfo.pickInfo;
                                 if (pickInfo.hit && pickInfo.pickedMesh) {
@@ -4425,6 +5005,10 @@
                                         mesh.dispose();
                                         const index = spawnedMeshes.indexOf(mesh);
                                         if (index > -1) spawnedMeshes.splice(index, 1);
+                                        return;
+                                    }
+
+                                    if (mesh.name === "drainButton" || mesh.name === "drainButtonBase") {
                                         return;
                                     }
 
@@ -4490,9 +5074,11 @@
                         let mat;
                         const isGlass = type.startsWith('glass_');
                         const isMirror = type.startsWith('mirror_');
+                        const isCustom = type.startsWith('custom_');
                         let baseType = type;
                         if (isGlass) baseType = type.replace('glass_', '');
                         if (isMirror) baseType = type.replace('mirror_', '');
+                        if (isCustom) baseType = 'custom';
 
                         const pickerVal = document.getElementById('color-picker').value;
                         const baseColor = BABYLON.Color3.FromHexString(pickerVal);
@@ -4522,14 +5108,16 @@
                         const pivotOffset = scale * 0.5 + (isBuildMode ? 0 : 0.01);
                         const spawnPos = pickInfo.pickedPoint.add(normal.scale(pivotOffset));
 
-                        if (baseType === 'custom' && customModelTemplate) {
-                            mesh = customModelTemplate.mesh.instantiateHierarchy(null, { doNotInstantiate: true });
+                        const customIdx = type.startsWith('custom_') ? parseInt(type.split('_')[1]) : -1;
+                        const customSlot = customIdx >= 0 ? customModelTemplates[customIdx] : null;
+                        if (customSlot) {
+                            mesh = customSlot.mesh.instantiateHierarchy(null, { doNotInstantiate: true });
                             mesh.name = "customInstance_" + Date.now();
                             mesh.alwaysSelectAsActiveMesh = false;
                             mesh.getChildMeshes().forEach(c => c.alwaysSelectAsActiveMesh = false);
                             mesh.setEnabled(true);
                             mesh.scaling = new BABYLON.Vector3(scale, scale, scale);
-                            const customOffset = (customModelTemplate.dimensions.height * scale) / 2;
+                            const customOffset = (customSlot.dimensions.height * scale) / 2;
                             mesh.position = pickInfo.pickedPoint.add(normal.scale(customOffset));
                         }
                         else if (baseType === 'box') {
@@ -4548,12 +5136,15 @@
                             mesh = BABYLON.MeshBuilder.CreateCylinder(isGlass ? "glass_tri" : "tri", { height: scale, diameter: scale, tessellation: 3 }, scene);
                             mesh.position.copyFrom(spawnPos);
                         }
-                        else if (baseType === 'bomb' || baseType === 'frag_bomb') {
-                            mesh = BABYLON.MeshBuilder.CreateSphere("bomb", { diameter: scale }, scene);
+                        else if (baseType === 'bomb' || baseType === 'frag_bomb' || baseType === 'fire_bomb' || baseType === 'ice_bomb') {
+                            mesh = BABYLON.MeshBuilder.CreateSphere(baseType, { diameter: scale }, scene);
                             mesh.position.copyFrom(spawnPos);
                             mat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-                            mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0);
+
                             if (baseType === 'frag_bomb') mat.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0);
+                            else if (baseType === 'fire_bomb') mat.emissiveColor = new BABYLON.Color3(0.8, 0.3, 0.1);
+                            else if (baseType === 'ice_bomb') mat.emissiveColor = new BABYLON.Color3(0.1, 0.6, 0.9);
+                            else mat.emissiveColor = new BABYLON.Color3(0.1, 0, 0);
                         }
                         else if (baseType === 'flashbang') {
                             mesh = BABYLON.MeshBuilder.CreateCylinder("flashbang", { height: scale * 1.5, diameter: scale * 0.5 }, scene);
@@ -4567,7 +5158,7 @@
 
                             let massVal = currentMass;
 
-                            if (baseType === 'custom' && customModelTemplate) {
+                            if (baseType === 'custom' && customSlot) {
                                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 5 * scale, restitution: 0.1, friction: 0.5 }, scene);
                             }
                             else if (baseType === 'box') {
@@ -4582,13 +5173,20 @@
                                 this.armBomb(mesh, scene, false, true);
                             }
 
-                            if (baseType.includes('bomb')) this.armBomb(mesh, scene, baseType === 'frag_bomb');
+                            if (baseType.includes('bomb')) {
+                                mesh.metadata = mesh.metadata || {};
+                                mesh.metadata.bombMass = currentMass;
+                                mesh.metadata.bombSize = currentSize;
+                                mesh.metadata.bombType = baseType;
+                                this.armBomb(mesh, scene, baseType === 'frag_bomb');
+                            }
 
                             if (isBuildMode && pickInfo.pickedMesh && pickInfo.pickedMesh.physicsImpostor && !baseType.includes('bomb')) {
                                 const joint = new BABYLON.PhysicsJoint(BABYLON.PhysicsJoint.LockJoint, {});
                                 pickInfo.pickedMesh.physicsImpostor.addJoint(mesh.physicsImpostor, joint);
                                 if (mesh.material && mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
                             }
+                            spawnParticleBurst(mesh.position, scene);
                             spawnedMeshes.push(mesh);
                             if (!isMirror && !isGlass) {
                                 workshop.shaman.sandbox3d.MirrorSystem.addToRenderList(mesh);
@@ -4680,6 +5278,7 @@
                                 friction: 0.8
                             }, scene);
 
+                            spawnParticleBurst(mesh.position, scene);
                             spawnedMeshes.push(mesh);
 
                             if (!isMirror && !isGlass) {
@@ -4690,12 +5289,15 @@
 
                     armBomb: function (bombMesh, scene, isFragment, isFlash = false) {
                         let flashCount = 0;
+                        const bType = bombMesh.metadata?.bombType || 'bomb';
                         const flashInterval = setInterval(() => {
                             if (!bombMesh || bombMesh.isDisposed()) { clearInterval(flashInterval); return; }
 
                             let colorOn = new BABYLON.Color3(1, 0, 0);
                             if (isFragment) colorOn = new BABYLON.Color3(1, 0.5, 0);
                             if (isFlash) colorOn = new BABYLON.Color3(1, 1, 1);
+                            if (bType === 'fire_bomb') colorOn = new BABYLON.Color3(1, 0.3, 0);
+                            if (bType === 'ice_bomb') colorOn = new BABYLON.Color3(0.1, 0.8, 1);
 
                             if (flashCount % 2 === 0) bombMesh.material.emissiveColor = colorOn;
                             else bombMesh.material.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.1);
@@ -4706,14 +5308,14 @@
                             clearInterval(flashInterval);
                             if (bombMesh && !bombMesh.isDisposed()) {
                                 if (isFlash) this.triggerFlashbang(bombMesh.position, scene);
-                                else this.explode(bombMesh.position, scene, isFragment, bombMesh.scaling.x);
+                                else this.explode(bombMesh.position, scene, isFragment, bombMesh.metadata?.bombSize ?? bombMesh.scaling.x, true, bombMesh.metadata?.bombMass ?? 1, bType);
 
                                 bombMesh.dispose();
                             }
                         }, isFlash ? 2500 : 4000);
                     },
 
-                    explode: function (center, scene, isFragment, scaleMultiplier, playSound = true) {
+                    explode: function (center, scene, isFragment, scaleMultiplier, playSound = true, massMultiplier = 1, bombType = 'bomb') {
                         if (playSound) {
                             const snd = document.getElementById('explosion-snd');
                             if (snd) {
@@ -4722,14 +5324,23 @@
                                 snd.play().catch(e => console.log("Audio blocked: Interaction required."));
                             }
                         }
-                        triggerScreenShake(scaleMultiplier);
-                        triggerHaptic(scaleMultiplier); 
+                        triggerScreenShake(scaleMultiplier * (massMultiplier / 5));
 
                         const explosion = BABYLON.MeshBuilder.CreateSphere("explosion", { diameter: 1 * scaleMultiplier }, scene);
                         explosion.position = center;
                         const expMat = new BABYLON.StandardMaterial("expMat", scene);
+
                         expMat.diffuseColor = isFragment ? new BABYLON.Color3(1, 0.8, 0) : new BABYLON.Color3(1, 0.5, 0);
                         expMat.emissiveColor = new BABYLON.Color3(1, 0.2, 0);
+
+                        if (bombType === 'fire_bomb') {
+                            expMat.diffuseColor = new BABYLON.Color3(1, 0.3, 0);
+                            expMat.emissiveColor = new BABYLON.Color3(1, 0.1, 0);
+                        } else if (bombType === 'ice_bomb') {
+                            expMat.diffuseColor = new BABYLON.Color3(0.2, 0.8, 1);
+                            expMat.emissiveColor = new BABYLON.Color3(0.1, 0.5, 1);
+                        }
+
                         expMat.alpha = 0.8;
                         explosion.material = expMat;
 
@@ -4745,23 +5356,128 @@
                         });
 
                         const blastRadius = 25 * scaleMultiplier;
-                        const blastForce = 60 * scaleMultiplier;
+                        const blastForce = 60 * (massMultiplier / 5);
+
                         spawnedMeshes.forEach(mesh => {
                             if (mesh && !mesh.isDisposed() && mesh.physicsImpostor) {
-                                if (mesh.metadata && mesh.metadata.originalMass) return;
+                                const isFrozen = mesh.metadata && mesh.metadata.originalMass !== undefined;
+
+                                if (isFrozen && bombType !== 'fire_bomb') return;
+
                                 const dir = mesh.getAbsolutePosition().subtract(center);
                                 const dist = dir.length();
+
                                 if (dist < blastRadius) {
-                                    dir.normalize();
-                                    const forceMagnitude = blastForce * (1 - dist / blastRadius);
-                                    const contactPoint = mesh.getAbsolutePosition();
-                                    const impulse = dir.scale(forceMagnitude);
-                                    mesh.physicsImpostor.applyImpulse(impulse, contactPoint);
+                                    if (bombType === 'ice_bomb') {
+                                        if (mesh.physicsImpostor.mass > 0) {
+                                            if (!mesh.metadata) mesh.metadata = {};
+                                            mesh.metadata.originalMass = mesh.physicsImpostor.mass;
+                                            mesh.physicsImpostor.setMass(0);
+                                            mesh.physicsImpostor.sleep();
+                                            if (mesh.material) {
+                                                mesh.metadata.originalColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : null;
+                                                if (mesh.material.emissiveColor) mesh.material.emissiveColor = new BABYLON.Color3(0.1, 0.6, 1);
+                                            }
+                                        }
+                                    } else {
+                                        if (bombType === 'fire_bomb' && isFrozen) {
+                                            mesh.physicsImpostor.setMass(mesh.metadata.originalMass);
+                                            mesh.physicsImpostor.wakeUp();
+                                            delete mesh.metadata.originalMass;
+                                            delete mesh.metadata.originalColor;
+                                        }
+
+                                        dir.normalize();
+                                        const forceMagnitude = blastForce * (1 - dist / blastRadius);
+                                        const contactPoint = mesh.getAbsolutePosition();
+                                        const impulse = dir.scale(forceMagnitude);
+                                        mesh.physicsImpostor.applyImpulse(impulse, contactPoint);
+
+                                        if (bombType === 'fire_bomb') {
+                                            if (!mesh.metadata) mesh.metadata = {};
+                                            if (!mesh.metadata.onFire) {
+                                                mesh.metadata.onFire = true;
+                                                workshop.shaman.sandbox3d.applyFireEffect(mesh, scene);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         });
 
                         if (isFragment) this.spawnFragments(center, scene);
+                    },
+
+                    applyFireEffect: function (mesh, scene) {
+                        if (!isSpawnParticlesEnabled || !scene || !mesh || mesh.isDisposed()) return;
+
+                        if (!mesh.metadata) mesh.metadata = {};
+                        mesh.metadata.isBurnt = false;
+                        mesh.metadata.washStartTime = null;
+
+                        if (mesh.material) {
+                            if (!mesh.metadata.originalFireColor) {
+                                if (mesh.material instanceof BABYLON.PBRMaterial) {
+                                    mesh.metadata.originalFireColor = mesh.material.albedoColor ? mesh.material.albedoColor.clone() : new BABYLON.Color3(1, 1, 1);
+                                } else {
+                                    mesh.metadata.originalFireColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : new BABYLON.Color3(1, 1, 1);
+                                }
+                                mesh.metadata.originalFireEmissive = mesh.material.emissiveColor ? mesh.material.emissiveColor.clone() : new BABYLON.Color3(0, 0, 0);
+                            }
+
+                            if (mesh.material instanceof BABYLON.PBRMaterial) {
+                                mesh.material.albedoColor = new BABYLON.Color3(1.0, 0.4, 0.0);
+                                mesh.material.emissiveColor = new BABYLON.Color3(0.8, 0.3, 0.0);
+                            } else {
+                                mesh.material.diffuseColor = new BABYLON.Color3(1.0, 0.4, 0.0);
+                                mesh.material.emissiveColor = new BABYLON.Color3(0.8, 0.3, 0.0);
+                            }
+                        }
+
+                        const ps = new BABYLON.ParticleSystem("fireFX", 60, scene);
+                        ps.particleTexture = new BABYLON.Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                        ps.emitter = mesh;
+                        ps.minEmitBox = new BABYLON.Vector3(-0.3, -0.3, -0.3);
+                        ps.maxEmitBox = new BABYLON.Vector3(0.3, 0.3, 0.3);
+                        ps.color1 = new BABYLON.Color4(1, 0.5, 0, 1.0);
+                        ps.color2 = new BABYLON.Color4(1, 0.1, 0, 1.0);
+                        ps.colorDead = new BABYLON.Color4(0, 0, 0, 0);
+                        ps.minSize = 0.15;
+                        ps.maxSize = 0.6;
+                        ps.minLifeTime = 0.3;
+                        ps.maxLifeTime = 0.8;
+                        ps.emitRate = 45;
+                        ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+                        ps.gravity = new BABYLON.Vector3(0, 4, 0);
+                        ps.direction1 = new BABYLON.Vector3(-0.5, 1, -0.5);
+                        ps.direction2 = new BABYLON.Vector3(0.5, 2, 0.5);
+                        ps.minAngularSpeed = 0;
+                        ps.maxAngularSpeed = Math.PI;
+                        ps.start();
+
+                        mesh.metadata.firePS = ps;
+
+                        mesh.metadata.fireTimeout = setTimeout(() => {
+                            ps.stop();
+                            setTimeout(() => ps.dispose(), 1000);
+
+                            if (mesh && !mesh.isDisposed()) {
+                                if (mesh.metadata) {
+                                    mesh.metadata.onFire = false;
+                                    mesh.metadata.isBurnt = true;
+                                }
+
+                                if (mesh.material) {
+                                    if (mesh.material instanceof BABYLON.PBRMaterial) {
+                                        mesh.material.albedoColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+                                        mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                                    } else {
+                                        mesh.material.diffuseColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+                                        mesh.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                                    }
+                                }
+                            }
+                        }, 8000);
                     },
 
                     triggerFlashbang: function (center, scene) {
@@ -4825,6 +5541,11 @@
                         waterLevel: 0,
                         fluidDensity: 1.2,
                         dragFactor: 0.15,
+                        waterMesh: null,
+                        isPoolEmpty: false,
+                        isAnimating: false,
+                        originalWaterY: 0,
+                        originalWaterDepth: 20,
 
                         init: function (scene) {
                             const poolSize = 80;
@@ -4868,6 +5589,10 @@
                             water.isPickable = false;
                             water.checkCollisions = false;
 
+                            this.waterMesh = water;
+                            this.originalWaterY = water.position.y;
+                            this.originalWaterDepth = poolDepth;
+
                             this.waterLevel = water.position.y + poolDepth / 2;
                             this.poolBounds = {
                                 minX: poolX - poolSize / 2,
@@ -4877,7 +5602,79 @@
                                 bottomY: floor.position.y + wallThickness / 2
                             };
 
+                            this.createDrainButton(scene, poolX, poolZ, poolSize, poolDepth);
+
                             scene.onBeforeRenderObservable.add(() => this.applyBuoyancy());
+                        },
+
+                        createDrainButton: function (scene, poolX, poolZ, poolSize, poolDepth) {
+                            const buttonBase = BABYLON.MeshBuilder.CreateBox("drainButtonBase", { width: 4, height: 6, depth: 4 }, scene);
+                            buttonBase.position = new BABYLON.Vector3(poolX + poolSize / 2 + 6, 4, poolZ);
+                            const baseMat = new BABYLON.StandardMaterial("baseMat", scene);
+                            baseMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+                            buttonBase.material = baseMat;
+
+                            const button = BABYLON.MeshBuilder.CreateCylinder("drainButton", { diameter: 3, height: 1 }, scene);
+                            button.position = new BABYLON.Vector3(poolX + poolSize / 2 + 6, 7.5, poolZ);
+                            const btnMat = new BABYLON.StandardMaterial("btnMat", scene);
+                            btnMat.diffuseColor = new BABYLON.Color3(0.8, 0.1, 0.1);
+                            button.material = btnMat;
+
+                            button.actionManager = new BABYLON.ActionManager(scene);
+                            button.actionManager.registerAction(
+                                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
+                                    this.toggleDrain(scene, button, btnMat);
+                                })
+                            );
+                        },
+
+                        toggleDrain: function (scene, buttonMesh, buttonMat) {
+                            if (this.isAnimating) return;
+                            this.isAnimating = true;
+
+                            const pressAnim = new BABYLON.Animation("btnPress", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                            const currentY = buttonMesh.position.y;
+                            pressAnim.setKeys([
+                                { frame: 0, value: currentY },
+                                { frame: 10, value: currentY - 0.5 },
+                                { frame: 20, value: currentY }
+                            ]);
+                            buttonMesh.animations = [pressAnim];
+                            scene.beginAnimation(buttonMesh, 0, 20, false);
+
+                            const targetScaleY = this.isPoolEmpty ? 1.0 : 0.001;
+                            const targetPosY = this.isPoolEmpty ? this.originalWaterY : this.originalWaterY - (this.originalWaterDepth / 2);
+                            const targetLevel = this.isPoolEmpty ? this.originalWaterY + (this.originalWaterDepth / 2) : this.poolBounds.bottomY - 1;
+
+                            buttonMat.diffuseColor = this.isPoolEmpty ? new BABYLON.Color3(0.8, 0.1, 0.1) : new BABYLON.Color3(0.1, 0.8, 0.1);
+
+                            const frameCount = 120;
+                            const scaleAnim = new BABYLON.Animation("waterScale", "scaling.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                            scaleAnim.setKeys([
+                                { frame: 0, value: this.waterMesh.scaling.y },
+                                { frame: frameCount, value: targetScaleY }
+                            ]);
+
+                            const posAnim = new BABYLON.Animation("waterPos", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                            posAnim.setKeys([
+                                { frame: 0, value: this.waterMesh.position.y },
+                                { frame: frameCount, value: targetPosY }
+                            ]);
+
+                            const levelAnim = new BABYLON.Animation("waterLevelAnim", "waterLevel", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                            levelAnim.setKeys([
+                                { frame: 0, value: this.waterLevel },
+                                { frame: frameCount, value: targetLevel }
+                            ]);
+
+                            this.waterMesh.animations = [scaleAnim, posAnim];
+
+                            scene.beginDirectAnimation(this, [levelAnim], 0, frameCount, false);
+                            scene.beginAnimation(this.waterMesh, 0, frameCount, false, 1.0, () => {
+                                this.isPoolEmpty = !this.isPoolEmpty;
+                                this.isAnimating = false;
+                                this.waterLevel = targetLevel;
+                            });
                         },
 
                         applyBuoyancy: function () {
@@ -4893,6 +5690,44 @@
                                 const pos = mesh.position;
 
                                 if (pos.x > b.minX && pos.x < b.maxX && pos.z > b.minZ && pos.z < b.maxZ && pos.y < this.waterLevel && pos.y > b.bottomY) {
+                                    if (mesh.metadata && mesh.metadata.onFire) {
+                                        mesh.metadata.onFire = false;
+                                        if (mesh.metadata.fireTimeout) clearTimeout(mesh.metadata.fireTimeout);
+                                        if (mesh.metadata.firePS) {
+                                            mesh.metadata.firePS.stop();
+                                            setTimeout(() => mesh.metadata.firePS.dispose(), 1000);
+                                        }
+                                        if (mesh.material && mesh.metadata.originalFireColor) {
+                                            if (mesh.material instanceof BABYLON.PBRMaterial) {
+                                                mesh.material.albedoColor = mesh.metadata.originalFireColor;
+                                            } else {
+                                                mesh.material.diffuseColor = mesh.metadata.originalFireColor;
+                                            }
+                                            if (mesh.metadata.originalFireEmissive) {
+                                                mesh.material.emissiveColor = mesh.metadata.originalFireEmissive;
+                                            }
+                                        }
+                                    }
+
+                                    if (mesh.metadata && mesh.metadata.isBurnt) {
+                                        if (!mesh.metadata.washStartTime) {
+                                            mesh.metadata.washStartTime = performance.now();
+                                        } else if (performance.now() - mesh.metadata.washStartTime >= 10000) {
+                                            if (mesh.material && mesh.metadata.originalFireColor) {
+                                                if (mesh.material instanceof BABYLON.PBRMaterial) {
+                                                    mesh.material.albedoColor = mesh.metadata.originalFireColor;
+                                                } else {
+                                                    mesh.material.diffuseColor = mesh.metadata.originalFireColor;
+                                                }
+                                                if (mesh.metadata.originalFireEmissive) {
+                                                    mesh.material.emissiveColor = mesh.metadata.originalFireEmissive;
+                                                }
+                                            }
+                                            mesh.metadata.isBurnt = false;
+                                            mesh.metadata.washStartTime = null;
+                                        }
+                                    }
+
                                     const depth = this.waterLevel - pos.y;
                                     const volume = mesh.scaling.x * mesh.scaling.y * mesh.scaling.z;
                                     const mass = mesh.physicsImpostor.mass;
@@ -4918,6 +5753,10 @@
                                         new BABYLON.Vector3(dragX, 0, dragZ),
                                         mesh.getAbsolutePosition()
                                     );
+                                } else {
+                                    if (mesh.metadata && mesh.metadata.washStartTime) {
+                                        mesh.metadata.washStartTime = null;
+                                    }
                                 }
                             }
                         }
@@ -5116,9 +5955,87 @@
 
         applyLanguage(activeLang);
         updatePostFXButtonState();
+        updateSpawnParticlesButton();
         updateWebGPUButtonState();
+        syncPanelPositions();
         workshop.shaman.sandbox3d.init();
 
     </script>
+<script>
+    (function () {
+        let overlay = document.getElementById('portrait-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'portrait-overlay';
+            overlay.innerHTML = `
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    position: fixed;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.85);
+                    z-index: 99999;
+                    pointer-events: auto;
+                    font-family: 'Segoe UI', sans-serif;
+                ">
+                    <button id="btn-force-landscape"
+                        style="
+                            background: #27ae60;
+                            border: 2px solid #2ecc71;
+                            color: white;
+                            font-size: 18px;
+                            font-weight: bold;
+                            padding: 14px 30px;
+                            border-radius: 12px;
+                            cursor: pointer;
+                            letter-spacing: 1px;
+                            box-shadow: 0 0 20px rgba(39,174,96,0.4);
+                        ">
+                        🔄 GO LANDSCAPE
+                    </button>
+                    <p style="color:#aaa; margin-top:16px; font-size:12px;">
+                        Sand Box 3D is optimized for landscape orientations
+                    </p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        const landscapeBtn = document.getElementById('btn-force-landscape');
+        const overlayContainer = document.getElementById('portrait-overlay');
+
+        function updateOverlay() {
+            const isPortrait = window.matchMedia('(orientation: portrait)').matches ||
+                window.innerHeight > window.innerWidth;
+            const isFullscreen = !!(document.fullscreenElement ||
+                document.webkitFullscreenElement);
+
+            overlayContainer.style.display = (isPortrait && !isFullscreen) ? 'block' : 'none';
+        }
+
+        landscapeBtn.addEventListener('click', function () {
+            if (typeof enterGame === 'function') {
+                enterGame();
+            } else {
+                const de = document.documentElement;
+                if (de.requestFullscreen) de.requestFullscreen();
+                else if (de.webkitRequestFullscreen) de.webkitRequestFullscreen();
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(() => { });
+                }
+            }
+        });
+
+        window.addEventListener('resize', updateOverlay);
+        window.addEventListener('orientationchange', updateOverlay);
+        document.addEventListener('fullscreenchange', updateOverlay);
+        document.addEventListener('webkitfullscreenchange', updateOverlay);
+
+        updateOverlay();
+    })();
+</script>
 </body>
 </html>

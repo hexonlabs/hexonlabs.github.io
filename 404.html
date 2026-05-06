@@ -3,244 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unavailable - HEXON Labs</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Unavailable — HEXON Labs</title>
+    <meta name="theme-color" content="#000000">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <script src="https://hexonlabs.github.io/hexonui/widescreen/wide.js"></script>
 
     <style>
         :root {
-            /* RECOLORED: Monochrome Black/White Tokens (Matching Main Page) */
-            --md-sys-color-primary: #ffffff;
-            --md-sys-color-on-primary: #000000;
-            --md-sys-color-secondary-container: #333333;
-            --md-sys-color-on-secondary-container: #ffffff;
-            --md-sys-color-surface: #121212;
-            --md-sys-color-surface-variant: #1e1e1e;
-            --md-sys-color-background: #000000;
-            --md-sys-color-outline: #444444;
-            
-            /* Text Colors */
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            
-            --md-elevation-1: 0px 1px 3px 1px rgba(255, 255, 255, 0.05), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(12, 12, 18, 0.55);
+            --glass-bg-heavy: rgba(8, 8, 14, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-hover: rgba(255, 255, 255, 0.18);
+            --glass-shine: rgba(255, 255, 255, 0.04);
+            --accent: #7c9ef7;
+            --accent-glow: rgba(124, 158, 247, 0.35);
+            --accent-2: #a78bfa;
+            --accent-2-glow: rgba(167, 139, 250, 0.25);
+            --text-primary: #f0f0f8;
+            --text-secondary: rgba(200, 200, 220, 0.6);
+            --text-muted: rgba(160, 160, 180, 0.4);
+            --surface-hover: rgba(30, 30, 48, 0.7);
+            --blur: blur(20px);
+            --blur-heavy: blur(32px);
+            --radius-pill: 100px;
         }
 
         * {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
 
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--md-sys-color-background);
+            font-family: 'Space Grotesk', sans-serif;
+            background: #030308;
             color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
             overflow-x: hidden;
         }
 
-        /* --- Background Animation --- */
-        .bg-shape-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            display: flex;
+        h1, h2, .label { font-family: 'Rajdhani', sans-serif; }
+
+        /* ─── BACKGROUND ─── */
+        #bg-canvas {
+            position: fixed; inset: 0;
+            z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .bg-placeholder {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(124, 158, 247, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 80%, rgba(167, 139, 250, 0.10) 0%, transparent 60%),
+                radial-gradient(ellipse 100% 100% at 50% 50%, #030308 0%, #05050f 100%);
+        }
+
+        .bg-overlay {
+            position: fixed; inset: 0;
+            background: rgba(3, 3, 12, 0.45);
+            z-index: 1; pointer-events: none;
+        }
+
+        /* ─── PAGE WRAPPER ─── */
+        .page-wrapper {
+            position: relative; z-index: 2;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
             align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            overflow: hidden;
+            padding: 32px 16px 48px;
         }
 
-        .hexagon-spinner {
-            width: 65vh;
-            height: 65vh;
-            color: var(--md-sys-color-primary);
-            opacity: 0.05;
-            animation: spin 12s linear infinite;
+        /* ─── TOPBAR ─── */
+        .topbar {
+            width: 100%; max-width: 480px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 32px;
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .topbar-brand {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none;
         }
 
-        /* --- Main Layout --- */
-        .container {
-            max-width: 450px;
-            width: 100%;
-            padding: 48px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-            z-index: 1;
-            /* Dark Glassmorphism */
-            background: rgba(20, 20, 20, 0.85);
-            border: 1px solid #333;
+        .topbar-logo {
+            width: 36px; height: 36px;
+            border-radius: 10px; object-fit: cover;
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .topbar-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 18px; font-weight: 700;
+            color: var(--text-primary); letter-spacing: 1.5px;
+        }
+
+        .topbar-pill {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--blur);
+            border-radius: var(--radius-pill);
+            padding: 6px 14px;
+            font-size: 11px; font-weight: 600;
+            color: #f87171;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        /* ─── HERO CARD ─── */
+        .hero-card {
+            width: 100%; max-width: 480px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 32px;
-            margin: 20px;
+            backdrop-filter: var(--blur-heavy);
+            padding: 36px 28px 28px;
+            position: relative; overflow: hidden;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
             text-align: center;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 0;
         }
 
-        /* Header */
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 16px; right: 16px; height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.15) 30%,
+                rgba(255,255,255,0.25) 50%,
+                rgba(255,255,255,0.15) 70%,
+                transparent 100%
+            );
         }
 
-        .mascot-container {
-            width: 150px;
-            height: 150px;
-            margin-bottom: 24px;
+        /* Red-ish glow for the error vibe */
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            top: -40px; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 200px;
+            background: radial-gradient(circle, rgba(248, 113, 113, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* ─── BINA IMAGE ─── */
+        .bina-frame {
+            width: 148px; height: 148px;
             border-radius: 50%;
-            background-color: var(--md-sys-color-surface);
-            padding: 8px;
-            box-shadow: var(--md-elevation-1);
-            border: 1px solid var(--md-sys-color-outline);
+            border: 1px solid var(--glass-border-hover);
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-bottom: 24px;
+            position: relative;
+            box-shadow:
+                0 0 0 6px rgba(124, 158, 247, 0.06),
+                0 8px 32px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+            background: rgba(20, 20, 32, 0.6);
         }
-        
-        .error-image {
-            width: 100%;
-            height: 100%;
+
+        .bina-img {
+            width: 100%; height: 100%;
             object-fit: cover;
             border-radius: 50%;
-            transition: transform 0.4s ease;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .mascot-container:hover .error-image {
-            transform: scale(1.1);
+        .bina-frame:hover .bina-img { transform: scale(1.08); }
+
+        /* ─── ERROR TEXT ─── */
+        .error-code {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase;
+            color: #f87171;
+            margin-bottom: 10px;
         }
 
-        h1 {
-            font-size: 28px;
-            font-weight: 400;
+        .error-title {
+            font-size: 32px; font-weight: 700;
+            letter-spacing: 1px;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            line-height: 1.1;
         }
 
-        .subtitle {
-            font-size: 16px;
+        .error-desc {
+            font-size: 14px;
             color: var(--text-secondary);
-            font-weight: 400;
-            line-height: 1.5;
-        }
-
-        /* Primary Action */
-        .primary-action-container {
-            display: flex;
-            justify-content: center;
+            line-height: 1.65;
+            margin-bottom: 28px;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 16px;
             width: 100%;
         }
 
-        .fab-primary {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            padding: 16px 32px;
-            border-radius: 100px;
+        /* ─── BACK BUTTON ─── */
+        .back-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            color: #080814;
+            padding: 15px 28px;
+            border-radius: var(--radius-pill);
             text-decoration: none;
-            transition: all 0.2s ease;
-            box-shadow: var(--md-elevation-1);
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            font-weight: 500;
-            position: relative;
-            overflow: hidden;
+            font-weight: 700; font-size: 15px;
+            letter-spacing: 0.5px;
+            transition: all 0.25s;
+            position: relative; overflow: hidden;
+            box-shadow: 0 4px 24px rgba(124, 158, 247, 0.3);
         }
 
-        .fab-primary:hover {
-            background-color: #e0e0e0; 
-            box-shadow: 0 4px 12px rgba(255,255,255,0.15);
+        .back-btn::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
         }
 
-        /* Footer */
-        footer {
-            margin-top: auto;
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(124, 158, 247, 0.45);
+        }
+
+        .back-btn:active { transform: translateY(0); }
+
+        /* ─── FOOTER ─── */
+        .page-footer {
+            margin-top: 28px;
+            text-align: center;
             font-size: 11px;
-            color: #555;
+            color: var(--text-muted);
+            letter-spacing: 1px;
         }
 
-        /* Ripple */
+        /* ─── RIPPLE ─── */
         .ripple {
-            position: absolute;
-            border-radius: 50%;
+            position: absolute; border-radius: 50%;
             transform: scale(0);
             animation: ripple 0.6s linear;
             background-color: rgba(0, 0, 0, 0.2);
             pointer-events: none;
         }
 
-        @keyframes ripple {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
+        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+        /* ─── RESPONSIVE ─── */
+        @media (min-width: 640px) {
+            .page-wrapper { padding: 48px 24px 64px; }
+            .error-title { font-size: 38px; }
         }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="bg-shape-container">
-        <svg class="hexagon-spinner" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="50 5, 95 27.5, 95 72.5, 50 95, 5 72.5, 5 27.5" 
-                     fill="none" stroke="currentColor" stroke-width="1.5" />
-            <polygon points="50 25, 72.5 36.25, 72.5 63.75, 50 75, 27.5 63.75, 27.5 36.25" 
-                     fill="currentColor" opacity="0.5"/>
-        </svg>
+    <div id="bg-canvas">
+        <div class="bg-placeholder"></div>
     </div>
+    <div class="bg-overlay"></div>
 
-    <div class="container">
-        
-        <header>
-            <div class="mascot-container">
-                <img src="./bina/columbina.png" alt="COLUMBINAAAA" class="error-image">
-            </div>
-            <h1>Unavailable</h1>
-            <div class="subtitle">Something is definitely missing here<br>We might be working on it or not... Check back next time.<br>Bina is wondering why it is missing...</div>
-        </header>
+    <div class="page-wrapper">
 
-        <div class="primary-action-container">
-            <a href="https://hexonlabs.github.io" class="fab-primary" onclick="createRipple(event)">
-                <i class="material-icons-round">arrow_back</i>
-                <span>Go back to the Lab</span>
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <a href="https://hexonlabs.github.io" class="topbar-brand">
+                <img src="https://hexonlabs.github.io/hexonstuff/logo.png" alt="HEXON" class="topbar-logo">
+                <span class="topbar-name">HEXON</span>
             </a>
+            <div class="topbar-pill">404</div>
         </div>
 
-        <footer>
-            <p>2025-2026 HEXON Laboratories</p>
-        </footer>
+        <!-- HERO CARD -->
+        <div class="hero-card">
+
+            <div class="bina-frame">
+                <img class="bina-img" id="bina-img" src="" alt="Bina">
+            </div>
+
+            <div class="error-code">Error · Not Found</div>
+            <h1 class="error-title">Unavailable</h1>
+
+            <p class="error-desc">
+                Something's definitely missing here. We might be working on it — or not. Check back next time.<br>Bina is also wondering why it's gone.
+            </p>
+
+            <a href="https://hexonlabs.github.io" class="back-btn" onclick="createRipple(event)">
+                <i class="material-icons-round" style="font-size:20px;">arrow_back</i>
+                Go back to the Lab
+            </a>
+
+        </div>
+
+        <div class="page-footer">
+            <p>2025–2026 HEXON Laboratories</p>
+        </div>
 
     </div>
 
     <script>
-        // 1. Logic for Random Images
         const errorGifs = [
-            './bina/columbina.png',
-            './bina/columbina1.png',
-            './bina/columbina2.png',
-            './bina/columbina3.png',
-            './bina/copium.png',
             'https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXMweXFtY2g1a21oMmE3bXFwdXFwMjFpdW51aGxwYW04bm0zMzRkbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fIVHwPuLVHvreSoVPf/giphy.gif',
             'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExb3BicDdqdnBwaG11MjlobmM3cW5oOWY3NTh3M3J3bmQ1cmNlNmg0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/GRw0u738drR9hD6JWR/giphy.gif',
             'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2hsdzk2cmZxbmxydGVwcm12cXJ4aTZ0bW03bmNtcDhmN3htb2FtZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/t3G8DMffSGxWbvAHYm/giphy.gif',
@@ -248,36 +315,21 @@
             'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2dsZGwyOGdybGhkdmc0djBhZWdvZTBqNmF6dTN4azh2eDZtZnVrdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/EXk1Xr22tT70emHTSc/giphy.gif',
             'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZWlic2lyYWViczJoMGxuZzh4OXUyMzhveDFxbDJuZWl1NWw1MjkyNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xmkbfmTCEADnb83r6r/giphy.gif'
         ];
-        
-        // Ensure image element exists before trying to set src
-        const imgElement = document.querySelector('.error-image');
-        if(imgElement) {
-            const randomGif = errorGifs[Math.floor(Math.random() * errorGifs.length)];
-            imgElement.src = randomGif;
-        }
 
-        // 2. Ripple Logic
-        function createRipple(event) {
-            const button = event.currentTarget;
-            
-            const circle = document.createElement("span");
-            const diameter = Math.max(button.clientWidth, button.clientHeight);
-            const radius = diameter / 2;
-            const rect = button.getBoundingClientRect();
+        const img = document.getElementById('bina-img');
+        img.src = errorGifs[Math.floor(Math.random() * errorGifs.length)];
 
-            circle.style.width = circle.style.height = `${diameter}px`;
-            circle.style.left = `${event.clientX - rect.left - radius}px`;
-            circle.style.top = `${event.clientY - rect.top - radius}px`;
-            circle.classList.add("ripple");
-
-            const existingRipple = button.getElementsByClassName("ripple")[0];
-            if (existingRipple) {
-                existingRipple.remove();
-            }
-
-            button.appendChild(circle);
+        function createRipple(e) {
+            const btn = e.currentTarget;
+            const existing = btn.querySelector('.ripple');
+            if (existing) existing.remove();
+            const circle = document.createElement('span');
+            const d = Math.max(btn.clientWidth, btn.clientHeight);
+            const rect = btn.getBoundingClientRect();
+            circle.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - rect.left - d/2}px;top:${e.clientY - rect.top - d/2}px`;
+            circle.classList.add('ripple');
+            btn.appendChild(circle);
         }
     </script>
-    <script src="https://hexonlabs.github.io/hexoneventtheme/event2.js"></script>
 </body>
 </html>
